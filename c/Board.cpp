@@ -358,10 +358,8 @@ void Board::sim_game() {
     std::cout << "Pusher's Goal: " << this->goal << std::endl;
     if (this->goal <= this->max_score) {
         std::cout << "Pusher Reached Their Goal" << std::endl;
-        // Assuming you want to return or somehow use the results after the function ends
     } else {
         std::cout << "Remover Reached Their Goal" << std::endl;
-        // Assuming you want to return or somehow use the results after the function ends
     }
 }
 
