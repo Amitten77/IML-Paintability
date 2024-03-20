@@ -6,10 +6,9 @@
 #include <stdexcept> 
 #include <iostream> 
 #include <memory>
-#include <cstdlib>
-#include <ctime>
 #include <unordered_set>
 #include <unordered_map>
+#include <sstream> 
 #include "helper.h"
 
 
@@ -26,6 +25,35 @@ public:
 
     Board(const Board& other)
     : n(other.n), k(other.k), goal(other.goal), max_score(other.max_score), num_tokens(other.num_tokens), board(other.board) {
+    }
+
+    Board(const std::string& serializedBoard) {
+        std::istringstream iss(serializedBoard);
+        std::string line;
+
+        // Get the first line and extract basic member variables
+        std::getline(iss, line);
+        std::istringstream basicInfo(line);
+        std::string value;
+        std::getline(basicInfo, value, ','); n = std::stoi(value);
+        std::getline(basicInfo, value, ','); k = std::stoi(value);
+        std::getline(basicInfo, value, ','); goal = std::stoi(value);
+        std::getline(basicInfo, value, ','); max_score = std::stoi(value);
+        std::getline(basicInfo, value, ','); num_tokens = std::stoi(value);
+
+        // Process subsequent lines for the board structure
+        while (std::getline(iss, line)) {
+            std::istringstream cellStream(line);
+            std::vector<std::pair<int, int>> row;
+            std::string cellData;
+            while (std::getline(cellStream, cellData, ' ')) {
+                if (cellData.empty()) continue; // Skip empty entries, if any
+                int first = std::stoi(cellData.substr(0, cellData.find(':')));
+                int second = std::stoi(cellData.substr(cellData.find(':') + 1));
+                row.push_back({first, second});
+            }
+            board.push_back(row);
+        }
     }
 
     bool game_over() const;
@@ -54,12 +82,16 @@ public:
     
 
     void sim_game();
+
+    std::string serialize() const;
 };
 
 extern std::vector<Board> WINNING;
 extern std::vector<Board> LOSING;
 extern int LOSING_BOUND;
 extern int WINNING_BOUND;
+extern size_t PREV_LOSING;
+extern size_t PREV_WINNING;
 extern std::unordered_map<int, std::vector<int>> subset_graph;
 extern std::map<std::vector<int>, int> num_graph;
 

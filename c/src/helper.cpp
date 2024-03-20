@@ -3,7 +3,54 @@
 #include "Board.h"
 #include "graph.h"
 
-int checkHallsCondition(const std::vector<std::unordered_set<int>>& relation, int n) {
+
+const int SCALE_FACTOR = 2;
+
+void saveBoardsToFile(const std::vector<Board>& boards, const std::string& filename) {
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Failed to open file for writing: " << filename << std::endl;
+        return;
+    }
+
+    for (const Board& board : boards) {
+        file << board.serialize();
+        file << "---\n"; // Use a delimiter to separate boards
+    }
+
+    file.close();
+}
+
+void loadBoardsFromFile(const std::string& filename, std::vector<Board>& boards) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Failed to open file for reading: " << filename << std::endl;
+        return;
+    }
+
+    std::string line;
+    std::string serializedBoard;
+    while (std::getline(file, line)) {
+        if (line == "---") { // Board delimiter
+            if (!serializedBoard.empty()) {
+                boards.emplace_back(serializedBoard);
+                serializedBoard.clear();
+            }
+        } else {
+            serializedBoard += line + "\n";
+        }
+    }
+    
+    // Don't forget to add the last board if the file doesn't end with "---"
+    if (!serializedBoard.empty()) {
+        boards.emplace_back(serializedBoard);
+    }
+}
+
+
+
+int checkHallsCondition(const std::vector<std::unordered_set<int>>& relation, 
+  int n) {
     std::vector<int> subset;
     std::function<bool(int)> backtrack = [&](int start) -> bool {
         std::unordered_set<int> neighbors;
@@ -124,6 +171,17 @@ int lessThan(const Board& board1, const Board& board2, const std::string& purpos
     }
     size_t n = board1.n;
     int k = board1.k;
+    bool possLess = true;
+    bool possMore = true;
+    if (purpose == "LESS") {
+        possMore = false;
+    }
+    if (purpose == "GREATER") {
+        possLess = false;
+    }
+    if (board1.num_tokens > board2.num_tokens) {
+        possLess = false;
+    }
 
     if (purpose == "LESS" || purpose == "GREATER") {
         if (purpose == "LESS" && board1.num_tokens > board2.num_tokens) return 2;
@@ -266,39 +324,44 @@ void initMap(int N, int K) {
 }
 
 void prune_losing() {
-    std::unordered_set<int> not_include;
+    std::vector<bool> not_include(LOSING.size(), false);
     for (size_t i = 0; i < LOSING.size(); i++) {
-        for (size_t j = i + 1; j < LOSING.size(); j++) {
-            int score = lessThan(LOSING[i], LOSING[j]);
-            if (score == 0 || score == 1) {
-                not_include.insert((int)i);
-            }
-            if (score == -1) {
-                not_include.insert((int)j);
+        for (size_t j = std::max(i + 1, PREV_LOSING); j < LOSING.size(); j++) {
+            if (not_include[i] == false && not_include[j] == false) {
+                int score = lessThan(LOSING[i], LOSING[j]);
+                if (score == 0 || score == 1) {
+                    not_include[i] = true;
+                }
+                if (score == -1) {
+                    not_include[j] = true;
+                }
             }
         }
     }
     std::vector<Board> pruned;
     pruned.reserve(LOSING.size() - not_include.size());
     for (size_t i = 0; i < LOSING.size(); ++i) {
-        if (not_include.find((int)i) == not_include.end()) {
+        if (not_include[i] == false) {
             pruned.push_back(std::move(LOSING[i]));
         }
     }
     
     LOSING = std::move(pruned);
+    PREV_LOSING = LOSING.size();
 }
 
 void prune_winning() {
-    std::unordered_set<int> not_include;
+    std::vector<bool> not_include(WINNING.size(), false);
     for (size_t i = 0; i < WINNING.size(); i++) {
-        for (size_t j = i + 1; j < WINNING.size(); j++) {
-            int score = lessThan(WINNING[i], WINNING[j]);
-            if (score == 0 || score == -1) {
-                not_include.insert((int)i);
-            }
-            if (score == 1) {
-                not_include.insert((int)j);
+        for (size_t j = std::max(i + 1, PREV_WINNING); j < WINNING.size(); j++) {
+            if (not_include[i] == false && not_include[j] == false) {
+                int score = lessThan(WINNING[i], WINNING[j]);
+                if (score == 0 || score == 1) {
+                    not_include[i] = true;
+                }
+                if (score == -1) {
+                    not_include[j] = true;
+                }
             }
         }
     }
@@ -306,12 +369,13 @@ void prune_winning() {
     std::vector<Board> pruned;
     pruned.reserve(WINNING.size() - not_include.size());
     for (size_t i = 0; i < WINNING.size(); ++i) {
-        if (not_include.find((int)i) == not_include.end()) {
+        if (not_include[i] == false) {
             pruned.push_back(std::move(WINNING[i]));
         }
     }
 
     WINNING = std::move(pruned);
+    PREV_WINNING = WINNING.size();
 }
 
 std::string checkStatus(const Board &board) {
@@ -375,7 +439,7 @@ int negaMax(Board& board, bool isPusher, int alpha, int beta, int depth) {
                     std::cout << "Losing Length Before Pruning: " << LOSING.size() << std::endl;
                     prune_losing();
                     std::cout << "Losing Length After Pruning: " << LOSING.size() << std::endl;
-                    LOSING_BOUND = std::max(LOSING_BOUND, int(LOSING.size()) + 40);
+                    LOSING_BOUND = std::max(LOSING_BOUND, int((LOSING.size() * SCALE_FACTOR)));
                 }
             }
             return board.max_score * multiplier;
@@ -427,7 +491,7 @@ int negaMax(Board& board, bool isPusher, int alpha, int beta, int depth) {
                 std::cout << "Losing Length Before Pruning: " << LOSING.size() << std::endl;
                 prune_losing();
                 std::cout << "Losing Length After Pruning: " << LOSING.size() << std::endl;
-                LOSING_BOUND = std::max(LOSING_BOUND, int(LOSING.size()) + 40);
+                LOSING_BOUND = std::max(LOSING_BOUND, int((LOSING.size() * SCALE_FACTOR)));
             }
         } else {
             WINNING.push_back(board);
@@ -435,7 +499,7 @@ int negaMax(Board& board, bool isPusher, int alpha, int beta, int depth) {
                 std::cout << "Winning Length Before Pruning: " << WINNING.size() << std::endl;
                 prune_winning();
                 std::cout << "Winning Length After Pruning: " << WINNING.size() << std::endl;
-                WINNING_BOUND = std::max(WINNING_BOUND, int(WINNING.size()) + 40);
+                WINNING_BOUND = std::max(WINNING_BOUND, int((WINNING.size() * SCALE_FACTOR)));
             }
         }
     }
