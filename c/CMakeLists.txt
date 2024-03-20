@@ -1,5 +1,12 @@
 cmake_minimum_required(VERSION 3.22)
 
+# CMake cache variables
+option(BUILD_TESTS "Build the test cases in the `test/` folder." OFF)
+if (BUILD_TESTS)
+    enable_testing()
+endif ()
+
+
 # Project settings
 project(iml-paintability)
 
@@ -24,11 +31,16 @@ endif ()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Target
-set(HEADERS "helper.h;Board.h;graph.h")
-set(SOURCES "main.cpp;helper.cpp;Board.cpp;graph.cpp")
+file(GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/include/*.h")
+file(GLOB_RECURSE SOURCES "${CMAKE_SOURCE_DIR}/src/*.cpp")
 
-add_executable(main ${HEADERS} ${SOURCES})
+add_executable(main main.cpp ${SOURCES})
 set_target_properties(main PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
         DEBUG_POSTFIX -d
 )
+target_include_directories(main PRIVATE "${CMAKE_SOURCE_DIR}/include")
+
+if (BUILD_TESTS)
+    add_subdirectory("test")
+endif ()

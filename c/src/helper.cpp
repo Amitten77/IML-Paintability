@@ -129,7 +129,7 @@ int lessThan(const Board& board1, const Board& board2, const std::string& purpos
         if (purpose == "LESS" && board1.num_tokens > board2.num_tokens) return 2;
         if (purpose == "GREATER" && board1.num_tokens < board2.num_tokens) return 2;
 
-        // Highest row?
+        // Top tokens
         std::vector<int> board1bst, board2bst;
         board1bst.reserve(n);
         board2bst.reserve(n);
@@ -138,7 +138,7 @@ int lessThan(const Board& board1, const Board& board2, const std::string& purpos
             board2bst.push_back(board2.board[i][k - 1].first);
         }
 
-        //
+        // Sort and check top tokens
         std::sort(board1bst.begin(), board1bst.end());
         std::sort(board2bst.begin(), board2bst.end());
         for (size_t i = 0; i < n; ++i) {
@@ -149,8 +149,17 @@ int lessThan(const Board& board1, const Board& board2, const std::string& purpos
 
     bool firstIsLess = true, secondIsLess = true;
     // Represent the boards in the standard notation
-    // TODO
     std::vector<std::vector<int>> board1Std, board2Std;
+    board1Std.resize(n);
+    board2Std.resize(n);
+    for (size_t i = 0; i < n; i++) {
+        board1Std[i].resize(k);
+        board2Std[i].resize(k);
+        for (int j = 0; j < k; j++) {
+            board1Std[i][j] = board1.board[i][j].first;
+            board2Std[i][j] = board2.board[i][j].first;
+        }
+    }
 
     // Prepare the graph
     Graph graph;
@@ -164,7 +173,7 @@ int lessThan(const Board& board1, const Board& board2, const std::string& purpos
 
     // Find perfect matching
     if (purpose != "GREATER") {
-        // Populate g with edges
+        // Populate graph with edges
         for (size_t i = 0; i < n; i++) {
             for (size_t j = 0; j < n; j++) {
                 int result = compareSortedCols(board1Std[i], board2Std[j]);
@@ -175,10 +184,11 @@ int lessThan(const Board& board1, const Board& board2, const std::string& purpos
                 }
             }
         }
-        firstIsLess = hopcroftKarp(graph, partition) == n;
+        firstIsLess = false;//hopcroftKarp(graph, partition) == n;
     }
     if (purpose != "LESS") {
-        // Populate g with edges
+        graph.clearEdges();
+        // Populate graph with edges
         for (size_t i = 0; i < n; i++) {
             for (size_t j = 0; j < n; j++) {
                 int result = compareSortedCols(board1Std[i], board2Std[j]);
@@ -189,7 +199,7 @@ int lessThan(const Board& board1, const Board& board2, const std::string& purpos
                 }
             }
         }
-        secondIsLess = hopcroftKarp(graph, partition) == n;
+        secondIsLess = false;//hopcroftKarp(graph, partition) == n;
     }
 
     if (firstIsLess && secondIsLess) return 0;
