@@ -9,6 +9,14 @@
 /*
 g++ -std=c++17 -O3 -flto -march=native -o main main.cpp Board.cpp helper.cpp 
 */
+/**
+ * Using CMake:
+ * ```shell
+ * cmake -B build
+ * cmake --build build --config Release
+ * ./build/<EXECUTABLE_NAME>
+ * ```
+ */
 int main() {
     // Start measuring time
     auto start = std::chrono::high_resolution_clock::now();

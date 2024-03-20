@@ -1,3 +1,4 @@
+#include <functional>
 #include "helper.h"
 #include "Board.h"
 
@@ -106,7 +107,7 @@ std::vector<std::vector<int>> product(const std::vector<std::vector<std::vector<
     for (const auto& list : lists) {
         if (list.empty()) return {{}};
     }
-    result.push_back({});
+    result.emplace_back();
 
     for (const auto& list : lists) {
         std::vector<std::vector<int>> tempResult;
@@ -163,17 +164,17 @@ void prune_losing() {
         for (size_t j = i + 1; j < LOSING.size(); j++) {
             int score = lessThan(LOSING[i], LOSING[j]);
             if (score == 0 || score == 1) {
-                not_include.insert(i);
+                not_include.insert((int)i);
             }
             if (score == -1) {
-                not_include.insert(j);
+                not_include.insert((int)j);
             }
         }
     }
     std::vector<Board> pruned;
     pruned.reserve(LOSING.size() - not_include.size());
     for (size_t i = 0; i < LOSING.size(); ++i) {
-        if (not_include.find(i) == not_include.end()) {
+        if (not_include.find((int)i) == not_include.end()) {
             pruned.push_back(std::move(LOSING[i]));
         }
     }
@@ -187,10 +188,10 @@ void prune_winning() {
         for (size_t j = i + 1; j < WINNING.size(); j++) {
             int score = lessThan(WINNING[i], WINNING[j]);
             if (score == 0 || score == -1) {
-                not_include.insert(i);
+                not_include.insert((int)i);
             }
             if (score == 1) {
-                not_include.insert(j);
+                not_include.insert((int)j);
             }
         }
     }
@@ -198,7 +199,7 @@ void prune_winning() {
     std::vector<Board> pruned;
     pruned.reserve(WINNING.size() - not_include.size());
     for (size_t i = 0; i < WINNING.size(); ++i) {
-        if (not_include.find(i) == not_include.end()) {
+        if (not_include.find((int)i) == not_include.end()) {
             pruned.push_back(std::move(WINNING[i]));
         }
     }
@@ -228,7 +229,7 @@ std::string checkStatus(const Board &board) {
         std::sort(rowsFilled.begin(), rowsFilled.end(), std::greater<int>());
 
         for (size_t index = 0; index < rowsFilled.size(); ++index) {
-            if (rowsFilled[index] + index >= board.goal) {
+            if (rowsFilled[index] + (int)index >= board.goal) {
                 return "WINNING";
             }
         }
@@ -263,7 +264,7 @@ int negaMax(Board& board, bool isPusher, int alpha, int beta, int depth) {
         if (board.game_over()) {
             if (board.max_score < board.goal) {
                 LOSING.push_back(board);
-                if (LOSING.size() > LOSING_BOUND) {
+                if ((int)LOSING.size() > LOSING_BOUND) {
                     std::cout << "Losing Length Before Pruning: " << LOSING.size() << std::endl;
                     prune_losing();
                     std::cout << "Losing Length After Pruning: " << LOSING.size() << std::endl;
@@ -299,7 +300,7 @@ int negaMax(Board& board, bool isPusher, int alpha, int beta, int depth) {
         alpha = std::max(alpha, bestVal);
         if (isPusher && depth < 3) {
             std::cout << std::fixed << std::setprecision(2) 
-          << ((index + 1) * 100.0 / game_states.size()) << "% done with the Game States for Depth " 
+          << (((int)index + 1) * 100.0 / (int)game_states.size()) << "% done with the Game States for Depth "
           << depth << " for Possibility " << (index + 1) << " out of " << game_states.size() << std::endl;
         }
         if (!isPusher && bestVal == 1) {
@@ -315,7 +316,7 @@ int negaMax(Board& board, bool isPusher, int alpha, int beta, int depth) {
     if (isPusher) {
         if (bestVal < board.goal) {
             LOSING.push_back(board);
-            if (LOSING.size() > LOSING_BOUND) {
+            if ((int)LOSING.size() > LOSING_BOUND) {
                 std::cout << "Losing Length Before Pruning: " << LOSING.size() << std::endl;
                 prune_losing();
                 std::cout << "Losing Length After Pruning: " << LOSING.size() << std::endl;
@@ -323,7 +324,7 @@ int negaMax(Board& board, bool isPusher, int alpha, int beta, int depth) {
             }
         } else {
             WINNING.push_back(board);
-            if (WINNING.size() > WINNING_BOUND) {
+            if ((int)WINNING.size() > WINNING_BOUND) {
                 std::cout << "Winning Length Before Pruning: " << WINNING.size() << std::endl;
                 prune_winning();
                 std::cout << "Winning Length After Pruning: " << WINNING.size() << std::endl;

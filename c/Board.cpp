@@ -23,8 +23,8 @@ Board::Board(int n, int k, int goal, const std::vector<std::vector<std::pair<int
                 if (selected != 0) throw std::invalid_argument("Token must be Unselected");
             }
         }
-        this->n = boardInput.size();
-        this->k = boardInput[0].size();
+        this->n = (int)boardInput.size();
+        this->k = (int)boardInput[0].size();
     }
 }
 
@@ -89,7 +89,7 @@ std::vector<std::vector<int>> Board::recur_get_poss(
             }
         }
 
-        if (depth == poss.size() - 1) {
+        if (depth == (int)poss.size() - 1) {
             if (filled_cols == 0) {
                 return {{-2}}; //-2 subsitution for NONE type
             } else if (filled_cols == 1) {
@@ -113,12 +113,12 @@ std::vector<std::vector<int>> Board::recur_get_poss(
                 }
                 return lis;
             }
-        } else if (depth < poss.size() - 1) {
+        } else if (depth < (int)poss.size() - 1) {
             std::unordered_map<int, std::vector<std::vector<int>>> poss_dic;
             std::unordered_set<int> lengths;
             for (auto& item : poss.at(depth)) {
                 if (item.size() == static_cast<size_t>(req) || req == -1) {
-                    lengths.insert(item.size());
+                    lengths.insert((int)item.size());
                 }
             }
 
@@ -131,7 +131,7 @@ std::vector<std::vector<int>> Board::recur_get_poss(
             std::vector<std::vector<int>> ans;
             for (auto& item : poss.at(depth)) {
                 if (item.size() == static_cast<size_t>(req) || req == -1) {
-                    for (auto& item2 : poss_dic[item.size()]) {
+                    for (auto& item2 : poss_dic[(int)item.size()]) {
                         if (item2.empty() || item2[0] != -2) {
                             std::vector<int> combined = item;
                             combined.insert(combined.end(), item2.begin(), item2.end());
@@ -160,7 +160,7 @@ std::vector<std::vector<int>> Board::get_poss(const std::vector<std::pair<int, i
         }
         offset++;
     }
-    if (tokens.size() == 0) {
+    if (tokens.empty()) {
         return {{}};
     }
     std::vector<std::vector<std::vector<int>>> lists;
@@ -190,8 +190,8 @@ std::vector<std::vector<int>> Board::get_poss(const std::vector<std::pair<int, i
 
 void Board::make_move_pusher() {
     std::vector<int> poss = this->is_possible_push();
-    srand(static_cast<unsigned int>(time(0)));
-    int randomIndex = rand() % poss.size();
+    srand(static_cast<unsigned int>(time(nullptr)));
+    size_t randomIndex = rand() % poss.size();
     std::vector<int> subset = subset_graph[poss[randomIndex]];
     this->make_pusher_board(subset);
 }
@@ -314,14 +314,14 @@ std::vector<int> Board::is_possible_remove() {
 
 
 void Board::make_remover_board(int action) {
-    for (unsigned int j = 0; j < this->k; j++) {
+    for (int j = 0; j < this->k; j++) {
         if (this->board[action][j].second == 1) {
             this->board[action][j].first = -1;
             this->num_tokens -= 1;
         }
     }
-    for (unsigned int i = 0; i < this->n; i++) {
-        for (unsigned int j = 0; j < this->k; j++) {
+    for (int i = 0; i < this->n; i++) {
+        for (int j = 0; j < this->k; j++) {
             this->board[i][j].second = 0;
             this->max_score = std::max(this->max_score, this->board[i][j].first);
         }
@@ -335,9 +335,9 @@ void Board::make_move_remover() {
         std::cout << cur << std::endl;
     }
     int action = 0;
-    if (poss.size() > 0) {
-        srand(static_cast<unsigned int>(time(0)));
-        int randomIndex = rand() % poss.size();
+    if (!poss.empty()) {
+        srand(static_cast<unsigned int>(time(nullptr)));
+        size_t randomIndex = rand() % poss.size();
         action = poss[randomIndex];
     }
     this->make_remover_board(action);
