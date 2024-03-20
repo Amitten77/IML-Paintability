@@ -33,7 +33,8 @@ std::vector<std::string> Graph::getVertices() const noexcept {
 }
 
 const std::vector<std::string>& Graph::getNeighbors(const std::string& vertex) const noexcept {
-    if (!this->hasVertex(vertex)) return std::vector<std::string>();
+    static const std::vector<std::string> empty;
+    if (!this->hasVertex(vertex)) return empty;
     return this->neighbors_.at(vertex);
 }
 
