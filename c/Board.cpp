@@ -6,6 +6,8 @@ std::vector<Board> WINNING;
 std::vector<Board> LOSING;
 int LOSING_BOUND = 20;
 int WINNING_BOUND = 20;
+size_t PREV_LOSING = 0;
+size_t PREV_WINNING = 0;
 std::unordered_map<int, std::vector<int>> subset_graph;
 std::map<std::vector<int>, int> num_graph;
 
@@ -363,4 +365,19 @@ void Board::sim_game() {
     }
 }
 
+std::string Board::serialize() const {
+        std::ostringstream os;
+        // Serialize basic member variables
+        os << n << "," << k << "," << goal << "," << max_score << "," << num_tokens << "\n";
+        
+        // Serialize the board structure
+        for (const auto& row : board) {
+            for (const auto& cell : row) {
+                os << cell.first << ":" << cell.second << " "; // Use ':' to separate pair values and ' ' for cell delimiter
+            }
+            os << "\n"; // Newline to separate rows
+        }
+
+        return os.str();
+    }
 

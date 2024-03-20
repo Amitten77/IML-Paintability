@@ -1,4 +1,3 @@
-#include <iostream>
 #include <limits>
 #include <chrono> // Include for high-resolution timing
 #include "Board.h"
@@ -14,17 +13,24 @@ int main() {
     auto start = std::chrono::high_resolution_clock::now();
 
     Board myBoard(6, 3, 9, {
-        {{4, 0}, {4, 0}, {4, 0}}, // Row 0
-        {{4, 0}, {4, 0}, {4, 0}}, // Row 1
-        {{4, 0}, {4, 0}, {4, 0}}, // Row 2
-        {{4, 0}, {4, 0}, {4, 0}}, // Row 3
-        {{-1, 0}, {-1, 0}, {-1, 0}}, // Row 4
+        {{3, 0}, {3, 0}, {3, 0}}, // Row 0
+        {{3, 0}, {3, 0}, {3, 0}}, // Row 1
+        {{3, 0}, {3, 0}, {3, 0}}, // Row 2
+        {{3, 0}, {3, 0}, {3, 0}}, // Row 3
+        {{2, 0}, {2, 0}, {2, 0}}, // Row 4
         {{-1, 0}, {-1, 0}, {-1, 0}}  // Row 5
     });
     initMap(6, 3);
-    int best = negaMax(myBoard, true, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), 0);
-    std::cout << "BEST SCORE WITH NEGAMAX: " << best << std::endl;
 
+    loadBoardsFromFile("losing/losing_board.txt", LOSING);
+    loadBoardsFromFile("winning/winning_boards.txt", WINNING);
+
+   int best = negaMax(myBoard, true, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), 0);
+   std::cout << "BEST SCORE WITH NEGAMAX: " << best << std::endl;
+
+
+    saveBoardsToFile(LOSING, "losing/losing_board.txt");
+    saveBoardsToFile(WINNING, "winning/winning_boards.txt");
     // Stop measuring time and calculate the elapsed duration
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);

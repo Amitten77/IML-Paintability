@@ -7,9 +7,11 @@
 #include <numeric>
 #include <map>
 #include <string>
-#include <climits>
-#include <iomanip>
+#include <queue>
+#include <cstring>
+#include <iostream>
 #include <unordered_set>
+#include <fstream>
 
 
 class Board;
@@ -31,5 +33,11 @@ int negaMax(Board& board, bool isPusher, int alpha, int beta, int depth);
 std::string checkStatus(const Board& board);
 
 std::vector<std::vector<int>> product(const std::vector<std::vector<std::vector<int>>>& lists);
+
+void saveBoardsToFile(const std::vector<Board>& boards, const std::string& filename);
+
+void loadBoardsFromFile(const std::string& filename, std::vector<Board>& boards);
+
+//bool hopcroftKarp(const std::vector<std::unordered_set<int>>& relation1, const std::vector<std::unordered_set<int>>& relation2, int n);
 
 #endif // HELPER_H
