@@ -30,15 +30,15 @@ int main() {
     });
     initMap(6, 3);
 
-    loadBoardsFromFile("losing/losing_board.txt", LOSING);
-    loadBoardsFromFile("winning/winning_boards.txt", WINNING);
+    loadBoardsFromFile("../losing/losing_board.txt", LOSING);
+    loadBoardsFromFile("../winning/winning_boards.txt", WINNING);
 
    int best = negaMax(myBoard, true, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), 0);
    std::cout << "BEST SCORE WITH NEGAMAX: " << best << std::endl;
 
 
-    saveBoardsToFile(LOSING, "losing/losing_board.txt");
-    saveBoardsToFile(WINNING, "winning/winning_boards.txt");
+    saveBoardsToFile(LOSING, "../losing/losing_board.txt");
+    saveBoardsToFile(WINNING, "../winning/winning_boards.txt");
     // Stop measuring time and calculate the elapsed duration
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);

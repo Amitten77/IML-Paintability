@@ -171,17 +171,6 @@ int lessThan(const Board& board1, const Board& board2, const std::string& purpos
     }
     size_t n = board1.n;
     int k = board1.k;
-    bool possLess = true;
-    bool possMore = true;
-    if (purpose == "LESS") {
-        possMore = false;
-    }
-    if (purpose == "GREATER") {
-        possLess = false;
-    }
-    if (board1.num_tokens > board2.num_tokens) {
-        possLess = false;
-    }
 
     if (purpose == "LESS" || purpose == "GREATER") {
         if (purpose == "LESS" && board1.num_tokens > board2.num_tokens) return 2;
