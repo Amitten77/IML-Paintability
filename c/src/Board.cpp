@@ -1,6 +1,9 @@
 #include "Board.h"
 
-
+#include <algorithm>
+#include <set>
+#include "compare.h"
+#include "helper.h"
 
 std::vector<Board> WINNING;
 std::vector<Board> LOSING;
@@ -287,24 +290,28 @@ std::vector<int> Board::is_possible_remove() {
     }
     std::set<int> not_include;
     if (poss.size() > 1) {
-            std::vector<std::unique_ptr<Board>> temp_boards;
-            for (auto item : poss) {
-                auto temp_board = std::make_unique<Board>(*this);
-                temp_board->make_remover_board(item);
-                temp_boards.push_back(std::move(temp_board));
-            }
-            for (size_t i = 0; i < poss.size(); ++i) {
-                for (size_t j = i + 1; j < poss.size(); ++j) {
-                    int score = lessThan(*temp_boards[i], *temp_boards[j]);
-                    if (score == 0 || score == -1) {
+        std::vector<std::unique_ptr<Board>> temp_boards;
+        for (auto item : poss) {
+            auto temp_board = std::make_unique<Board>(*this);
+            temp_board->make_remover_board(item);
+            temp_boards.push_back(std::move(temp_board));
+        }
+        for (size_t i = 0; i < poss.size(); ++i) {
+            for (size_t j = i + 1; j < poss.size(); ++j) {
+                switch (compareBoards(*temp_boards[i], *temp_boards[j])) {
+                    case CompResult::LESS:
+                    case CompResult::EQUAL:
                         not_include.insert(poss[i]);
-                    }
-                    if (score == 1) {
+                        break;
+                    case CompResult::GREATER:
                         not_include.insert(poss[j]);
-                    }
+                        break;
+                    default:
+                        break;
                 }
             }
         }
+    }
     auto newEnd = std::remove_if(poss.begin(), poss.end(),
                                  [&not_include](const int& value) {
                                      return not_include.find(value) != not_include.end();

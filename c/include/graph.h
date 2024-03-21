@@ -146,6 +146,6 @@ private:
  *
  * Time complexity: O(|E|sqrt(|V|))
  */
-size_t hopcroftKarp(const Graph& graph, const std::unordered_map<std::string, int>& partition) noexcept;
+size_t hopcroftKarp(const Graph& graph, const std::unordered_map<std::string, int>& partition, int verbose = 0) noexcept;
 
 #endif // GRAPH_H

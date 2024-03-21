@@ -1,18 +1,15 @@
 #ifndef BOARD_H
 #define BOARD_H
 
+#include <map>
 #include <vector>
-#include <utility> 
-#include <stdexcept> 
-#include <iostream> 
+#include <utility>
+#include <stdexcept>
+#include <iostream>
 #include <memory>
 #include <unordered_set>
 #include <unordered_map>
-#include <sstream> 
-#include "helper.h"
-
-
-
+#include <sstream>
 
 class Board {
 private:
@@ -23,11 +20,9 @@ public:
     std::vector<std::vector<std::pair<int, int> > > board;
     Board(int n, int k, int goal = 10, const std::vector<std::vector<std::pair<int, int> > >& boardInput = std::vector<std::vector<std::pair<int, int> > >());
 
-    Board(const Board& other)
-    : n(other.n), k(other.k), goal(other.goal), max_score(other.max_score), num_tokens(other.num_tokens), board(other.board) {
-    }
+    Board(const Board& other) = default;
 
-    Board(const std::string& serializedBoard) {
+    explicit Board(const std::string& serializedBoard) {
         std::istringstream iss(serializedBoard);
         std::string line;
 
@@ -50,13 +45,13 @@ public:
                 if (cellData.empty()) continue; // Skip empty entries, if any
                 int first = std::stoi(cellData.substr(0, cellData.find(':')));
                 int second = std::stoi(cellData.substr(cellData.find(':') + 1));
-                row.push_back({first, second});
+                row.emplace_back(first, second);
             }
             board.push_back(row);
         }
     }
 
-    bool game_over() const;
+    [[nodiscard]] bool game_over() const;
 
     friend std::ostream& operator<<(std::ostream& os, const Board& b);
 
@@ -83,7 +78,7 @@ public:
 
     void sim_game();
 
-    std::string serialize() const;
+    [[nodiscard]] std::string serialize() const;
 };
 
 extern std::vector<Board> WINNING;

@@ -89,16 +89,27 @@ void Graph::clear() noexcept {
 // Helper
 std::vector<std::vector<std::string>> getDisjointPaths(
         const Graph& graph, const std::unordered_map<std::string, std::string>& matching,
-        const std::unordered_set<std::string>& unmatched1, const std::unordered_set<std::string>& unmatched2) {
+        const std::unordered_set<std::string>& unmatched1, const std::unordered_set<std::string>& unmatched2,
+        int verbose) {
 
     using namespace std;
 
     Graph pathGraph;
 
     vector<string> frontier(unmatched1.begin(), unmatched1.end());
-    pathGraph.addVertices(unmatched1.begin(), unmatched2.end());
+    pathGraph.addVertices(unmatched1.begin(), unmatched1.end());
     int curLevel = 0;
     bool reachedEnd = false;
+
+    if (verbose) {
+        printf("Path graph layers:\n");
+        if (!frontier.empty()) {
+            for (const string& vertex: frontier) {
+                printf("   %s", vertex.c_str());
+            }
+            printf("\n");
+        }
+    }
 
     // Do BFS to construct path graph
     while (!reachedEnd && !frontier.empty()) {
@@ -119,8 +130,10 @@ std::vector<std::vector<std::string>> getDisjointPaths(
                     // Add neighbor to graph
                     pathGraph.addVertex(neighbor);
                     pathGraph.addEdge(neighbor, vertex);
+
                     // Add neighbor to frontier
-                    newFrontier.push_back(vertex);
+                    newFrontier.push_back(neighbor);
+
                     // Check if should end
                     if (unmatched2.contains(neighbor)) reachedEnd = true;
                 }
@@ -132,14 +145,27 @@ std::vector<std::vector<std::string>> getDisjointPaths(
                 // Add neighbor to graph
                 pathGraph.addVertex(match);
                 pathGraph.addEdge(match, vertex);
+
                 // Add neighbor to frontier
                 newFrontier.push_back(match);
+
                 // Check if should end
                 if (unmatched2.contains(match)) reachedEnd = true;
             }
         }
 
         frontier = std::move(newFrontier);
+        if (verbose) {
+            printf(" ");
+            for (const string& vertex : frontier) {
+                printf(" (%s)", pathGraph.getNeighbors(vertex)[0].c_str());
+            }
+            printf("\n");
+            for (const string& vertex : frontier) {
+                printf("   %s", vertex.c_str());
+            }
+            printf("\n");
+        }
     }
 
     // Use DFS to find disjoint paths
@@ -179,7 +205,7 @@ std::vector<std::vector<std::string>> getDisjointPaths(
     return paths;
 }
 
-size_t hopcroftKarp(const Graph& graph, const std::unordered_map<std::string, int>& partition) noexcept {
+size_t hopcroftKarp(const Graph& graph, const std::unordered_map<std::string, int>& partition, int verbose) noexcept {
     using namespace std;
 
     // Find the partitions
@@ -201,8 +227,30 @@ size_t hopcroftKarp(const Graph& graph, const std::unordered_map<std::string, in
     }
 
     while (!part1.empty() && !part2.empty()) {
+        if (verbose) {
+            printf("Current matching:\n");
+            for (const string& vertex : part1) {
+                printf("  %s -- %s\n", vertex.c_str(), matching[vertex].c_str());
+            }
+        }
+
         // Get the disjoint paths
-        vector<vector<string>> disjointPaths = getDisjointPaths(graph, matching, unmatched1, unmatched2);
+        vector<vector<string>> disjointPaths = getDisjointPaths(graph, matching, unmatched1, unmatched2, verbose);
+
+        if (verbose) {
+            printf("Disjoint paths:\n");
+            for (const vector<string>& path : disjointPaths) {
+                if (path.empty()) {
+                    printf("  (empty)\n");
+                    break;
+                }
+                for (size_t i = 0; i < path.size(); i++) {
+                    printf(i ? " --" : " ");
+                    printf(" %s", path[i].c_str());
+                }
+                printf("\n");
+            }
+        }
 
         // If empty, we have the maximum matching
         if (disjointPaths.empty()) break;
@@ -228,8 +276,8 @@ size_t hopcroftKarp(const Graph& graph, const std::unordered_map<std::string, in
 
     // Count final matching
     size_t count = 0;
-    for (const auto& [vertex, neighbor] : matching) {
-        if (!neighbor.empty()) count++;
+    for (const string& vertex : part1) {
+        if (!matching[vertex].empty()) count++;
     }
-    return count / 2;
+    return count;
 }
