@@ -132,7 +132,7 @@ CompResult compareBoards(const Board& board1, const Board& board2, Purpose purpo
         for (size_t i = 0; i < n; i++) {
             for (size_t j = 0; j < n; j++) {
                 switch (compareSortedCols(gameState1[i], gameState2[j])) {
-                    case CompResult::LESS:
+                    case CompResult::GREATER:
                     case CompResult::EQUAL: {
                         std::string a = "A" + std::to_string(i);
                         std::string b = "B" + std::to_string(j);
@@ -219,8 +219,8 @@ CompResult compareBoards(const Board& board1, const Board& board2, Purpose purpo
         isLess = checkHallsCondition(lessThanRelation, n);
     }
     if (isMore && isLess) return CompResult::EQUAL;
-    if (isLess) return CompResult::GREATER;
-    if (isMore) return CompResult::LESS;
+    if (isLess) return CompResult::LESS;
+    if (isMore) return CompResult::GREATER;
     return CompResult::INCOMPARABLE;
 }
 

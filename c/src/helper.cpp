@@ -116,10 +116,10 @@ void prune_losing() {
                     case CompResult::EQUAL:
                         not_include[i] = true;
                         break;
-                    case CompResult::GREATER:
+                    case CompResult::LESS:
                         not_include[i] = true;
                         break;
-                    case CompResult::LESS:
+                    case CompResult::GREATER:
                         not_include[j] = true;
                         break;
                     default:
@@ -208,10 +208,8 @@ std::string checkStatus(const Board &board) {
 
     for (const auto& lose_board : LOSING) {
         switch (compareBoards(board, lose_board, Purpose::LESS)) {
-            case CompResult::GREATER:
-            case CompResult::EQUAL:
-                return "LOSING";
             case CompResult::LESS:
+            case CompResult::EQUAL:
                 return "LOSING";
             default:
                 break;
@@ -220,10 +218,8 @@ std::string checkStatus(const Board &board) {
 
     for (const auto& win_board : WINNING) {
         switch(compareBoards(board, win_board, Purpose::GREATER)) {
-            case CompResult::LESS:
-            case CompResult::EQUAL:
-                return "WINNING";
             case CompResult::GREATER:
+            case CompResult::EQUAL:
                 return "WINNING";
             default:
                 break;
