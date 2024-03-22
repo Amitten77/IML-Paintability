@@ -1,9 +1,8 @@
-#include "Board.h"
-
+#include "../include/Board.h"
 #include <algorithm>
 #include <set>
-#include "compare.h"
-#include "helper.h"
+#include "../include/compare.h"
+#include "../include/helper.h"
 
 std::vector<Board> WINNING;
 std::vector<Board> LOSING;
@@ -272,7 +271,6 @@ void Board::make_pusher_board(std::vector<int> subset) {
     }
 }
 
-//REMOVER METHODS
 std::vector<int> Board::is_possible_remove() {
     std::vector<int> poss;
     std::set<std::vector<std::pair<int, int>>> visited;
@@ -386,5 +384,34 @@ std::string Board::serialize() const {
         }
 
         return os.str();
+    }
+
+Board::Board(const std::string& serializedBoard) {
+        std::istringstream iss(serializedBoard);
+        std::string line;
+
+        // Get the first line and extract basic member variables
+        std::getline(iss, line);
+        std::istringstream basicInfo(line);
+        std::string value;
+        std::getline(basicInfo, value, ','); n = std::stoi(value);
+        std::getline(basicInfo, value, ','); k = std::stoi(value);
+        std::getline(basicInfo, value, ','); goal = std::stoi(value);
+        std::getline(basicInfo, value, ','); max_score = std::stoi(value);
+        std::getline(basicInfo, value, ','); num_tokens = std::stoi(value);
+
+        // Process subsequent lines for the board structure
+        while (std::getline(iss, line)) {
+            std::istringstream cellStream(line);
+            std::vector<std::pair<int, int>> row;
+            std::string cellData;
+            while (std::getline(cellStream, cellData, ' ')) {
+                if (cellData.empty()) continue; // Skip empty entries, if any
+                int first = std::stoi(cellData.substr(0, cellData.find(':')));
+                int second = std::stoi(cellData.substr(cellData.find(':') + 1));
+                row.emplace_back(first, second);
+            }
+            board.push_back(row);
+        }
     }
 

@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.21)
 
 # CMake cache variables
-option(BUILD_TESTS "Build the test cases in the `test/` folder." OFF)
+option(BUILD_TESTS "Build the test cases in the `test/` folder." ON)
 if (BUILD_TESTS)
     enable_testing()
 endif ()

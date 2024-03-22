@@ -3,9 +3,9 @@
 #include <iomanip>
 #include <iostream>
 #include <numeric>
-#include "Board.h"
-#include "compare.h"
-#include "helper.h"
+#include "../include/Board.h"
+#include "../include/compare.h"
+#include "../include/helper.h"
 
 const int SCALE_FACTOR = 2;
 
@@ -114,6 +114,8 @@ void prune_losing() {
             if (!not_include[i] && !not_include[j]) {
                 switch(compareBoards(LOSING[i], LOSING[j])) {
                     case CompResult::EQUAL:
+                        not_include[i] = true;
+                        break;
                     case CompResult::GREATER:
                         not_include[i] = true;
                         break;
@@ -146,6 +148,8 @@ void prune_winning() {
             if (!not_include[i] && !not_include[j]) {
                 switch(compareBoards(WINNING[i], WINNING[j])) {
                     case CompResult::EQUAL:
+                        not_include[i] = true;
+                        break;
                     case CompResult::GREATER:
                         not_include[i] = true;
                         break;
@@ -207,6 +211,8 @@ std::string checkStatus(const Board &board) {
             case CompResult::GREATER:
             case CompResult::EQUAL:
                 return "LOSING";
+            case CompResult::LESS:
+                return "LOSING";
             default:
                 break;
         }
@@ -216,6 +222,8 @@ std::string checkStatus(const Board &board) {
         switch(compareBoards(board, win_board, Purpose::GREATER)) {
             case CompResult::LESS:
             case CompResult::EQUAL:
+                return "WINNING";
+            case CompResult::GREATER:
                 return "WINNING";
             default:
                 break;

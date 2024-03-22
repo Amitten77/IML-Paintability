@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <functional>
-#include "compare.h"
-#include "graph.h"
+#include "../include/compare.h"
+#include "../include/graph.h"
 
 #define USE_HOPCROFT_KARP
 

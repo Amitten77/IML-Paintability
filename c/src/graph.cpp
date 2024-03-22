@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <queue>
 #include <unordered_set>
-#include "graph.h"
+#include "../include/graph.h"
 
 Graph::Graph() noexcept : neighbors_(), edgeCount_(0) {}
 
