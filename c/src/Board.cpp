@@ -13,6 +13,7 @@ size_t PREV_WINNING = 0;
 std::unordered_map<int, std::vector<int>> subset_graph;
 std::map<std::vector<int>, int> num_graph;
 
+Board::Board() = default;
 
 Board::Board(int n, int k, int goal, const std::vector<std::vector<std::pair<int, int> > >& boardInput) : n(n), k(k), goal(goal), max_score(0), num_tokens(0) {
     if (boardInput.empty()) {

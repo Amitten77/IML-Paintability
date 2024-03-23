@@ -212,7 +212,6 @@ std::string checkStatus(const Board &board) {
     for (const auto& lose_board : LOSING) {
         switch (compareBoards(board, lose_board, Purpose::LESS)) {
             case CompResult::LESS:
-                return "LOSING";
             case CompResult::EQUAL:
                 return "LOSING";
             default:
@@ -222,9 +221,8 @@ std::string checkStatus(const Board &board) {
 
     for (const auto& win_board : WINNING) {
         switch(compareBoards(board, win_board, Purpose::GREATER)) {
-            case CompResult::EQUAL:
-                return "WINNING";
             case CompResult::GREATER:
+            case CompResult::EQUAL:
                 return "WINNING";
             default:
                 break;

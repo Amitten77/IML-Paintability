@@ -30,12 +30,15 @@ public:
     int n, k, goal, max_score, num_tokens;
     std::vector<std::vector<std::pair<int, int> > > board;
 
+    /**
+     * @brief Empty Constructor.
+     *
+     * Warning: Does not initialize the board!!! Only use it as placeholder.
+     */
+    Board();
 
     /// @brief Default Constructor. If BoardInput not defined, creates a n x k board with all tokens at row 0. 
     Board(int n, int k, int goal = 10, const std::vector<std::vector<std::pair<int, int> > >& boardInput = std::vector<std::vector<std::pair<int, int> > >());
-
-    /// @brief Copy Constructor
-    Board(const Board& other) = default;
 
     /// @brief  Deserializes a string into a Board
     /// @param serializedBoard 

@@ -1,6 +1,6 @@
 #include "utility.h"
 
-namespace corn::test {
+namespace test {
     template <>
     bool VectorsEqual<std::u8string>(const std::vector<std::u8string>& vec1, const std::vector<std::u8string>& vec2) {
         bool result = VectorsEqual_(vec1, vec2);
