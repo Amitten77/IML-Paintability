@@ -250,7 +250,7 @@ std::vector<int> Board::is_possible_push() {
     for (const auto& subset : subsets) {
         ans.push_back(num_graph[subset]);
     }
-    std::sort(ans.begin(), ans.end());
+    std::sort(ans.begin(), ans.end(), std::greater<>());
 
     return ans;
 
@@ -270,6 +270,17 @@ void Board::make_pusher_board(std::vector<int> subset) {
         // Sort the row based on the pairs
         std::sort(this->board[i].begin(), this->board[i].end());
     }
+}
+
+double Board::remover_heuristic(int col) {
+    double score = 0;
+    double val = static_cast<double>(this->n) / (this->n - 1);
+    for (const std::pair<int, int>& temp: this->board[col]) {
+        if (temp.second == 1) {
+            score +=  pow(val, temp.first);
+        }
+    }
+    return score;
 }
 
 std::vector<int> Board::is_possible_remove() {
@@ -319,6 +330,9 @@ std::vector<int> Board::is_possible_remove() {
                                  });
 
     poss.erase(newEnd, poss.end());
+    std::sort(poss.begin(), poss.end(), [this](int a, int b) {
+            return remover_heuristic(a) > remover_heuristic(b);
+    });
     return poss;
 }
 

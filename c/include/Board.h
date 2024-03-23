@@ -10,6 +10,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <sstream>
+#include <cmath>
 
 
 /**
@@ -78,6 +79,8 @@ public:
 
     /// @brief Makes a random move for remover
     void make_move_remover();
+
+    double remover_heuristic(int col);
     
     void sim_game();
 

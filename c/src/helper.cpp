@@ -111,6 +111,7 @@ void prune_losing() {
     std::vector<bool> not_include(LOSING.size(), false);
     for (size_t i = 0; i < LOSING.size(); i++) {
         for (size_t j = std::max(i + 1, PREV_LOSING); j < LOSING.size(); j++) {
+            if (!not_include[i] && !not_include[j]) {
                 switch(compareBoards(LOSING[i], LOSING[j])) {
                     case CompResult::EQUAL:
                         not_include[i] = true;
@@ -124,6 +125,7 @@ void prune_losing() {
                     default:
                         break;
                 }
+            }
         }
     }
 
@@ -244,7 +246,7 @@ int negaMax(Board& board, bool isPusher, int alpha, int beta, int depth) {
     int bestVal = INT_MIN;
     std::vector<int> game_states = isPusher ? board.is_possible_push() : board.is_possible_remove();
 
-    std::reverse(game_states.begin(), game_states.end());
+    // std::reverse(game_states.begin(), game_states.end());
 
     for (size_t index = 0; index < game_states.size(); ++index) {
         int poss = game_states[index];
