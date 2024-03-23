@@ -3,7 +3,7 @@
 #include "../include/compare.h"
 #include "../include/graph.h"
 
-#define USE_HOPCROFT_KARP
+#define USE_HOPCROFT_KARPP
 
 int checkHallsCondition(const std::vector<std::unordered_set<int>>& relation, int n) {
     std::vector<int> subset;
@@ -157,30 +157,41 @@ CompResult compareBoards(const Board& board1, const Board& board2, Purpose purpo
     }
     int n = board1.n;
     int k = board1.k;
+    bool possLess = true;
+    bool possMore = true;
+    if (purpose == Purpose::LESS) {
+        possMore = false;
+    }
+    if (purpose == Purpose::GREATER) {
+        possLess = false;
+    }
+    if (board1.num_tokens > board2.num_tokens) {
+        possLess = false;
+    }
 
-    if (purpose == Purpose::LESS || purpose == Purpose::GREATER) {
-        if (purpose == Purpose::LESS && board1.num_tokens > board2.num_tokens) {
+    if (board1.num_tokens < board2.num_tokens) {
+        possMore = false;
+    }
+    if (!possLess && !possMore) {
+        return CompResult::INCOMPARABLE;
+    }
+    std::vector<int> board1bst;
+    std::vector<int> board2bst;
+    for (int i = 0; i < n; ++i) {
+        board1bst.push_back(board1.board[i][k - 1].first);
+        board2bst.push_back(board2.board[i][k - 1].first);
+    }
+    std::sort(board1bst.begin(), board1bst.end());
+    std::sort(board2bst.begin(), board2bst.end());
+    for (int i = 0; i < n; ++i) {
+        if (board1bst[i] > board2bst[i]) {
+            possLess = false;
+        }
+        if (board1bst[i] < board2bst[i]) {
+            possMore = false;
+        }
+        if (!possLess && !possMore) {
             return CompResult::INCOMPARABLE;
-        }
-
-        if (purpose == Purpose::GREATER && board1.num_tokens < board2.num_tokens) {
-            return CompResult::INCOMPARABLE;
-        }
-        std::vector<int> board1bst;
-        std::vector<int> board2bst;
-        for (int i = 0; i < n; ++i) {
-            board1bst.push_back(board1.board[i][k - 1].first);
-            board2bst.push_back(board2.board[i][k - 1].first);
-        }
-        std::sort(board1bst.begin(), board1bst.end());
-        std::sort(board2bst.begin(), board2bst.end());
-        for (int i = 0; i < n; ++i) {
-            if (purpose == Purpose::LESS && board1bst[i] > board2bst[i]) {
-                return CompResult::INCOMPARABLE;
-            }
-            if (purpose == Purpose::GREATER && board1bst[i] < board2bst[i]) {
-                return CompResult::INCOMPARABLE;
-            }
         }
     }
 
@@ -201,13 +212,25 @@ CompResult compareBoards(const Board& board1, const Board& board2, Purpose purpo
             if (less) lessThanRelation[i].insert(j);
             if (greater) greaterThanRelation[i].insert(j);
         }
+        if (lessThanRelation[i].size() == 0) {
+            possLess = false;
+        }
+        if (greaterThanRelation[i].size() == 0) {
+            possMore = false;
+        }
+        if (!possLess && !possMore) {
+            return CompResult::INCOMPARABLE;
+        }
+    }
+    if (!possLess && !possMore) {
+        return CompResult::INCOMPARABLE;
     }
     // Check Hall's condition for both relations
     bool isMore = false;
     bool isLess = false;
-    if (purpose == Purpose::GREATER) {
+    if (possMore && !possLess) {
         isMore = checkHallsCondition(greaterThanRelation, n);
-    } else if (purpose == Purpose::LESS) {
+    } else if (possLess && !possMore) {
         isLess = checkHallsCondition(lessThanRelation, n);
     } else {
         isMore = checkHallsCondition(greaterThanRelation, n);

@@ -111,11 +111,6 @@ void prune_losing() {
     std::vector<bool> not_include(LOSING.size(), false);
     for (size_t i = 0; i < LOSING.size(); i++) {
         for (size_t j = std::max(i + 1, PREV_LOSING); j < LOSING.size(); j++) {
-                // if (i == 0) {
-                //     std::cout << i << " " << j << " " << static_cast<int>(compareBoards(LOSING[i], LOSING[j])) << std::endl;
-                //     std::cout << LOSING[i] << std::endl;
-                //     std::cout << LOSING[j] << std::endl;
-                // }
                 switch(compareBoards(LOSING[i], LOSING[j])) {
                     case CompResult::EQUAL:
                         not_include[i] = true;
