@@ -297,11 +297,13 @@ std::vector<int> Board::is_possible_remove() {
         for (size_t i = 0; i < poss.size(); ++i) {
             for (size_t j = i + 1; j < poss.size(); ++j) {
                 switch (compareBoards(*temp_boards[i], *temp_boards[j])) {
-                    case CompResult::LESS:
+                    case CompResult::GREATER:
+                        not_include.insert(poss[i]);
+                        break;
                     case CompResult::EQUAL:
                         not_include.insert(poss[i]);
                         break;
-                    case CompResult::GREATER:
+                    case CompResult::LESS:
                         not_include.insert(poss[j]);
                         break;
                     default:

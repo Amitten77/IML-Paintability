@@ -46,8 +46,8 @@ int main() {
     
 
 
-    // saveBoardsToFile(LOSING, "losing/losing_board.txt");
-    // saveBoardsToFile(WINNING, "winning/winning_boards.txt");
+    saveBoardsToFile(LOSING, "losing/losing_board.txt");
+    saveBoardsToFile(WINNING, "winning/winning_boards.txt");
     // Stop measuring time and calculate the elapsed duration
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);

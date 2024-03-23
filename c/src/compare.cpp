@@ -3,7 +3,7 @@
 #include "../include/compare.h"
 #include "../include/graph.h"
 
-#define USE_HOPCROFT_KARPP
+#define USE_HOPCROFT_KARP
 
 int checkHallsCondition(const std::vector<std::unordered_set<int>>& relation, int n) {
     std::vector<int> subset;
@@ -50,104 +50,104 @@ CompResult compareSortedCols(const std::vector<int>& col1, const std::vector<int
 
 #ifdef USE_HOPCROFT_KARP
 
-// CompResult compareBoards(const Board& board1, const Board& board2, Purpose purpose) {
-//     if (board1.n != board2.n || board1.k != board2.k) {
-//         return CompResult::INCOMPARABLE;
-//     }
-//     size_t n = board1.n;
-//     int k = board1.k;
+CompResult compareBoards(const Board& board1, const Board& board2, Purpose purpose) {
+    if (board1.n != board2.n || board1.k != board2.k) {
+        return CompResult::INCOMPARABLE;
+    }
+    size_t n = board1.n;
+    int k = board1.k;
 
-//     if (purpose == Purpose::LESS || purpose == Purpose::GREATER) {
-//         if (purpose == Purpose::LESS && board1.num_tokens > board2.num_tokens) return CompResult::INCOMPARABLE;
-//         if (purpose == Purpose::GREATER && board1.num_tokens < board2.num_tokens) return CompResult::INCOMPARABLE;
+    if (purpose == Purpose::LESS || purpose == Purpose::GREATER) {
+        if (purpose == Purpose::LESS && board1.num_tokens > board2.num_tokens) return CompResult::INCOMPARABLE;
+        if (purpose == Purpose::GREATER && board1.num_tokens < board2.num_tokens) return CompResult::INCOMPARABLE;
 
-//         // Top tokens
-//         std::vector<int> board1bst, board2bst;
-//         board1bst.reserve(n);
-//         board2bst.reserve(n);
-//         for (size_t i = 0; i < n; ++i) {
-//             board1bst.push_back(board1.board[i][k - 1].first);
-//             board2bst.push_back(board2.board[i][k - 1].first);
-//         }
+        // Top tokens
+        std::vector<int> board1bst, board2bst;
+        board1bst.reserve(n);
+        board2bst.reserve(n);
+        for (size_t i = 0; i < n; ++i) {
+            board1bst.push_back(board1.board[i][k - 1].first);
+            board2bst.push_back(board2.board[i][k - 1].first);
+        }
 
-//         // Sort and check top tokens
-//         std::sort(board1bst.begin(), board1bst.end());
-//         std::sort(board2bst.begin(), board2bst.end());
-//         for (size_t i = 0; i < n; ++i) {
-//             if (purpose == Purpose::LESS && board1bst[i] > board2bst[i]) return CompResult::INCOMPARABLE;
-//             if (purpose == Purpose::GREATER && board1bst[i] < board2bst[i]) return CompResult::INCOMPARABLE;
-//         }
-//     }
+        // Sort and check top tokens
+        std::sort(board1bst.begin(), board1bst.end());
+        std::sort(board2bst.begin(), board2bst.end());
+        for (size_t i = 0; i < n; ++i) {
+            if (purpose == Purpose::LESS && board1bst[i] > board2bst[i]) return CompResult::INCOMPARABLE;
+            if (purpose == Purpose::GREATER && board1bst[i] < board2bst[i]) return CompResult::INCOMPARABLE;
+        }
+    }
 
-//     bool firstIsLess = false, secondIsLess = false;
-//     // Represent the boards in the standard notation
-//     std::vector<std::vector<int>> gameState1, gameState2;
-//     gameState1.resize(n); gameState2.resize(n);
-//     for (size_t i = 0; i < n; i++) {
-//         gameState1[i].resize(k);
-//         gameState2[i].resize(k);
-//         for (int j = 0; j < k; j++) {
-//             gameState1[i][j] = board1.board[i][j].first;
-//             gameState2[i][j] = board2.board[i][j].first;
-//         }
-//     }
+    bool firstIsLess = false, secondIsLess = false;
+    // Represent the boards in the standard notation
+    std::vector<std::vector<int>> gameState1, gameState2;
+    gameState1.resize(n); gameState2.resize(n);
+    for (size_t i = 0; i < n; i++) {
+        gameState1[i].resize(k);
+        gameState2[i].resize(k);
+        for (int j = 0; j < k; j++) {
+            gameState1[i][j] = board1.board[i][j].first;
+            gameState2[i][j] = board2.board[i][j].first;
+        }
+    }
 
-//     // Prepare the graph
-//     Graph graph;
-//     std::unordered_map<std::string, int> partition;
-//     for (size_t i = 0; i < n; i++) {
-//         std::string a = "A" + std::to_string(i);
-//         std::string b = "B" + std::to_string(i);
-//         partition[a] = 0; partition[b] = 1;
-//         graph.addVertex(a); graph.addVertex(b);
-//     }
+    // Prepare the graph
+    Graph graph;
+    std::unordered_map<std::string, int> partition;
+    for (size_t i = 0; i < n; i++) {
+        std::string a = "A" + std::to_string(i);
+        std::string b = "B" + std::to_string(i);
+        partition[a] = 0; partition[b] = 1;
+        graph.addVertex(a); graph.addVertex(b);
+    }
 
-//     // Find perfect matching
-//     if (purpose != Purpose::GREATER) {
-//         // Populate graph with edges
-//         for (size_t i = 0; i < n; i++) {
-//             for (size_t j = 0; j < n; j++) {
-//                 switch (compareSortedCols(gameState1[i], gameState2[j])) {
-//                     case CompResult::LESS:
-//                     case CompResult::EQUAL: {
-//                         std::string a = "A" + std::to_string(i);
-//                         std::string b = "B" + std::to_string(j);
-//                         graph.addEdge(a, b); graph.addEdge(b, a);
-//                         break;
-//                     }
-//                     default:
-//                         break;
-//                 }
-//             }
-//         }
-//         firstIsLess = hopcroftKarp(graph, partition) == n;
-//     }
-//     if (purpose != Purpose::LESS) {
-//         graph.clearEdges();
-//         // Populate graph with edges
-//         for (size_t i = 0; i < n; i++) {
-//             for (size_t j = 0; j < n; j++) {
-//                 switch (compareSortedCols(gameState1[i], gameState2[j])) {
-//                     case CompResult::GREATER:
-//                     case CompResult::EQUAL: {
-//                         std::string a = "A" + std::to_string(i);
-//                         std::string b = "B" + std::to_string(j);
-//                         graph.addEdge(a, b); graph.addEdge(b, a);
-//                         break;
-//                     }
-//                     default:
-//                         break;
-//                 }
-//             }
-//         }
-//         secondIsLess = hopcroftKarp(graph, partition) == n;
-//     }
+    // Find perfect matching
+    if (purpose != Purpose::GREATER) {
+        // Populate graph with edges
+        for (size_t i = 0; i < n; i++) {
+            for (size_t j = 0; j < n; j++) {
+                switch (compareSortedCols(gameState1[i], gameState2[j])) {
+                    case CompResult::LESS:
+                    case CompResult::EQUAL: {
+                        std::string a = "A" + std::to_string(i);
+                        std::string b = "B" + std::to_string(j);
+                        graph.addEdge(a, b); graph.addEdge(b, a);
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+        }
+        firstIsLess = hopcroftKarp(graph, partition) == n;
+    }
+    if (purpose != Purpose::LESS) {
+        graph.clearEdges();
+        // Populate graph with edges
+        for (size_t i = 0; i < n; i++) {
+            for (size_t j = 0; j < n; j++) {
+                switch (compareSortedCols(gameState1[i], gameState2[j])) {
+                    case CompResult::GREATER:
+                    case CompResult::EQUAL: {
+                        std::string a = "A" + std::to_string(i);
+                        std::string b = "B" + std::to_string(j);
+                        graph.addEdge(a, b); graph.addEdge(b, a);
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+        }
+        secondIsLess = hopcroftKarp(graph, partition) == n;
+    }
 
-//     if (firstIsLess && secondIsLess) return CompResult::EQUAL;
-//     else if (firstIsLess) return CompResult::LESS;
-//     else if (secondIsLess) return CompResult::GREATER;
-//     else return CompResult::INCOMPARABLE;
-// }
+    if (firstIsLess && secondIsLess) return CompResult::EQUAL;
+    else if (firstIsLess) return CompResult::LESS;
+    else if (secondIsLess) return CompResult::GREATER;
+    else return CompResult::INCOMPARABLE;
+}
 
 #else
 

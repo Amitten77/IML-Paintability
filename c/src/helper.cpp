@@ -111,7 +111,11 @@ void prune_losing() {
     std::vector<bool> not_include(LOSING.size(), false);
     for (size_t i = 0; i < LOSING.size(); i++) {
         for (size_t j = std::max(i + 1, PREV_LOSING); j < LOSING.size(); j++) {
-            if (!not_include[i] && !not_include[j]) {
+                // if (i == 0) {
+                //     std::cout << i << " " << j << " " << static_cast<int>(compareBoards(LOSING[i], LOSING[j])) << std::endl;
+                //     std::cout << LOSING[i] << std::endl;
+                //     std::cout << LOSING[j] << std::endl;
+                // }
                 switch(compareBoards(LOSING[i], LOSING[j])) {
                     case CompResult::EQUAL:
                         not_include[i] = true;
@@ -125,7 +129,6 @@ void prune_losing() {
                     default:
                         break;
                 }
-            }
         }
     }
 
@@ -176,7 +179,6 @@ void prune_winning() {
 }
 
 std::string checkStatus(const Board &board) {
-    return "UNSURE";
     int maxTokens = 0;
     std::vector<int> rowsFilled;
 
@@ -199,7 +201,6 @@ std::string checkStatus(const Board &board) {
 
     for (size_t index = 0; index < rowsFilled.size(); ++index) {
         if (rowsFilled[index] + (int)index >= board.goal) {
-            std::cout << board << std::endl;
             return "WINNING";
         }
     }
@@ -235,30 +236,17 @@ std::string checkStatus(const Board &board) {
 
 
 int negaMax(Board& board, bool isPusher, int alpha, int beta, int depth) {
-    int multiplier = -1;
-    if (isPusher) {
-        multiplier = 1;
-    }
     if (isPusher) {
         if (board.game_over()) {
-            // if (board.max_score < board.goal) {
-            //     LOSING.push_back(board);
-            //     if ((int)LOSING.size() > LOSING_BOUND) {
-            //         std::cout << "Losing Length Before Pruning: " << LOSING.size() << std::endl;
-            //         prune_losing();
-            //         std::cout << "Losing Length After Pruning: " << LOSING.size() << std::endl;
-            //         LOSING_BOUND = std::max(LOSING_BOUND, int((LOSING.size() * SCALE_FACTOR)));
-            //     }
-            // }
-            return board.max_score * multiplier;
+            return board.max_score;
         }
-        // std::string status = checkStatus(board);
-        // if (status == "LOSING") {
-        //     return -1 * multiplier;
-        // }
-        // if (status == "WINNING") {
-        //     return board.goal * multiplier;
-        // }
+        std::string status = checkStatus(board);
+        if (status == "LOSING") {
+            return -1;
+        }
+        if (status == "WINNING") {
+            return board.goal;
+        }
     }
     int bestVal = INT_MIN;
     std::vector<int> game_states = isPusher ? board.is_possible_push() : board.is_possible_remove();
@@ -292,24 +280,24 @@ int negaMax(Board& board, bool isPusher, int alpha, int beta, int depth) {
             break;
         } 
     }
-    // if (isPusher) {
-    //     if (bestVal < board.goal) {
-    //         LOSING.push_back(board);
-    //         if ((int)LOSING.size() > LOSING_BOUND) {
-    //             std::cout << "Losing Length Before Pruning: " << LOSING.size() << std::endl;
-    //             prune_losing();
-    //             std::cout << "Losing Length After Pruning: " << LOSING.size() << std::endl;
-    //             LOSING_BOUND = std::max(LOSING_BOUND, int((LOSING.size() * SCALE_FACTOR)));
-    //         }
-    //     } else {
-    //         WINNING.push_back(board);
-    //         if ((int)WINNING.size() > WINNING_BOUND) {
-    //             std::cout << "Winning Length Before Pruning: " << WINNING.size() << std::endl;
-    //             prune_winning();
-    //             std::cout << "Winning Length After Pruning: " << WINNING.size() << std::endl;
-    //             WINNING_BOUND = std::max(WINNING_BOUND, int((WINNING.size() * SCALE_FACTOR)));
-    //         }
-    //     }
-    // }
+    if (isPusher) {
+        if (bestVal < board.goal) {
+            LOSING.push_back(board);
+            if ((int)LOSING.size() > LOSING_BOUND) {
+                std::cout << "Losing Length Before Pruning: " << LOSING.size() << std::endl;
+                prune_losing();
+                std::cout << "Losing Length After Pruning: " << LOSING.size() << std::endl;
+                LOSING_BOUND = std::max(LOSING_BOUND, int((LOSING.size() * SCALE_FACTOR)));
+            } 
+        } else {
+            WINNING.push_back(board);
+            if ((int)WINNING.size() > WINNING_BOUND) {
+                std::cout << "Winning Length Before Pruning: " << WINNING.size() << std::endl;
+                prune_winning();
+                std::cout << "Winning Length After Pruning: " << WINNING.size() << std::endl;
+                WINNING_BOUND = std::max(WINNING_BOUND, int((WINNING.size() * SCALE_FACTOR)));
+            }
+        }
+    }
     return bestVal;
 }
