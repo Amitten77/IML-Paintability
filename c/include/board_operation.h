@@ -4,7 +4,17 @@
 #include <vector>
 #include <Board.h>
 
-unsigned long long integerPow(unsigned long long base, unsigned int exponent);
+// Each move is represented as a list of tokens indices to push (std::vector<int>).
+using PusherMove = std::vector<int>;
+
+// The i-th bit (from lowest to highest) corresponds to whether to push the i-th token in the column.
+using EncodedMove = size_t;
+
+// Suppose M = goal + 2. Interpret as base M number.
+// The i-th bit (from lowest to highest) is the row number of the i-th token plus one.
+using EncodedColState = size_t;
+
+size_t integerPow(size_t base, size_t exponent);
 
 /**
  * @brief Count the number of tokens in the column that is still on the board.
@@ -12,9 +22,6 @@ unsigned long long integerPow(unsigned long long base, unsigned int exponent);
  * @return Number of movable tokens.
  */
 size_t countMovableTokens(const std::vector<std::pair<int, int>>& col);
-
-// Each move is represented as a list of tokens indices to push (std::vector<int>).
-using PusherMove = std::vector<int>;
 
 enum class Player {
     PUSHER, REMOVER, NONE
@@ -39,7 +46,7 @@ void fast_make_pusher_board(Board& board, const PusherMove& tokensToMove);
  * @param board Board to move.
  * @param col Column number chosen by remover.
  */
-void faster_make_remover_board(Board& board, int col);
+void fast_make_remover_board(Board& board, int col);
 
 /**
  * @brief Generates a powerset of a given set.
@@ -77,6 +84,6 @@ std::vector<PusherMove> getAllPusherMoves(const Board& board);
  * @param board The current board.
  * @return All pusher moves.
  */
-std::vector<PusherMove> getAllPusherMovesPruned(const Board& board);
+void getAllPusherMovesPruned(const Board& board, std::vector<PusherMove>& moves, int verbose = 0);
 
 #endif //BOARD_OPERATION_H

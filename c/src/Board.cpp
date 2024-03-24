@@ -34,17 +34,18 @@ Board::Board(int n, int k, int goal, const std::vector<std::vector<std::pair<int
 }
 
 bool Board::game_over() const {
-    if (max_score >= goal) {
-        return true;
-    }
-    for (const auto& row : board) {
-        for (const auto& [level, _] : row) {
-            if (level != -1) {
-                return false;
-            }
-        }
-    }
-    return true;
+//    if (max_score >= goal) {
+//        return true;
+//    }
+//    for (const auto& row : board) {
+//        for (const auto& [level, _] : row) {
+//            if (level != -1) {
+//                return false;
+//            }
+//        }
+//    }
+//    return true;
+    return this->max_score >= this->goal || this->num_tokens == 0;
 }
 
 std::ostream& operator<<(std::ostream& os, const Board& b) {
@@ -268,7 +269,7 @@ void Board::make_pusher_board(std::vector<int> subset) {
             ++index;
         }
         // Sort the row based on the pairs
-        std::sort(this->board[i].begin(), this->board[i].end());
+        std::sort(this->board[i].begin(), this->board[i].end(), std::greater<std::pair<int, int>>());
     }
 }
 
@@ -349,7 +350,7 @@ void Board::make_remover_board(int action) {
             this->board[i][j].second = 0;
             this->max_score = std::max(this->max_score, this->board[i][j].first);
         }
-        std::sort(this->board[i].begin(), this->board[i].end());
+        std::sort(this->board[i].begin(), this->board[i].end(), std::greater<std::pair<int, int>>());
     }
 }
 

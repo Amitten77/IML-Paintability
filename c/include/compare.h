@@ -24,8 +24,8 @@ inline std::string toString(Purpose purpose) {
     return "";
 }
 
-inline std::string toString(CompResult purpose) {
-    switch (purpose) {
+inline std::string toString(CompResult result) {
+    switch (result) {
         case CompResult::LESS:
             return "LESS";
         case CompResult::GREATER:

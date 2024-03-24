@@ -41,7 +41,7 @@ void verifyCanWin(const Board& board, const std::vector<Board>& winningStates) {
             // Find all possible moves of the remover
             for (int col = 0; col < afterPusher.n; col++) {
                 Board afterRemover = afterPusher;
-                faster_make_remover_board(afterRemover, col);
+                fast_make_remover_board(afterRemover, col);
 
                 // Add to list of non-winning states
                 nextStates.push_back(afterRemover);
@@ -78,9 +78,9 @@ void verifyCanWin(const Board& board, const std::vector<Board>& winningStates) {
 void verifyCannotReach(Board board, int goal);
 
 int main() {
-    int N = 6;
+    int N = 4;
     int K = 3;
-    int GOAL = 8;
+    int GOAL = 6;
 
     // Load the winning states
     std::stringstream winning_ss;
@@ -96,8 +96,8 @@ int main() {
             {{3, 0}, {3, 0}, {3, 0}},
             {{3, 0}, {3, 0}, {3, 0}},
             {{3, 0}, {3, 0}, {3, 0}},
-            {{3, 0}, {3, 0}, {3, 0}},
-            {{3, 0}, {3, 0}, {3, 0}}
+//            {{3, 0}, {3, 0}, {3, 0}},
+//            {{3, 0}, {3, 0}, {3, 0}}
     });
     verifyCanWin(board, winningBoard);
 }
