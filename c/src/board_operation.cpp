@@ -34,6 +34,7 @@ void fast_make_pusher_board(Board& board, const std::vector<int>& tokensToMove) 
         if (board.board[i][j].first != -1) {
             board.board[i][j].first += 1;
             board.board[i][j].second = 1;
+            board.max_score = std::max(board.max_score, board.board[i][j].first);
         }
     }
     for (int i = 0; i < board.n; ++i) {

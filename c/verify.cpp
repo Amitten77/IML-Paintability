@@ -30,7 +30,9 @@ void verifyCanWin(const Board& board, const std::vector<Board>& winningStates) {
 
         bool foundWinningMove = false;
         // Find all possible moves of the pusher
-        for (const PusherMove& move : getAllPusherMoves(curr)) {
+        std::vector<std::vector<int>> moves;
+        getAllPusherMovesPruned(curr, moves);
+        for (const PusherMove& move : moves) {
             // Apply pusher's move
             Board afterPusher = curr;
             fast_make_pusher_board(afterPusher, move);
@@ -43,11 +45,13 @@ void verifyCanWin(const Board& board, const std::vector<Board>& winningStates) {
                 Board afterRemover = afterPusher;
                 fast_make_remover_board(afterRemover, col);
 
-                // Add to list of non-winning states
+                // If pusher will win, remover should not take this move
+                if (checkWinner(afterRemover) == Player::PUSHER) continue;
+
+                // Add to list of potential next states
                 nextStates.push_back(afterRemover);
 
-                // If this board is not winning for the Pusher, we know Pusher should not use this move.
-                if (checkWinner(afterRemover) == Player::PUSHER) continue;
+                // If this board is not a "winning state", Pusher should not take this move.
                 bool isWinning = boardIsWinning(afterRemover, winningStates);
                 if (!isWinning) {
                     foundWinningMove = false;
@@ -58,7 +62,9 @@ void verifyCanWin(const Board& board, const std::vector<Board>& winningStates) {
             // If pusher's move guarantees reaching a winning state, then no need to search other moves.
             if (foundWinningMove) {
                 // Insert all generated state to the back of the queue
-                for (const Board& next : winningStates) boards.push(next);
+                for (const Board& next : nextStates) {
+                    boards.push(next);
+                }
                 break;
             }
         }
@@ -92,10 +98,10 @@ int main() {
 
     // Verify
     Board board(N, K, GOAL, {
-            {{3, 0}, {3, 0}, {3, 0}},
-            {{3, 0}, {3, 0}, {3, 0}},
-            {{3, 0}, {3, 0}, {3, 0}},
-            {{3, 0}, {3, 0}, {3, 0}},
+            {{2, 0}, {2, 0}, {2, 0}},
+            {{2, 0}, {2, 0}, {2, 0}},
+            {{2, 0}, {2, 0}, {2, 0}},
+            {{2, 0}, {2, 0}, {2, 0}},
 //            {{3, 0}, {3, 0}, {3, 0}},
 //            {{3, 0}, {3, 0}, {3, 0}}
     });

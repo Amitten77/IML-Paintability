@@ -5,7 +5,7 @@
 #include "include/compare.h"
 #include "include/graph.h"
 
-
+#define RUN_ONCE
 
 /*
 g++ -std=c++20 -O3 -flto -march=native -o main main.cpp src/Board.cpp src/helper.cpp src/graph.cpp src/compare.cpp
@@ -36,14 +36,15 @@ int main() {
     loadBoardsFromFile(WINNING_FILE, WINNING);
     initMap(N, K);
     std::vector<std::vector<std::pair<int, int>>> curr = {
-            {{3, 0}, {3, 0}, {3, 0}}, // Row 0
-            {{3, 0}, {3, 0}, {3, 0}}, // Row 1
-            {{3, 0}, {3, 0}, {3, 0}}, // Row 2
-            {{3, 0}, {3, 0}, {3, 0}}, // Row 3
+            {{0, 0}, {0, 0}, {0, 0}}, // Row 0
+            {{0, 0}, {0, 0}, {0, 0}}, // Row 1
+            {{0, 0}, {0, 0}, {0, 0}}, // Row 2
+            {{0, 0}, {0, 0}, {0, 0}}, // Row 3
 //            {{3, 0}, {3, 0}, {3, 0}}, // Row 4
 //            {{3, 0}, {3, 0}, {3, 0}}  // Row 5
     };
 
+#ifndef RUN_ONCE
     int index = 0;
     while (true) {
         int i = index / K, j = index % K;
@@ -54,15 +55,15 @@ int main() {
         // Otherwise move one token backward and run the algorithm
         curr[i][j].first--;
         index = (index + 1) % (N * K);
-
+#endif
         Board myBoard(N, K, GOAL, curr);
         std::cout << "CURRENT BOARD" << std::endl;
         std::cout << myBoard << std::endl;
         int best = negaMax(myBoard, true, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), 0);
         std::cout << "BEST SCORE WITH NEGAMAX: " << best << std::endl;
+#ifndef RUN_ONCE
     }
-    
-
+#endif
 
     saveBoardsToFile(LOSING, LOSING_FILE);
     saveBoardsToFile(WINNING, WINNING_FILE);
