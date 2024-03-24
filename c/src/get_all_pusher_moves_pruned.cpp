@@ -60,6 +60,15 @@ std::vector<int> applyMoveToCol(const std::vector<std::pair<int, int>>& column, 
     return movedColumn;
 }
 
+std::string toString(EncodedMove move, int k) {
+    std::string result;
+    for (size_t _ = 0; _ < k; _++) {
+        result += std::to_string(move % 2);
+        move /= 2;
+    }
+    return result;
+}
+
 /**
  * @brief Given a number of identical columns and possible moves to choose from, get the possible combined moves.
  *  Prunes unpromising moves.
@@ -87,6 +96,9 @@ void getCombinedMoves(
         }
 
         // Then compare every pair
+        if (verbose) {
+            printf("Compare moves for equivalence class:\n");
+        }
         for (size_t i = 0; i < numMoves; i++) {
             compMatrix[i][i] = CompResult::INCOMPARABLE;
             for (size_t j = i + 1; j < numMoves; j++) {
@@ -94,6 +106,12 @@ void getCombinedMoves(
                 compMatrix[j][i] = compMatrix[i][j] == CompResult::GREATER ? CompResult::LESS :
                                    compMatrix[i][j] == CompResult::LESS ? CompResult::GREATER :
                                    compMatrix[i][j];
+
+                if (verbose) {
+                    printf(" Compare moves [%s] and [%s]: %s\n",
+                           toString(movesForCol[i], k).c_str(), toString(movesForCol[j], k).c_str(),
+                           toString(compMatrix[i][j]).c_str());
+                }
             }
         }
     }
@@ -102,6 +120,7 @@ void getCombinedMoves(
     size_t total = integerPow(numMoves, count);
     size_t pruned1 = 0;
     size_t pruned2 = 0;
+
     for (size_t encoded = 0; encoded < total; encoded++) {
         // Decode the move
         size_t encoded_ = encoded;
@@ -125,8 +144,8 @@ void getCombinedMoves(
         }
 
         // Check if no move is strictly better than another
-        for (size_t i = 0; i < numMoves && !shouldPrune; i++) {
-            for (size_t j = i + 1; j < numMoves; j++) {
+        for (size_t i = 0; i < count && !shouldPrune; i++) {
+            for (size_t j = i + 1; j < count; j++) {
                 CompResult result = compMatrix[actualMoveIdx[i]][actualMoveIdx[j]];
                 if (result == CompResult::GREATER || result == CompResult::LESS) {
                     shouldPrune = true;
@@ -175,11 +194,10 @@ void combineEquivClasses(
         PusherMove& move = moves.emplace_back();
         size_t encoded_ = encoded;
         for (size_t i = 0; i < numEquivClasses; i++) {
-            // Save to move
+            // Save to `move`
             size_t moveIdx = encoded_ % combinedMovesForEachClass[i].size();
-            for (int index : combinedMovesForEachClass[i][moveIdx]) {
-                move.push_back(index);
-            }
+            const std::vector<int>& tokensToMove = combinedMovesForEachClass[i][moveIdx];
+            move.insert(move.end(), tokensToMove.begin(), tokensToMove.end());
 
             // Update encoded
             encoded_ /= combinedMovesForEachClass[i].size();
@@ -225,14 +243,12 @@ void getAllPusherMovesPruned(const Board& board, std::vector<PusherMove>& moves,
         std::vector<EncodedMove> movesForSingleColumn;
         size_t col1 = *equivClasses[i].begin();
         size_t k_ = countMovableTokens(board.board[col1]);
-        if (verbose) printf(" k_: %zu\n", k_);
         size_t two_to_the_k_ = integerPow(2, k_);
 
         // Find all moves that generate different column states
         std::unordered_set<EncodedColState> moveResults;
         for (EncodedMove move = 0; move < two_to_the_k_; move++) {
             EncodedColState colState = encodeColState(applyMoveToCol(board.board[col1], move), board.goal);
-            if (verbose) printf(" %zu -> %zu\n", move, colState);
             // If this move generates a new column state
             if (!moveResults.contains(colState)) {
                 movesForSingleColumn.push_back(move);
@@ -246,12 +262,7 @@ void getAllPusherMovesPruned(const Board& board, std::vector<PusherMove>& moves,
         if (verbose) {
             printf("Encoded moves for equivalence class %zu:\n", i);
             for (EncodedMove move : movesForSingleColumn) {
-                printf(" ");
-                for (size_t _ = 0; _ < board.k; _++) {
-                    printf("%zu", move % 2);
-                    move /= 2;
-                }
-                printf("\n");
+                printf(" %s\n", toString(move, board.k).c_str());
             }
         }
     }

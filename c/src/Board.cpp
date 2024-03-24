@@ -15,13 +15,14 @@ std::map<std::vector<int>, int> num_graph;
 
 Board::Board() = default;
 
-Board::Board(int n, int k, int goal, const std::vector<std::vector<std::pair<int, int> > >& boardInput) : n(n), k(k), goal(goal), max_score(0), num_tokens(0) {
+Board::Board(int n, int k, int goal, const std::vector<std::vector<std::pair<int, int>>>& boardInput) : n(n), k(k), goal(goal), max_score(0), num_tokens(0) {
     if (boardInput.empty()) {
-        board = std::vector<std::vector<std::pair<int, int> > >(n, std::vector<std::pair<int, int> >(k, {0, 0}));
+        board = std::vector<std::vector<std::pair<int, int>>>(
+                n, std::vector<std::pair<int, int>>(k, { 0, 0 }));
     } else {
         this->board = boardInput;
         for (auto& row : this->board) {
-            std::sort(row.begin(), row.end());
+            std::sort(row.begin(), row.end(), std::greater<std::pair<int, int>>());
             for (auto& [level, selected] : row) {
                 max_score = std::max(max_score, level);
                 if (level != -1) num_tokens++;

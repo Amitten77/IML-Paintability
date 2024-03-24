@@ -15,7 +15,7 @@ namespace test::board_operation {
                 {{0, 0}, {0, 0}, {0, 0}},
         });
         getAllPusherMovesPruned(board, moves, 0);
-        EXPECT_EQ(moves.size(), 3);
+        EXPECT_EQ(moves.size(), 4 - 1);
 
         board = Board(6, 3, 9, {
                 {{0, 0}, {0, 0}, {-1, 0}},
@@ -25,7 +25,7 @@ namespace test::board_operation {
                 {{1, 0}, {0, 0}, {0, 0}},
                 {{1, 0}, {0, 0}, {0, 0}},
         });
-        getAllPusherMovesPruned(board, moves, 1);
-        EXPECT_EQ(moves.size(), 96);
+        getAllPusherMovesPruned(board, moves);
+        EXPECT_EQ(moves.size(), 3 * 18 - 1);
     }
 }

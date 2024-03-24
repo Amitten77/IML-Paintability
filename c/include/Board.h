@@ -26,6 +26,7 @@ public:
     - goal is the row number that wins the game for Pusher
     - max_score is the highest row number Pusher has reached throughout the game
     - num_tokens is the number of tokens left on the board
+    - board: 2D array representing the row number of each token. Sorted from largest to smallest.
     Note: Pusher has only 'reached' a row number after Remover's turn is over and the token remains on the board.
      */
     int n, k, goal, max_score, num_tokens;
@@ -39,7 +40,8 @@ public:
     Board();
 
     /// @brief Default Constructor. If BoardInput not defined, creates a n x k board with all tokens at row 0. 
-    Board(int n, int k, int goal = 10, const std::vector<std::vector<std::pair<int, int> > >& boardInput = std::vector<std::vector<std::pair<int, int> > >());
+    Board(int n, int k, int goal = 10,
+          const std::vector<std::vector<std::pair<int, int>>>& boardInput = std::vector<std::vector<std::pair<int, int>>>());
 
     /// @brief  Deserializes a string into a Board
     /// @param serializedBoard 
