@@ -30,10 +30,10 @@ endif ()
 # For static analysis and linting
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Target
 file(GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/include/*.h")
 file(GLOB_RECURSE SOURCES "${CMAKE_SOURCE_DIR}/src/*.cpp")
 
+# Main target
 add_executable(main main.cpp ${SOURCES})
 set_target_properties(main PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
@@ -41,6 +41,15 @@ set_target_properties(main PROPERTIES
 )
 target_include_directories(main PRIVATE "${CMAKE_SOURCE_DIR}/include")
 
+# Verify target
+add_executable(verify verify.cpp ${SOURCES})
+set_target_properties(verify PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+        DEBUG_POSTFIX -d
+)
+target_include_directories(verify PRIVATE "${CMAKE_SOURCE_DIR}/include")
+
+# Testcases
 if (BUILD_TESTS)
     add_subdirectory("test")
 endif ()
