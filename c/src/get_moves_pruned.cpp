@@ -1,8 +1,8 @@
 #include <algorithm>
-#include <bitset>
 #include <set>
 #include "board_operation.h"
 #include "compare.h"
+#include "hash.h"
 
 // Helper
 // Scan the board and generate a list of equivalence classes.
@@ -30,25 +30,8 @@ void findEquivColumns(const Board& board, std::vector<std::vector<size_t>>& equi
 }
 
 // Helper
-void decodeMove(EncodedMove encoded, PusherMove& decoded, int k, size_t col = 0) {
-    for (int i = 0; i < k; i++) {
-        if (encoded % 2) decoded.push_back((int)col * k + i);
-        encoded /= 2;
-    }
-}
-
-EncodedColState encodeColState(const std::vector<int>& column, unsigned int goal) {
-    EncodedColState encoded = 0;
-    for (auto row : column) {
-        encoded += (row + 1);
-        encoded *= (goal + 2);
-    }
-    return encoded;
-}
-
-// Helper
 // Return value is a hash of the resulting column state.
-std::vector<int> applyMoveToCol(const std::vector<std::pair<int, int>>& column, EncodedMove move) {
+std::vector<int> applyMoveToColumn(const std::vector<std::pair<int, int>>& column, EncodedMove move) {
     std::vector<int> movedColumn(column.size());
     for (size_t i = 0; i < column.size(); i++) {
         bool shouldMove = move % 2;
@@ -58,15 +41,6 @@ std::vector<int> applyMoveToCol(const std::vector<std::pair<int, int>>& column, 
 
     std::sort(movedColumn.begin(), movedColumn.end(), std::greater<int>());
     return movedColumn;
-}
-
-std::string toString(EncodedMove move, int k) {
-    std::string result;
-    for (size_t _ = 0; _ < k; _++) {
-        result += std::to_string(move % 2);
-        move /= 2;
-    }
-    return result;
 }
 
 /**
@@ -92,7 +66,7 @@ void getCombinedMoves(
         // Compute the resulting column after each move
         std::vector<std::vector<int>> columnAfterMove(numMoves);
         for (size_t i = 0; i < numMoves; i++) {
-            columnAfterMove[i] = applyMoveToCol(column, movesForCol[i]);
+            columnAfterMove[i] = applyMoveToColumn(column, movesForCol[i]);
         }
 
         // Then compare every pair
@@ -209,6 +183,8 @@ void combineEquivClasses(
 }
 
 void getAllPusherMovesPruned(const Board& board, std::vector<PusherMove>& moves, int verbose) {
+    moves.clear();
+
     // Equivalence classes of columns
     // [equivalence class index: size_t -> list of column indices: vector<size_t>]
     std::vector<std::vector<size_t>> equivClasses;
@@ -248,7 +224,7 @@ void getAllPusherMovesPruned(const Board& board, std::vector<PusherMove>& moves,
         // Find all moves that generate different column states
         std::unordered_set<EncodedColState> moveResults;
         for (EncodedMove move = 0; move < two_to_the_k_; move++) {
-            EncodedColState colState = encodeColState(applyMoveToCol(board.board[col1], move), board.goal);
+            EncodedColState colState = encodeColState(applyMoveToColumn(board.board[col1], move), board.goal);
             // If this move generates a new column state
             if (!moveResults.contains(colState)) {
                 movesForSingleColumn.push_back(move);
@@ -296,5 +272,49 @@ void getAllPusherMovesPruned(const Board& board, std::vector<PusherMove>& moves,
             }
             printf("]\n");
         }
+    }
+}
+
+void getAllRemoverMovesPruned(const Board& board, std::vector<int>& moves, int verbose) {
+    (void)verbose;
+    moves.clear();
+
+    // For all possible remover's choice, calculate the resulting board
+    std::vector<Board> movedBoards(board.n, board);
+    for (int i = 0; i < board.n; i++) {
+        applyRemoverMove(movedBoards[i], i);
+    }
+
+    // Filter out choices that leads to worse situations for the Remover
+    std::vector<bool> selected(board.n, true);
+    for (int i = 0; i < board.n; i++) {
+        // Compare with previous results
+        for (int prev = 0; prev < i; prev++) {
+            // Skip those that are already discarded
+            if (!selected[prev]) continue;
+
+            CompResult result = compareBoards(movedBoards[i], movedBoards[prev]);
+            switch (result) {
+                case CompResult::GREATER:
+                case CompResult::EQUAL:
+                    // Current choice is worse than/equivalent to previous choice
+                    selected[i] = false;
+                    break;
+                case CompResult::LESS:
+                    // Current choice is better than previous choice
+                    selected[prev] = false;
+                    break;
+                default:
+                    break;
+            }
+
+            // Stop comparing if current choice already discarded
+            if (!selected[i]) break;
+        }
+    }
+
+    // Output the selected moves
+    for (int i = 0; i < board.n; i++) {
+        if (selected[i]) moves.push_back(i);
     }
 }

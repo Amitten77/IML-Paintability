@@ -12,13 +12,24 @@
 #include <sstream>
 #include <cmath>
 
+/**
+ * A list of token indices that the Pusher intends to push forward.
+ *
+ * A token index is a unique identifier of a token. The j-th token of the i-th column has index
+ *   i * k + j
+ * where k is the number of tokens per column.
+ */
+using PusherMove = std::vector<int>;
+
+enum class Player {
+    PUSHER, REMOVER, NONE
+};
 
 /**
  * @class Board
  * @brief A class to represent a Board for the Chip Pushing Game
  */
 class Board {
-
 public:
     /**
      * @brief 

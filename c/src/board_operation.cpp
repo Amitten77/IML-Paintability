@@ -23,9 +23,9 @@ Player checkWinner(Board& board) {
     else return Player::NONE;
 }
 
-void fast_make_pusher_board(Board& board, const std::vector<int>& tokensToMove) {
+void applyPusherMove(Board& board, const std::vector<int>& tokensToMove) {
     for (int index : tokensToMove) {
-        // Find which token is moved
+        // Find which tokens are moved
         int i = index / board.k;
         int j = index % board.k;
         if (i < 0 || i >= board.n || j < 0 || j >= board.k) continue;
@@ -34,29 +34,60 @@ void fast_make_pusher_board(Board& board, const std::vector<int>& tokensToMove) 
         if (board.board[i][j].first != -1) {
             board.board[i][j].first += 1;
             board.board[i][j].second = 1;
+            // Update max_score
             board.max_score = std::max(board.max_score, board.board[i][j].first);
         }
     }
+
+    // Sort columns
     for (int i = 0; i < board.n; ++i) {
         std::sort(board.board[i].begin(), board.board[i].end(), std::greater<std::pair<int, int>>());
     }
 }
 
-void fast_make_remover_board(Board& board, int col) {
-    // Remove pushed tokens
+void applyRemoverMove(Board& board, int col) {
+    // Remove pushed tokens in column
     for (int j = 0; j < board.k; j++) {
-        if (board.board[col][j].second == 1) {
+        if (board.board[col][j].second == 1 && board.board[col][j].first != -1) {
             board.board[col][j].first = -1;
             board.num_tokens--;
         }
-        // Mark all as not pushed
-        for (int i = 0; i < board.n; i++) {
+    }
+
+    // Mark all as not pushed
+    for (int i = 0; i < board.n; i++) {
+        for (int j = 0; j < board.n; j++) {
             board.board[i][j].second = 0;
         }
     }
 
     // Only need to update removed column
     std::sort(board.board[col].begin(), board.board[col].end(), std::greater<std::pair<int, int>>());
+}
+
+// Helper
+/**
+ * @brief Generates a powerset of a given set.
+ * @tparam T Type of element.
+ * @param vec Original set.
+ * @param powerset Resulting powerset is stored here.
+ */
+template<typename T>
+void generatePowerset(const std::vector<T>& vec, std::vector<std::vector<T>>& powerset) {
+    powerset.clear();
+
+    // There are 2^n possible subsets for a set of size n
+    size_t powSetCount = integerPow(2, (unsigned int)vec.size());
+
+    for (size_t i = 0; i < powSetCount; i++) {
+        std::vector<T>& subset = powerset.emplace_back();
+        for (int j = 0; j < vec.size(); j++) {
+            // Check if jth element is in the current subset (counter)
+            if (i & (1ULL << j)) {
+                subset.push_back(vec[j]);
+            }
+        }
+    }
 }
 
 std::vector<PusherMove> getAllPusherMoves(const Board& board) {

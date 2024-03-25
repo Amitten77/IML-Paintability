@@ -12,7 +12,7 @@
 // 4. If yes, then let the Pusher make that move and continue to verify the resulting states (6 in total).
 // 5. The check terminates when all paths lead to the Pusher winning (actually winning, not by comparing to
 //    the list of "winning states").
-void verifyCanWin(const Board& board, const std::vector<Board>& winningStates) {
+void verifyPusherWin(const Board& board, const std::vector<Board>& winningStates) {
     std::queue<Board> boards;
     boards.push(board);
 
@@ -30,20 +30,22 @@ void verifyCanWin(const Board& board, const std::vector<Board>& winningStates) {
 
         bool foundWinningMove = false;
         // Find all possible moves of the pusher
-        std::vector<std::vector<int>> moves;
-        getAllPusherMovesPruned(curr, moves);
-        for (const PusherMove& move : moves) {
+        std::vector<PusherMove> pusherMoves;
+        getAllPusherMovesPruned(curr, pusherMoves);
+        for (const PusherMove& pusherMove : pusherMoves) {
             // Apply pusher's move
             Board afterPusher = curr;
-            fast_make_pusher_board(afterPusher, move);
+            applyPusherMove(afterPusher, pusherMove);
 
             foundWinningMove = true;
             std::vector<Board> nextStates;
 
             // Find all possible moves of the remover
-            for (int col = 0; col < afterPusher.n; col++) {
+            std::vector<int> removerMoves;
+            getAllRemoverMovesPruned(curr, removerMoves);
+            for (int removerMove : removerMoves) {
                 Board afterRemover = afterPusher;
-                fast_make_remover_board(afterRemover, col);
+                applyRemoverMove(afterRemover, removerMove);
 
                 // If pusher will win, remover should not take this move
                 if (checkWinner(afterRemover) == Player::PUSHER) continue;
@@ -72,16 +74,18 @@ void verifyCanWin(const Board& board, const std::vector<Board>& winningStates) {
         // If all moves lead to non-winning state, then the pusher fails
         if (!foundWinningMove) {
             printf("Failed to find a winning move for:\n%s\n", curr.serialize().c_str());
+            printf("Verification aborted.\n");
             // No winning move for `curr`
             return;
         }
     }
 
-    printf("Verified pusher strategy against all remover moves.\n");
+    printf("Verified Pusher strategy against all possible Remover strategies.\n");
+    printf("Verification successful.\n");
 }
 
 // Not implemented
-void verifyCannotReach(Board board, int goal);
+void verifyRemoverWin(Board board, int goal);
 
 int main() {
     int N = 4;
@@ -105,5 +109,6 @@ int main() {
 //            {{3, 0}, {3, 0}, {3, 0}},
 //            {{3, 0}, {3, 0}, {3, 0}}
     });
-    verifyCanWin(board, winningBoard);
+
+    verifyPusherWin(board, winningBoard);
 }

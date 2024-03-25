@@ -2,75 +2,45 @@
 #define BOARD_OPERATION_H
 
 #include <vector>
-#include <Board.h>
+#include "Board.h"
 
-// Each move is represented as a list of tokens indices to push (std::vector<int>).
-using PusherMove = std::vector<int>;
-
-// The i-th bit (from lowest to highest) corresponds to whether to push the i-th token in the column.
-using EncodedMove = size_t;
-
-// Suppose M = goal + 2. Interpret as base M number.
-// The i-th bit (from lowest to highest) is the row number of the i-th token plus one.
-using EncodedColState = size_t;
-
+/// @brief Integer version of std::pow.
 size_t integerPow(size_t base, size_t exponent);
 
 /**
- * @brief Count the number of tokens in the column that is still on the board.
- * @param col Column to count.
+ * @brief Count the number of movable tokens (i.e. tokens not removed) in a single column.
+ * @param col The target column.
  * @return Number of movable tokens.
  */
 size_t countMovableTokens(const std::vector<std::pair<int, int>>& col);
 
-enum class Player {
-    PUSHER, REMOVER, NONE
-};
-
 /**
- * @brief Checks the winner of the current board. Does not do predictions.
+ * @brief Checks the winner of the current board.
  * @param board Target board to check.
- * @return Winner.
+ * @return Winner if game is over, Player::NONE otherwise.
+ *
+ * Does not do predictions.
  */
 Player checkWinner(Board& board);
 
 /**
- * @brief A faster version of Board::make_pusher_board.
+ * @brief Applies a Pusher move to the board in-place.
  * @param board Board to move.
- * @param tokens Tokens to push forward.
+ * @param tokens Indices of tokens to push forward.
+ *
+ * A faster version of Board::make_pusher_board.
+ * Does not check for duplicated indices. Moves the token regardless of whether it is already moved.
  */
-void fast_make_pusher_board(Board& board, const PusherMove& tokensToMove);
+void applyPusherMove(Board& board, const PusherMove& tokensToMove);
 
 /**
- * @brief A faster version of Board::make_remover_board.
+ * @brief Applies a Remover move to the board in-place.
  * @param board Board to move.
  * @param col Column number chosen by remover.
+ *
+ * A faster version of Board::make_remover_board.
  */
-void fast_make_remover_board(Board& board, int col);
-
-/**
- * @brief Generates a powerset of a given set.
- * @tparam T Type of element.
- * @param vec Original set.
- * @param powerset Resulting powerset is stored here.
- */
-template<typename T>
-void generatePowerset(const std::vector<T>& vec, std::vector<std::vector<T>>& powerset) {
-    powerset.clear();
-
-    // There are 2^n possible subsets for a set of size n
-    size_t powSetCount = integerPow(2, (unsigned int)vec.size());
-
-    for (size_t i = 0; i < powSetCount; i++) {
-        std::vector<T>& subset = powerset.emplace_back();
-        for (int j = 0; j < vec.size(); j++) {
-            // Check if jth element is in the current subset (counter)
-            if (i & (1ULL << j)) {
-                subset.push_back(vec[j]);
-            }
-        }
-    }
-}
+void applyRemoverMove(Board& board, int col);
 
 /**
  * @brief Finds all possible pusher moves. Not pruned. May have duplicates.
@@ -82,8 +52,17 @@ std::vector<PusherMove> getAllPusherMoves(const Board& board);
 /**
  * @brief Finds all possible pusher moves. Prunes unpromising moves.
  * @param board The current board.
- * @return All pusher moves.
+ * @param moves Where to output the pusher moves to.
+ * @param verbose Defines how much calculation details to log.
  */
 void getAllPusherMovesPruned(const Board& board, std::vector<PusherMove>& moves, int verbose = 0);
+
+/**
+ * @brief Finds all possible remover moves. Prunes unpromising moves.
+ * @param board The current board.
+ * @param moves Where to output the remover moves to.
+ * @param verbose Defines how much calculation details to log.
+ */
+void getAllRemoverMovesPruned(const Board& board, std::vector<int>& moves, int verbose = 0);
 
 #endif //BOARD_OPERATION_H
