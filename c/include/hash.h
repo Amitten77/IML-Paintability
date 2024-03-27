@@ -8,17 +8,18 @@
 /**
  * A move on a column is defined as a list of bits, representing whether or not to push the corresponding tokens.
  *
- * E.g. the move `1101` means pushing the 1st, 2nd, and 4th tokens. Applying it to the following column state:
- *              [5, 3, 2, 2, -1, -1]    : Column state
- *   --(move)-> [6, 4, 2, 3, -1, -1]    : Column state
- *   --(sort)-> [6, 4, 3, 2, -1, -1]    : Column state
+ * E.g. the move `1011` means pushing the 1st, 2nd, and 4th tokens FROM THE BACK. Applying it to the following column
+ * state:
+ *              [-1, -1, 2, 2, 3, 5]    : Column state
+ *   --(move)-> [-1, -1, 3, 2, 4, 6]    : Column state
+ *   --(sort)-> [-1, -1, 2, 3, 4, 6]    : Column state
  *
- * To encode this bit string into a number, we reverse the order and convert it into binary:
- *                          "1101"      : string
+ * To encode this bit string into a number, we convert it into binary:
+ *                          "1011"      : string
  *   -----(reverse)->       0x1011      : binary
  *   --(to decimal)->       11          : decimal
  *
- * Note: The trailing 0's in the string representation (or leading 0's in the binary representation) do not matter.
+ * Note: The leading 0's do not matter.
  */
 using EncodedMove = size_t;
 
@@ -27,7 +28,7 @@ using EncodedMove = size_t;
  *
  * E.g. the following columns state represents a column containing one token on row 5, one token on row 3, two tokens on
  * row 2, and two tokens removed from board:
- *             [5, 3, 2, 2, -1, -1]
+ *             [-1, -1, 2, 2, 3, 5]
  *
  * To encode this column state into a number:
  *   B = goal + 2

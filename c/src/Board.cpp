@@ -22,7 +22,7 @@ Board::Board(int n, int k, int goal, const std::vector<std::vector<std::pair<int
     } else {
         this->board = boardInput;
         for (auto& row : this->board) {
-            std::sort(row.begin(), row.end(), std::greater<std::pair<int, int>>());
+            std::sort(row.begin(), row.end());
             for (auto& [level, selected] : row) {
                 max_score = std::max(max_score, level);
                 if (level != -1) num_tokens++;
@@ -270,7 +270,7 @@ void Board::make_pusher_board(std::vector<int> subset) {
             ++index;
         }
         // Sort the row based on the pairs
-        std::sort(this->board[i].begin(), this->board[i].end(), std::greater<std::pair<int, int>>());
+        std::sort(this->board[i].begin(), this->board[i].end());
     }
 }
 
@@ -351,7 +351,7 @@ void Board::make_remover_board(int action) {
             this->board[i][j].second = 0;
             this->max_score = std::max(this->max_score, this->board[i][j].first);
         }
-        std::sort(this->board[i].begin(), this->board[i].end(), std::greater<std::pair<int, int>>());
+        std::sort(this->board[i].begin(), this->board[i].end());
     }
 }
 

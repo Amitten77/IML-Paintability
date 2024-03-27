@@ -23,7 +23,7 @@ int main() {
     auto start = std::chrono::high_resolution_clock::now();
     int N = 4;
     int K = 3;
-    int GOAL = 6;
+    int GOAL = 5;
     std::stringstream losing_ss;
     losing_ss << "losing/N" << N << "_K" << K << "_goal" << GOAL << "_board.txt";
     std::string LOSING_FILE = losing_ss.str();

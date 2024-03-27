@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <ranges>
 #include <set>
 #include "board_operation.h"
 
@@ -10,7 +11,7 @@ size_t integerPow(size_t base, size_t exponent) {
 
 size_t countMovableTokens(const std::vector<std::pair<int, int>>& col) {
     size_t i = 0;
-    for (auto [r, _] : col) {
+    for (auto [r, _] : col | std::views::reverse) {
         if (r == -1) break;
         i++;
     }
@@ -41,7 +42,7 @@ void applyPusherMove(Board& board, const std::vector<int>& tokensToMove) {
 
     // Sort columns
     for (int i = 0; i < board.n; ++i) {
-        std::sort(board.board[i].begin(), board.board[i].end(), std::greater<std::pair<int, int>>());
+        std::sort(board.board[i].begin(), board.board[i].end());
     }
 }
 
@@ -62,7 +63,7 @@ void applyRemoverMove(Board& board, int col) {
     }
 
     // Only need to update removed column
-    std::sort(board.board[col].begin(), board.board[col].end(), std::greater<std::pair<int, int>>());
+    std::sort(board.board[col].begin(), board.board[col].end());
 }
 
 // Helper

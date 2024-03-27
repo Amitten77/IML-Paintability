@@ -33,13 +33,13 @@ void findEquivColumns(const Board& board, std::vector<std::vector<size_t>>& equi
 // Return value is a hash of the resulting column state.
 std::vector<int> applyMoveToColumn(const std::vector<std::pair<int, int>>& column, EncodedMove move) {
     std::vector<int> movedColumn(column.size());
-    for (size_t i = 0; i < column.size(); i++) {
+    for (size_t i = column.size(); i --> 0;) {
         bool shouldMove = move % 2;
         move /= 2;
         movedColumn[i] = (shouldMove && column[i].first != -1) ? column[i].first + 1 : column[i].first;
     }
 
-    std::sort(movedColumn.begin(), movedColumn.end(), std::greater<int>());
+    std::sort(movedColumn.begin(), movedColumn.end());
     return movedColumn;
 }
 
