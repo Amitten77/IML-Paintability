@@ -19,7 +19,7 @@ EncodedColState encodeColState(const std::vector<int>& column, unsigned int goal
 
 std::string toString(EncodedMove move, int k) {
     std::string result;
-    for (size_t _ = 0; _ < k; _++) {
+    for (int _ = 0; _ < k; _++) {
         result += std::to_string(move % 2);
         move /= 2;
     }

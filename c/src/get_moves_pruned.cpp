@@ -10,16 +10,16 @@
 void findEquivColumns(const Board& board, std::vector<std::vector<size_t>>& equivClasses) {
     equivClasses.clear();
     std::set<size_t> remaining;
-    for (size_t i = 0; i < board.n; i++) remaining.insert(i);
+    for (size_t i = 0; (int)i < board.n; i++) remaining.insert(i);
 
-    for (size_t i = 0; i < board.n; i++) {
+    for (size_t i = 0; (int)i < board.n; i++) {
         if (!remaining.contains(i)) continue;
         remaining.erase(i);
 
         std::vector<size_t>& equivClass = equivClasses.emplace_back();
         equivClass.push_back(i);
 
-        for (size_t j = i + 1; j < board.n; j++) {
+        for (size_t j = i + 1; (int)j < board.n; j++) {
             // Check if next and col are equivalent columns
             if (compareBoardCols(board.board[i], board.board[j]) == CompResult::EQUAL) {
                 remaining.erase(j);

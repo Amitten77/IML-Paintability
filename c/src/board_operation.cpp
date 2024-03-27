@@ -81,7 +81,7 @@ void generatePowerset(const std::vector<T>& vec, std::vector<std::vector<T>>& po
 
     for (size_t i = 0; i < powSetCount; i++) {
         std::vector<T>& subset = powerset.emplace_back();
-        for (int j = 0; j < vec.size(); j++) {
+        for (int j = 0; j < (int)vec.size(); j++) {
             // Check if jth element is in the current subset (counter)
             if (i & (1ULL << j)) {
                 subset.push_back(vec[j]);
