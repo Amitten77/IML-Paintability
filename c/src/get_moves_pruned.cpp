@@ -99,7 +99,7 @@ void getCombinedMoves(
         // Decode the move
         size_t encoded_ = encoded;
         std::vector<EncodedMove> actualMoveIdx(count);
-        for (size_t i = 0; i < count; i++) {
+        for (size_t i = count; i --> 0;) {
             actualMoveIdx[i] = encoded_ % numMoves;
             encoded_ /= numMoves;
         }
@@ -137,7 +137,7 @@ void getCombinedMoves(
         for (size_t i = 0; i < count; i++) {
             // Move
             EncodedMove moveIdx = actualMoveIdx[i];
-            decodeMove(moveIdx, move, k, equivClass[i]);
+            decodeMove(movesForCol[moveIdx], move, k, equivClass[i]);
         }
     }
 
@@ -254,6 +254,13 @@ void getAllPusherMovesPruned(const Board& board, std::vector<PusherMove>& moves,
         printf("Number of combined moves for each equivalence class:\n");
         for (const std::vector<PusherMove>& combinedMovesForClass : combinedMoves) {
             printf(" %zu", combinedMovesForClass.size());
+            if (verbose >= 2) {
+                for (const PusherMove &pusherMove: combinedMovesForClass) {
+                    printf("  [");
+                    for (int a: pusherMove) printf(" %d,", a);
+                    printf("]\n");
+                }
+            }
         }
         printf("\n");
     }

@@ -24,6 +24,7 @@ void verifyPusherWin(const Board& board, const std::vector<Board>& winningStates
     while (!boards.empty()) {
         Board curr = boards.front();
         boards.pop();
+        // printf("%s\n", curr.serialize().c_str());
 
         // If already won, no need to continue
         if (checkWinner(curr) == Player::PUSHER) break;
@@ -90,7 +91,7 @@ void verifyRemoverWin(Board board, int goal);
 int main() {
     int N = 4;
     int K = 3;
-    int GOAL = 6;
+    int GOAL = 4;
 
     // Load the winning states
     std::stringstream winning_ss;
@@ -102,10 +103,10 @@ int main() {
 
     // Verify
     Board board(N, K, GOAL, {
-            {{2, 0}, {2, 0}, {2, 0}},
-            {{2, 0}, {2, 0}, {2, 0}},
-            {{2, 0}, {2, 0}, {2, 0}},
-            {{2, 0}, {2, 0}, {2, 0}},
+            {{0, 0}, {0, 0}, {0, 0}},
+            {{0, 0}, {0, 0}, {0, 0}},
+            {{0, 0}, {0, 0}, {0, 0}},
+            {{0, 0}, {0, 0}, {0, 0}},
 //            {{3, 0}, {3, 0}, {3, 0}},
 //            {{3, 0}, {3, 0}, {3, 0}}
     });
