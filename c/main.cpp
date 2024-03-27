@@ -9,6 +9,7 @@
 
 /*
 g++ -std=c++20 -O3 -flto -march=native -o main main.cpp src/Board.cpp src/helper.cpp src/graph.cpp src/compare.cpp
+./main
 */
 /**
  * Using CMake:
@@ -21,9 +22,9 @@ g++ -std=c++20 -O3 -flto -march=native -o main main.cpp src/Board.cpp src/helper
 int main() {
     // Start measuring time
     auto start = std::chrono::high_resolution_clock::now();
-    int N = 4;
+    int N = 5;
     int K = 3;
-    int GOAL = 5;
+    int GOAL = 7;
     std::stringstream losing_ss;
     losing_ss << "losing/N" << N << "_K" << K << "_goal" << GOAL << "_board.txt";
     std::string LOSING_FILE = losing_ss.str();
@@ -32,38 +33,34 @@ int main() {
     winning_ss << "winning/N" << N << "_K" << K << "_goal" << GOAL << "_board.txt";
     std::string WINNING_FILE = winning_ss.str();
 
-    loadBoardsFromFile(LOSING_FILE, LOSING);
-    loadBoardsFromFile(WINNING_FILE, WINNING);
+    // loadBoardsFromFile(LOSING_FILE, LOSING);
+    // loadBoardsFromFile(WINNING_FILE, WINNING);
     initMap(N, K);
     std::vector<std::vector<std::pair<int, int>>> curr = {
-            {{0, 0}, {0, 0}, {0, 0}}, // Row 0
-            {{0, 0}, {0, 0}, {0, 0}}, // Row 1
-            {{0, 0}, {0, 0}, {0, 0}}, // Row 2
-            {{0, 0}, {0, 0}, {0, 0}}, // Row 3
-//            {{3, 0}, {3, 0}, {3, 0}}, // Row 4
-//            {{3, 0}, {3, 0}, {3, 0}}  // Row 5
-    };
-
-#ifndef RUN_ONCE
+                {{0, 0}, {0, 0}, {0, 0}}, // Row 0
+                {{0, 0}, {0, 0}, {0, 0}}, // Row 1
+                {{0, 0}, {0, 0}, {0, 0}}, // Row 2
+                {{0, 0}, {0, 0}, {0, 0}},
+                {{0, 0}, {0, 0}, {0, 0}},
+            };
     int index = 0;
     while (true) {
-        int i = index / K, j = index % K;
-        // Stop if reached the actual starting configuration
-        if (index == 0 && curr[0][0].first == 0) {
-            break;
-        }
-        // Otherwise move one token backward and run the algorithm
-        curr[i][j].first--;
-        index = (index + 1) % (N * K);
-#endif
+        // val = val % 18;
+        // if (val == 0 && curr[int(val/6)][val % 3].first == 0) {
+        //     break;
+        // } else {
+        //     curr[int(val/3)][val % 3].first -= 1;
+        //     val += 1;
+        // }
         Board myBoard(N, K, GOAL, curr);
         std::cout << "CURRENT BOARD" << std::endl;
         std::cout << myBoard << std::endl;
         int best = negaMax(myBoard, true, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), 0);
         std::cout << "BEST SCORE WITH NEGAMAX: " << best << std::endl;
-#ifndef RUN_ONCE
+        saveBoardsToFile(LOSING, LOSING_FILE);
+        saveBoardsToFile(WINNING, WINNING_FILE);
+        break;
     }
-#endif
 
     saveBoardsToFile(LOSING, LOSING_FILE);
     saveBoardsToFile(WINNING, WINNING_FILE);
