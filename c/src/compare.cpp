@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <functional>
+#include <ranges>
 #include "../include/compare.h"
 #include "../include/graph.h"
 
@@ -42,6 +43,21 @@ CompResult compareSortedCols(const std::vector<int>& col1, const std::vector<int
         // Compare i-th element
         if (col1[i] > col2[i]) col1IsLess = false;
         if (col2[i] > col1[i]) col2IsLess = false;
+    }
+
+    if (col1IsLess && col2IsLess) return CompResult::EQUAL;
+    else if (col1IsLess) return CompResult::LESS;
+    else if (col2IsLess) return CompResult::GREATER;
+    else return CompResult::INCOMPARABLE;
+}
+
+CompResult compareBoardCols(const std::vector<std::pair<int, int>>& col1, const std::vector<std::pair<int, int>>& col2) {
+    bool col1IsLess = true, col2IsLess = true;
+
+    for (size_t i = 0; i < col1.size(); i++) {
+        // Compare i-th element
+        if (col1[i].first > col2[i].first) col1IsLess = false;
+        if (col2[i].first > col1[i].first) col2IsLess = false;
     }
 
     if (col1IsLess && col2IsLess) return CompResult::EQUAL;
@@ -260,3 +276,9 @@ CompResult compareBoards(const Board& board1, const Board& board2, Purpose purpo
 }
 
 #endif
+
+bool boardIsWinning(const Board& board, const std::vector<Board>& winningBoards) {
+    return std::ranges::any_of(winningBoards, [&board](const Board& other) {
+        return compareBoards(board, other, Purpose::GREATER) == CompResult::GREATER;
+    });
+}

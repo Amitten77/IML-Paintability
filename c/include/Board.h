@@ -12,13 +12,24 @@
 #include <sstream>
 #include <cmath>
 
+/**
+ * A list of token indices that the Pusher intends to push forward.
+ *
+ * A token index is a unique identifier of a token. The j-th token of the i-th column has index
+ *   i * k + j
+ * where k is the number of tokens per column.
+ */
+using PusherMove = std::vector<int>;
+
+enum class Player {
+    PUSHER, REMOVER, NONE
+};
 
 /**
  * @class Board
  * @brief A class to represent a Board for the Chip Pushing Game
  */
 class Board {
-
 public:
     /**
      * @brief 
@@ -26,6 +37,7 @@ public:
     - goal is the row number that wins the game for Pusher
     - max_score is the highest row number Pusher has reached throughout the game
     - num_tokens is the number of tokens left on the board
+    - board: 2D array representing the row number of each token. Sorted from largest to smallest.
     Note: Pusher has only 'reached' a row number after Remover's turn is over and the token remains on the board.
      */
     int n, k, goal, max_score, num_tokens;
@@ -39,7 +51,8 @@ public:
     Board();
 
     /// @brief Default Constructor. If BoardInput not defined, creates a n x k board with all tokens at row 0. 
-    Board(int n, int k, int goal = 10, const std::vector<std::vector<std::pair<int, int> > >& boardInput = std::vector<std::vector<std::pair<int, int> > >());
+    Board(int n, int k, int goal = 10,
+          const std::vector<std::vector<std::pair<int, int>>>& boardInput = std::vector<std::vector<std::pair<int, int>>>());
 
     /// @brief  Deserializes a string into a Board
     /// @param serializedBoard 

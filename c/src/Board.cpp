@@ -15,9 +15,10 @@ std::map<std::vector<int>, int> num_graph;
 
 Board::Board() = default;
 
-Board::Board(int n, int k, int goal, const std::vector<std::vector<std::pair<int, int> > >& boardInput) : n(n), k(k), goal(goal), max_score(0), num_tokens(0) {
+Board::Board(int n, int k, int goal, const std::vector<std::vector<std::pair<int, int>>>& boardInput) : n(n), k(k), goal(goal), max_score(0), num_tokens(0) {
     if (boardInput.empty()) {
-        board = std::vector<std::vector<std::pair<int, int> > >(n, std::vector<std::pair<int, int> >(k, {0, 0}));
+        board = std::vector<std::vector<std::pair<int, int>>>(
+                n, std::vector<std::pair<int, int>>(k, { 0, 0 }));
     } else {
         this->board = boardInput;
         for (auto& row : this->board) {
@@ -34,17 +35,18 @@ Board::Board(int n, int k, int goal, const std::vector<std::vector<std::pair<int
 }
 
 bool Board::game_over() const {
-    if (max_score >= goal) {
-        return true;
-    }
-    for (const auto& row : board) {
-        for (const auto& [level, _] : row) {
-            if (level != -1) {
-                return false;
-            }
-        }
-    }
-    return true;
+//    if (max_score >= goal) {
+//        return true;
+//    }
+//    for (const auto& row : board) {
+//        for (const auto& [level, _] : row) {
+//            if (level != -1) {
+//                return false;
+//            }
+//        }
+//    }
+//    return true;
+    return this->max_score >= this->goal || this->num_tokens == 0;
 }
 
 std::ostream& operator<<(std::ostream& os, const Board& b) {

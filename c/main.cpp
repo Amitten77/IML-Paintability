@@ -5,7 +5,7 @@
 #include "include/compare.h"
 #include "include/graph.h"
 
-
+#define RUN_ONCE
 
 /*
 g++ -std=c++20 -O3 -flto -march=native -o main main.cpp src/Board.cpp src/helper.cpp src/graph.cpp src/compare.cpp
@@ -22,9 +22,9 @@ g++ -std=c++20 -O3 -flto -march=native -o main main.cpp src/Board.cpp src/helper
 int main() {
     // Start measuring time
     auto start = std::chrono::high_resolution_clock::now();
-    int N = 5;
+    int N = 4;
     int K = 3;
-    int GOAL = 6;
+    int GOAL = 5;
     std::stringstream losing_ss;
     losing_ss << "losing/N" << N << "_K" << K << "_goal" << GOAL << "_board.txt";
     std::string LOSING_FILE = losing_ss.str();
@@ -37,15 +37,15 @@ int main() {
     // loadBoardsFromFile(WINNING_FILE, WINNING);
     initMap(N, K);
     std::vector<std::vector<std::pair<int, int>>> curr = {
-                {{1, 0}, {1, 0}, {1, 0}}, // Row 0
-                {{1, 0}, {1, 0}, {1, 0}}, // Row 1
-                {{1, 0}, {1, 0}, {1, 0}}, // Row 2
-                {{1, 0}, {1, 0}, {1, 0}}, // Row 3
-                {{1, 0}, {1, 0}, {1, 0}}, // Row 4
-                {{-1, 0}, {-1, 0}, {-1, 0}}  // Row 5
+                {{0, 0}, {0, 0}, {0, 0}}, // Row 0
+                {{0, 0}, {0, 0}, {0, 0}}, // Row 1
+                {{0, 0}, {0, 0}, {0, 0}}, // Row 2
+                {{0, 0}, {0, 0}, {0, 0}}, // Row 3
             };
+    
 
-    int val = 0;
+#ifndef RUN_ONCE
+    int index = 0;
     while (true) {
         // val = val % 18;
         // if (val == 0 && curr[int(val/6)][val % 3].first == 0) {
@@ -63,8 +63,7 @@ int main() {
         saveBoardsToFile(WINNING, WINNING_FILE);
         break;
     }
-    
-
+#endif
 
     saveBoardsToFile(LOSING, LOSING_FILE);
     saveBoardsToFile(WINNING, WINNING_FILE);
