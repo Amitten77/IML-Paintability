@@ -22,9 +22,9 @@ g++ -std=c++20 -O3 -flto -march=native -o main main.cpp src/Board.cpp src/helper
 int main() {
     // Start measuring time
     auto start = std::chrono::high_resolution_clock::now();
-    int N = 4;
+    int N = 5;
     int K = 3;
-    int GOAL = 5;
+    int GOAL = 7;
     std::stringstream losing_ss;
     losing_ss << "losing/N" << N << "_K" << K << "_goal" << GOAL << "_board.txt";
     std::string LOSING_FILE = losing_ss.str();
@@ -40,11 +40,9 @@ int main() {
                 {{0, 0}, {0, 0}, {0, 0}}, // Row 0
                 {{0, 0}, {0, 0}, {0, 0}}, // Row 1
                 {{0, 0}, {0, 0}, {0, 0}}, // Row 2
-                {{0, 0}, {0, 0}, {0, 0}}, // Row 3
+                {{0, 0}, {0, 0}, {0, 0}},
+                {{0, 0}, {0, 0}, {0, 0}},
             };
-    
-
-#ifndef RUN_ONCE
     int index = 0;
     while (true) {
         // val = val % 18;
@@ -63,7 +61,6 @@ int main() {
         saveBoardsToFile(WINNING, WINNING_FILE);
         break;
     }
-#endif
 
     saveBoardsToFile(LOSING, LOSING_FILE);
     saveBoardsToFile(WINNING, WINNING_FILE);
