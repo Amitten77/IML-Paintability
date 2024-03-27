@@ -233,7 +233,10 @@ std::string checkStatus(const Board &board) {
 int negaMax(Board& board, bool isPusher, int alpha, int beta, int depth) {
     if (isPusher) {
         if (board.game_over()) {
-            return board.max_score;
+            if (board.max_score >= board.goal) {
+                return board.goal;
+            }
+            return -1;
         }
         std::string status = checkStatus(board);
         if (status == "LOSING") {
