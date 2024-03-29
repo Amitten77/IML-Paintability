@@ -279,6 +279,8 @@ CompResult compareBoards(const Board& board1, const Board& board2, Purpose purpo
 
 bool boardIsWinning(const Board& board, const std::vector<Board>& winningBoards) {
     return std::ranges::any_of(winningBoards, [&board](const Board& other) {
-        return compareBoards(board, other, Purpose::GREATER) == CompResult::GREATER;
+//        return compareBoards(board, other, Purpose::GREATER) == CompResult::GREATER;
+        auto ans = compareBoards(board, other);
+        return ans == CompResult::GREATER || ans == CompResult::EQUAL;
     });
 }

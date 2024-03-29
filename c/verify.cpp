@@ -32,7 +32,7 @@ void verifyPusherWin(const Board& board, const std::vector<Board>& winningStates
         bool foundWinningMove = false;
         // Find all possible moves of the pusher
         std::vector<PusherMove> pusherMoves;
-        getAllPusherMovesPruned(curr, pusherMoves);
+        getAllPusherMovesPruned(curr, pusherMoves, 1);
         for (const PusherMove& pusherMove : pusherMoves) {
             // Apply pusher's move
             Board afterPusher = curr;
@@ -47,6 +47,7 @@ void verifyPusherWin(const Board& board, const std::vector<Board>& winningStates
             for (int removerMove : removerMoves) {
                 Board afterRemover = afterPusher;
                 applyRemoverMove(afterRemover, removerMove);
+                printf("%s\n", afterRemover.serialize().c_str());
 
                 // If pusher will win, remover should not take this move
                 if (checkWinner(afterRemover) == Player::PUSHER) continue;
@@ -56,6 +57,7 @@ void verifyPusherWin(const Board& board, const std::vector<Board>& winningStates
 
                 // If this board is not a "winning state", Pusher should not take this move.
                 bool isWinning = boardIsWinning(afterRemover, winningStates);
+                printf("%s\n", isWinning ? "true" : "false");
                 if (!isWinning) {
                     foundWinningMove = false;
                     break;
@@ -91,7 +93,7 @@ void verifyRemoverWin(Board board, int goal);
 int main() {
     int N = 4;
     int K = 3;
-    int GOAL = 4;
+    int GOAL = 5;
 
     // Load the winning states
     std::stringstream winning_ss;
@@ -107,7 +109,7 @@ int main() {
             {{0, 0}, {0, 0}, {0, 0}},
             {{0, 0}, {0, 0}, {0, 0}},
             {{0, 0}, {0, 0}, {0, 0}},
-//            {{3, 0}, {3, 0}, {3, 0}},
+//            {{0, 0}, {0, 0}, {0, 0}},
 //            {{3, 0}, {3, 0}, {3, 0}}
     });
 
