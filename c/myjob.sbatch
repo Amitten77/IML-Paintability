@@ -5,6 +5,7 @@
 #SBATCH --job-name=traink35again
 #SBATCH --account=pb38-ic 
 ##SBATCH --mail-user=amitlk2@illinois.edu 
+#SBATCH --partition=secondary
 ##SBATCH --mail-type=BEGIN,END
 #
 # End of embedded SBATCH options
