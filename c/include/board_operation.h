@@ -1,6 +1,7 @@
 #ifndef BOARD_OPERATION_H
 #define BOARD_OPERATION_H
 
+#include <functional>
 #include <vector>
 #include "Board.h"
 
@@ -64,5 +65,29 @@ void getAllPusherMovesPruned(const Board& board, std::vector<PusherMove>& moves,
  * @param verbose Defines how much calculation details to log.
  */
 void getAllRemoverMovesPruned(const Board& board, std::vector<int>& moves, int verbose = 0);
+
+/**
+ * @brief Starting from a game state, the Pusher makes one move.
+ * @param board The current board. The Pusher moves next.
+ * @param output Where to output all possible resulting states. WILL APPEND TO BACK.
+ * @param pred A predicate function that filters whether or not to include a resulting state (return true to include).
+ */
+void stepPusher(const Board& board, std::vector<Board>& output, const std::function<bool(const Board&)>& pred);
+
+/**
+ * @brief Starting from a game state, the Remover makes one move.
+ * @param board The current board. The Remover moves next.
+ * @param output Where to output all possible resulting states. WILL APPEND TO BACK.
+ * @param pred A predicate function that filters whether or not to include a resulting state (return true to include).
+ */
+void stepRemover(const Board& board, std::vector<Board>& output, const std::function<bool(const Board&)>& pred);
+
+/**
+ * @brief Starting from a game state, the Pusher and the Remover each makes one move.
+ * @param board The current board. The Pusher moves next.
+ * @param output Where to output all possible resulting states. WILL APPEND TO BACK.
+ * @param pred A predicate function that filters whether or not to include a resulting state (return true to include).
+ */
+void step(const Board& board, std::vector<Board>& output, const std::function<bool(const Board&)>& pred);
 
 #endif //BOARD_OPERATION_H

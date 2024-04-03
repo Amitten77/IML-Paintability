@@ -3,12 +3,14 @@
 #include <iomanip>
 #include <iostream>
 #include <numeric>
+#include <queue>
+#include <stack>
 #include "../include/Board.h"
 #include "../include/compare.h"
 #include "../include/helper.h"
 #include "../include/board_operation.h"
 
-#define USE_NEW_NEGAMAX
+//#define USE_NEW_NEGAMAX
 
 const int SCALE_FACTOR = 3;
 
@@ -235,83 +237,46 @@ std::string checkStatus(const Board &board) {
 #ifdef USE_NEW_NEGAMAX
 
 int negaMax(Board& board, bool isPusher, int alpha, int beta, int depth) {
-    if (isPusher) {
-        if (board.game_over()) {
-            if (board.max_score >= board.goal) {
-                return board.goal;
+    (void)isPusher, (void)alpha, (void)beta, (void)depth;
+
+    // First check if the beginning state is already in the winning/loosing state
+    switch (checkWinner(board)) {
+        case Player::PUSHER:
+            printf("Pusher wins with score %d\n", board.max_score);
+            return board.max_score;
+        case Player::REMOVER:
+            printf("Pusher loses with score %d\n", board.max_score);
+            return board.max_score;
+        default:
+            if (boardIsWinning(board, WINNING)) {
+                printf("Pusher predicted to win\n");
+            } else if (boardIsLosing(board, LOSING)) {
+                printf("Pusher predicted to lose\n");
             }
-            return -1;
-        }
-        std::string status = checkStatus(board);
-        if (status == "LOSING") {
-            return -1;
-        }
-        if (status == "WINNING") {
-            return board.goal;
-        }
-    }
-    int bestVal = INT_MIN;
-
-    std::vector<int> game_states;
-    std::vector<PusherMove> pusherMoves;
-    if (isPusher) {
-        getAllPusherMovesPruned(board, pusherMoves);
-        for (PusherMove& move : pusherMoves) {
-            std::sort(move.begin(), move.end());
-            game_states.push_back(num_graph[move]);
-        }
-    } else {
-        game_states = board.is_possible_remove();
+            break;
     }
 
-    // std::reverse(game_states.begin(), game_states.end());
+    // <Current board, isPusher, children>
+    std::stack<std::tuple<Board, std::vector<Board>, std::vector<Player>>> boards;
+    // todo: find children
+    boards.emplace(board, std::vector<Board>());
 
-    for (size_t index = 0; index < game_states.size(); ++index) {
-        Board nex(board);
-        if (isPusher) {
-            applyPusherMove(nex, pusherMoves[index]);
-        } else {
-            int poss = game_states[index];
-            nex.make_remover_board(poss);
+    while (!boards.empty()) {
+        auto [currState, nextStates, nextWinners] = boards.top();
+        // printf("%s\n", curr.serialize().c_str());
+
+        // Check if any next state is not categorized into winning or losing
+        std::vector<Board> toChecks;
+        for (const Board& afterPusher : nextStates) {
+            stepRemover(afterPusher, toChecks, [](const Board& item) {
+                return !boardIsWinning(item, WINNING) && !boardIsLosing(item, LOSING);
+            });
         }
-        int value = -negaMax(nex, !isPusher, -beta, -alpha, depth + 1);
-        bestVal = std::max(bestVal, value);
-        alpha = std::max(alpha, bestVal);
-        if (isPusher && depth < 3) {
-            std::cout << std::fixed << std::setprecision(2) 
-          << (((int)index + 1) * 100.0 / (int)game_states.size()) << "% done with the Game States for Depth "
-          << depth << " for Possibility " << (index + 1) << " out of " << game_states.size() << std::endl;
-        }
-        if (!isPusher && bestVal == 1) {
-            break;
-        }
-        if (isPusher && bestVal > board.goal) {
-            break;
-        }
-        if (bestVal >= board.goal || beta <= alpha) {
-            break;
-        } 
-    }
-    if (isPusher) {
-        if (bestVal < board.goal) {
-            LOSING.push_back(board);
-            if ((int)LOSING.size() > LOSING_BOUND) {
-                std::cout << "Losing Length Before Pruning: " << LOSING.size() << std::endl;
-                prune_losing();
-                std::cout << "Losing Length After Pruning: " << LOSING.size() << std::endl;
-                LOSING_BOUND = std::max(LOSING_BOUND, int((LOSING.size() * SCALE_FACTOR)));
-            } 
-        } else {
-            WINNING.push_back(board);
-            if ((int)WINNING.size() > WINNING_BOUND) {
-                std::cout << "Winning Length Before Pruning: " << WINNING.size() << std::endl;
-                prune_winning();
-                std::cout << "Winning Length After Pruning: " << WINNING.size() << std::endl;
-                WINNING_BOUND = std::max(WINNING_BOUND, int((WINNING.size() * SCALE_FACTOR)));
-            }
+
+        if (toChecks.empty()) {
+            // If all pushers
         }
     }
-    return bestVal;
 }
 
 #else

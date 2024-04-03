@@ -4,7 +4,7 @@
 #include "../include/compare.h"
 #include "../include/graph.h"
 
-//#define USE_HOPCROFT_KARPP
+#define USE_HOPCROFT_KARP
 #define HALLS
 
 
@@ -279,8 +279,12 @@ CompResult compareBoards(const Board& board1, const Board& board2, Purpose purpo
 
 bool boardIsWinning(const Board& board, const std::vector<Board>& winningBoards) {
     return std::ranges::any_of(winningBoards, [&board](const Board& other) {
-//        return compareBoards(board, other, Purpose::GREATER) == CompResult::GREATER;
-        auto ans = compareBoards(board, other);
-        return ans == CompResult::GREATER || ans == CompResult::EQUAL;
+        return compareBoards(board, other, Purpose::GREATER) == CompResult::GREATER;
+    });
+}
+
+bool boardIsLosing(const Board& board, const std::vector<Board>& losingBoards) {
+    return std::ranges::any_of(losingBoards, [&board](const Board& other) {
+        return compareBoards(board, other, Purpose::LESS) == CompResult::LESS;
     });
 }

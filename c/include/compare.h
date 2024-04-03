@@ -64,9 +64,17 @@ CompResult compareBoards(const Board& board1, const Board& board2, Purpose purpo
 /**
  * @brief Compare a board with winning boards to check if it is winning.
  * @param board The target board.
- * @param boards A list of winning boards.
+ * @param winningBoards A list of winning boards.
  * @return Whether it is winning.
  */
 bool boardIsWinning(const Board& board, const std::vector<Board>& winningBoards);
+
+/**
+ * @brief Compare a board with losing boards to check if it is losing.
+ * @param board The target board.
+ * @param losingBoards A list of losing boards.
+ * @return Whether it is losing.
+ */
+bool boardIsLosing(const Board& board, const std::vector<Board>& losingBoards);
 
 #endif // COMPARE_H

@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <ranges>
-#include <set>
 #include "board_operation.h"
 
 size_t integerPow(size_t base, size_t exponent) {

@@ -325,3 +325,57 @@ void getAllRemoverMovesPruned(const Board& board, std::vector<int>& moves, int v
         if (selected[i]) moves.push_back(i);
     }
 }
+
+void stepPusher(const Board& board, std::vector<Board>& output, const std::function<bool(const Board&)>& pred) {
+    std::vector<PusherMove> moves;
+    getAllPusherMovesPruned(board, moves);
+    output.reserve(moves.size());
+    for (const PusherMove& move : moves) {
+        output.push_back(board);
+        applyPusherMove(output.back(), move);
+        if (!pred(output.back())) {
+            output.pop_back();
+        }
+    }
+}
+
+void stepRemover(const Board& board, std::vector<Board>& output, const std::function<bool(const Board&)>& pred) {
+    std::vector<int> moves;
+    getAllRemoverMovesPruned(board, moves);
+    for (int move : moves) {
+        output.push_back(board);
+        applyRemoverMove(output.back(), move);
+        if (!pred(output.back())) {
+            output.pop_back();
+        }
+    }
+}
+
+void step(const Board& board, std::vector<Board>& output, const std::function<bool(const Board&)>& pred) {
+    // For storing the result after Pusher move and before Remover move
+    std::vector<Board> temps;
+
+    // Search Pusher moves
+    {
+        std::vector<PusherMove> moves;
+        getAllPusherMovesPruned(board, moves);
+        temps.reserve(moves.size());
+        for (const PusherMove& move : moves) {
+            temps.push_back(board);
+            applyPusherMove(temps.back(), move);
+        }
+    }
+
+    // Search Remover moves
+    for (const Board& temp : temps) {
+        std::vector<int> moves;
+        getAllRemoverMovesPruned(temp, moves);
+        for (int move : moves) {
+            output.push_back(temp);
+            applyRemoverMove(output.back(), move);
+            if (!pred(output.back())) {
+                output.pop_back();
+            }
+        }
+    }
+}
