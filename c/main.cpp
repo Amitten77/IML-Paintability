@@ -35,8 +35,8 @@ int main() {
     winning_ss << "winning/N" << N << "_K" << K << "_goal" << GOAL << "_board.txt";
     std::string WINNING_FILE = winning_ss.str();
 
-    loadBoardsFromFile(LOSING_FILE, LOSING);
-    loadBoardsFromFile(WINNING_FILE, WINNING);
+    // loadBoardsFromFile(LOSING_FILE, LOSING);
+    // loadBoardsFromFile(WINNING_FILE, WINNING);
     initMap(N, K);
     std::vector<std::vector<std::pair<int, int>>> curr = {
                 {{0, 0}, {0, 0}, {0, 0}}, // Row 0
