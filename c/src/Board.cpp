@@ -78,7 +78,8 @@ struct Compare {
 std::vector<std::vector<int>> Board::recur_get_poss(
     const std::unordered_map<int, std::vector<std::vector<int>>>& poss, 
     const std::unordered_map<int, std::vector<int>>& match, 
-    std::vector<int> prev_cols, 
+    const std::unordered_map<int, std::vector<int>>& spec_match,
+    std::vector<int> prev_cols,
     int depth) {
 
         int filled_cols = 0;
@@ -88,8 +89,15 @@ std::vector<std::vector<int>> Board::recur_get_poss(
             }
         }
 
+        int strict_req = -1;
+        auto matchIt = spec_match.find(depth);
+        if (matchIt != match.end()) {
+            for (auto item : matchIt->second) {
+                strict_req = prev_cols[item];
+            }
+        }
         int req = -1;
-        auto matchIt = match.find(depth);
+        matchIt = match.find(depth);
         if (matchIt != match.end()) {
             for (auto item : matchIt->second) {
                 req = prev_cols[item];
@@ -104,17 +112,19 @@ std::vector<std::vector<int>> Board::recur_get_poss(
                     return {{-2}};
                 }
                 std::vector<std::vector<int>> lis;
-                for (size_t i = 1; i < poss.at(depth).size(); ++i) {
+                for (size_t i = 0; i < poss.at(depth).size(); ++i) {
                     auto& item = poss.at(depth)[i];
-                    if (item.size() == static_cast<size_t>(req) || req == -1) {
-                        lis.push_back(item);
+                    if (item.size() != 0) {
+                        if (item.size() == static_cast<size_t>(strict_req) || (strict_req == -1 && (req == -1 || item.size() >= static_cast<size_t>(req)))) {
+                            lis.push_back(item);
+                        }
                     }
                 }
                 return lis;
             } else if (filled_cols >= 2) {
                 std::vector<std::vector<int>> lis;
                 for (auto& item : poss.at(depth)) {
-                    if (item.size() == static_cast<size_t>(req) || req == -1) {
+                    if (item.size() == static_cast<size_t>(strict_req) || (strict_req == -1 && (req == -1 || item.size() >= static_cast<size_t>(req)))) {
                         lis.push_back(item);
                     }
                 }
@@ -124,7 +134,7 @@ std::vector<std::vector<int>> Board::recur_get_poss(
             std::unordered_map<int, std::vector<std::vector<int>>> poss_dic;
             std::unordered_set<int> lengths;
             for (auto& item : poss.at(depth)) {
-                if (item.size() == static_cast<size_t>(req) || req == -1) {
+                if (item.size() == static_cast<size_t>(strict_req) || (strict_req == -1 && (req == -1 || item.size() >= static_cast<size_t>(req)))) {
                     lengths.insert((int)item.size());
                 }
             }
@@ -132,12 +142,12 @@ std::vector<std::vector<int>> Board::recur_get_poss(
             for (auto length : lengths) {
                 auto prev_cols_copy = prev_cols;
                 prev_cols_copy.push_back(length);
-                poss_dic[length] = recur_get_poss(poss, match, prev_cols_copy, depth + 1);
+                poss_dic[length] = recur_get_poss(poss, match, spec_match, prev_cols_copy, depth + 1);
             }
 
             std::vector<std::vector<int>> ans;
             for (auto& item : poss.at(depth)) {
-                if (item.size() == static_cast<size_t>(req) || req == -1) {
+                if (item.size() == static_cast<size_t>(strict_req) || (strict_req == -1 && (req == -1 || item.size() >= static_cast<size_t>(req)))) {
                     for (auto& item2 : poss_dic[(int)item.size()]) {
                         if (item2.empty() || item2[0] != -2) {
                             std::vector<int> combined = item;
@@ -154,57 +164,32 @@ std::vector<std::vector<int>> Board::recur_get_poss(
 }
 
 
-std::vector<std::vector<int>> Board::get_poss(const std::vector<std::pair<int, int>>& col, int offset) {
+std::vector<std::vector<int>> Board::get_poss(int col) {
     std::unordered_map<int, std::vector<std::vector<int>>> tokens;
-    for (const auto& item : col) {
-        if (item.first != -1) {
-            if (tokens.find(item.first) == tokens.end()) {
-                tokens[item.first] = {{}};
+    for (int i = 0; i < this->k; i++) {
+        if (this->board[col][i].first != -1) {
+            if (tokens.find(this->board[col][i].first) == tokens.end()) {
+                tokens[this->board[col][i].first] = {{}};
             }
-            std::vector<int> lis = tokens[item.first].back();
-            lis.push_back(offset);
-            tokens[item.first].push_back(lis);
+            std::vector<int> lis = tokens[this->board[col][i].first].back();
+            lis.push_back(col * this->k + i);
+            tokens[this->board[col][i].first].push_back(lis);
         }
-        offset++;
     }
+
     if (tokens.empty()) {
         return {{}};
     }
-    std::vector<std::vector<std::vector<int>>> lists;
+    std::vector<std::vector<std::vector<int>>> pre_ans;
     for (const auto& [key, value] : tokens) {
-            lists.push_back(value);
-    }
-    std::vector<std::vector<int>> all_combinations = product(lists);
-    std::set<std::vector<int>> unique_combinations;
-
-    for (auto& combination : all_combinations) {
-        std::sort(combination.begin(), combination.end());
-        unique_combinations.insert(combination); 
+            pre_ans.push_back(value);
     }
 
-    std::vector<std::vector<int>> final_combinations(unique_combinations.begin(), unique_combinations.end());
-
-    std::sort(final_combinations.begin(), final_combinations.end(),
-                [](const std::vector<int>& a, const std::vector<int>& b) {
-                    return a.size() == b.size() ? a < b : a.size() < b.size();
-                });
-
-    return final_combinations;
-    
+    std::vector<std::vector<int>> ans = product(pre_ans);
+    return ans;
 }
 
-
-
-void Board::make_move_pusher() {
-    std::vector<int> poss = this->is_possible_push();
-    srand(static_cast<unsigned int>(time(nullptr)));
-    size_t randomIndex = rand() % poss.size();
-    std::vector<int> subset = subset_graph[poss[randomIndex]];
-    this->make_pusher_board(subset);
-}
-
-
-std::vector<int> Board::is_possible_push() {
+std::vector<std::vector<int>> Board::is_possible_push() {
     std::vector<int> diff_cols;
     for (int i = 0; i < this->n; ++i) {
         for (const auto& cell : this->board[i]) {
@@ -227,35 +212,128 @@ std::vector<int> Board::is_possible_push() {
             }
             offset++;
         }
-        return {num_graph[ans]}; // Assuming num_graph is a map from vector<int> to int
+        return {ans}; // Assuming num_graph is a map from vector<int> to int
     }
 
     std::unordered_map<int, std::vector<int>> match; // Map of dependencies
+    std::unordered_map<int, std::vector<int>> spec_match;
     for (int i = 0; i < this->n; ++i) {
         for (int j = i + 1; j < this->n; ++j) {
-            if (this->board[i] == this->board[j]) {
-                match[j].push_back(i);
+            bool isMatch = true;
+            std::unordered_set<int> check;
+            for (int l = 0; l < k; l++) {
+                if (this->board[i][l].first == this->board[j][l].first) {
+                    check.insert(this->board[i][l].first);
+                } else {
+                    isMatch = false;
+                    break;
+                }
+            }
+            if (isMatch) {
+                if (check.size() == 1 || (check.size() == 2 && check.find(-1) != check.end())) {
+                    spec_match[j].push_back(i);
+                    match[j].push_back(i);
+                } else {
+                    match[j].push_back(i);
+                }
             }
         }
     }
 
     std::unordered_map<int, std::vector<std::vector<int>>> poss;
     for (int i = 0; i < this->n; ++i) {
-        poss[i] = get_poss(board[i], i * this->k);
+        poss[i] = get_poss(i);
     }
 
 
     std::vector<int> prev_cols; // Starts empty
-    std::vector<std::vector<int>> subsets = recur_get_poss(poss, match, prev_cols, 0);
+    std::vector<std::vector<int>> subsets = recur_get_poss(poss, match, spec_match, prev_cols, 0);
     
-    std::vector<int> ans;
-    for (const auto& subset : subsets) {
-        ans.push_back(num_graph[subset]);
-    }
-    std::sort(ans.begin(), ans.end(), std::greater<>());
+    std::sort(subsets.begin(), subsets.end(), [](const std::vector<int>& a, const std::vector<int>& b) {
+            return a.size() > b.size(); // Ensure longer vectors come first
+        });
 
-    return ans;
+    return subsets;
 
+}
+
+// std::vector<std::vector<int>> Board::get_col_poss(int col) {
+//     std::unordered_map<int, std::vector<std::vector<int>>> tokens;
+//     for (int i = 0; i < this->k; i++) {
+//         if (this->board[col][i].first != -1) {
+//             if (tokens.find(this->board[col][i].first) == tokens.end()) {
+//                 tokens[this->board[col][i].first] = {{}};
+//             }
+//             std::vector<int> lis = tokens[this->board[col][i].first].back();
+//             lis.push_back(col * this->k + i);
+//             tokens[this->board[col][i].first].push_back(lis);
+//         }
+//     }
+
+//     if (tokens.empty()) {
+//         return {{}};
+//     }
+//     std::vector<std::vector<std::vector<int>>> pre_ans;
+//     for (const auto& [key, value] : tokens) {
+//             pre_ans.push_back(value);
+//     }
+
+//     std::vector<std::vector<int>> ans = product(pre_ans);
+//     return ans;
+// }
+
+// std::vector<std::vector<int>> Board::is_possible_push() {
+//   //Each column will have a list of subsets to push
+//   std::vector<std::vector<int>> match;
+//   std::vector<std::vector<int>> strict_match;
+//   for (int i = 0; i < this->n; i++) {
+//     for (int j = i + 1; j < this->n; j++) {
+//         bool isMatch = true;
+//         std::unordered_set<int> unique;
+//         for (int l = 0; l < this->k; l++) {
+//             if (this->board[i][l].first == this->board[j][l].first) {
+//                 unique.insert(this->board[i][l].first);
+//             } else {
+//                 isMatch = false;
+//                 break;
+//             }
+//         }
+//         if (isMatch) {
+//             if (unique.size() == 1 || (unique.size() == 2 && unique.find(-1) != unique.end())) {
+//                 strict_match[j].push_back(i);
+//             } else {
+//                 match[j].push_back(i);
+//             }
+//         }
+//     }
+//   }
+
+
+//   std::vector<std::vector<std::vector<int>>> col_poss;
+//   for (int i = 0; i < this->n; i++) {
+//     col_poss[i] = get_col_poss(i);
+//   }
+
+
+// }
+
+
+/*
+Optimizations for is_possible_push():
+- If one column, push all chips
+- If multiple tokens in same row, pushing either token is the same move
+- If two columns have all tokens in the same row, must push exactly that number of tokens for optimal play
+- If two columns are the exact same, pushing one specific token in one and two specific tokens in other is the same reversed
+- If easy winning move in sight, take it (e.g. move check Status to here)
+*/
+
+
+void Board::make_move_pusher() {
+    std::vector<std::vector<int>> poss = this->is_possible_push();
+    srand(static_cast<unsigned int>(time(nullptr)));
+    size_t randomIndex = rand() % poss.size();
+    std::vector<int> subset = poss[randomIndex];
+    this->make_pusher_board(subset);
 }
 
 void Board::make_pusher_board(std::vector<int> subset) {

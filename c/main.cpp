@@ -10,6 +10,8 @@
 /*
 g++ -std=c++20 -O3 -flto -march=native -o main main.cpp src/Board.cpp src/helper.cpp src/graph.cpp src/compare.cpp
 ./main
+
+g++ -std=c++20 -Iinclude -O3 -flto -march=native -o verify verify.cpp src/Board.cpp src/helper.cpp src/graph.cpp src/compare.cpp src/get_moves_pruned.cpp src/board_operation.cpp
 */
 /**
  * Using CMake:
@@ -22,9 +24,9 @@ g++ -std=c++20 -O3 -flto -march=native -o main main.cpp src/Board.cpp src/helper
 int main() {
     // Start measuring time
     auto start = std::chrono::high_resolution_clock::now();
-    int N = 5;
+    int N = 6;
     int K = 3;
-    int GOAL = 7;
+    int GOAL = 8;
     std::stringstream losing_ss;
     losing_ss << "losing/N" << N << "_K" << K << "_goal" << GOAL << "_board.txt";
     std::string LOSING_FILE = losing_ss.str();
@@ -33,8 +35,8 @@ int main() {
     winning_ss << "winning/N" << N << "_K" << K << "_goal" << GOAL << "_board.txt";
     std::string WINNING_FILE = winning_ss.str();
 
-    // loadBoardsFromFile(LOSING_FILE, LOSING);
-    // loadBoardsFromFile(WINNING_FILE, WINNING);
+    loadBoardsFromFile(LOSING_FILE, LOSING);
+    loadBoardsFromFile(WINNING_FILE, WINNING);
     initMap(N, K);
     std::vector<std::vector<std::pair<int, int>>> curr = {
                 {{0, 0}, {0, 0}, {0, 0}}, // Row 0
@@ -42,6 +44,7 @@ int main() {
                 {{0, 0}, {0, 0}, {0, 0}}, // Row 2
                 {{0, 0}, {0, 0}, {0, 0}},
                 {{0, 0}, {0, 0}, {0, 0}},
+                {{0, 0}, {0, 0}, {0, 0}}
             };
     int index = 0;
     while (true) {

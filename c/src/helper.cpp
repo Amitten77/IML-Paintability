@@ -247,36 +247,37 @@ int negaMax(Board& board, bool isPusher, int alpha, int beta, int depth) {
         }
     }
     int bestVal = INT_MIN;
-    std::vector<int> game_states = isPusher ? board.is_possible_push() : board.is_possible_remove();
-
-    // std::reverse(game_states.begin(), game_states.end());
-
-    for (size_t index = 0; index < game_states.size(); ++index) {
-        int poss = game_states[index];
-        Board nex(board);
-        if (isPusher) {
-            std::vector<int> subset = subset_graph[poss];
+    if (isPusher) {
+        std::vector<std::vector<int>> game_states = board.is_possible_push();
+        for (size_t index = 0; index < game_states.size(); ++index) {
+            Board nex(board);
+            std::vector<int>& subset = game_states[index];
             nex.make_pusher_board(subset);
-        } else {
+            int value = -negaMax(nex, !isPusher, -beta, -alpha, depth + 1);
+            bestVal = std::max(bestVal, value);
+            alpha = std::max(alpha, bestVal);
+            if (depth < 3) {
+                std::cout << std::fixed << std::setprecision(2) 
+            << (((int)index + 1) * 100.0 / (int)game_states.size()) << "% done with the Game States for Depth "
+            << depth << " for Possibility " << (index + 1) << " out of " << game_states.size() << std::endl;
+            }
+            if (bestVal >= board.goal || beta <= alpha) {
+                break;
+            } 
+        }
+    } else if (!isPusher) {
+        std::vector<int> game_states = board.is_possible_remove();
+        for (size_t index = 0; index < game_states.size(); ++index) {
+            int poss = game_states[index];
+            Board nex(board);
             nex.make_remover_board(poss);
+            int value = -negaMax(nex, !isPusher, -beta, -alpha, depth + 1);
+            bestVal = std::max(bestVal, value);
+            alpha = std::max(alpha, bestVal);
+            if (bestVal == 1 || beta <= alpha) {
+                break;
+            } 
         }
-        int value = -negaMax(nex, !isPusher, -beta, -alpha, depth + 1);
-        bestVal = std::max(bestVal, value);
-        alpha = std::max(alpha, bestVal);
-        if (isPusher && depth < 3) {
-            std::cout << std::fixed << std::setprecision(2) 
-          << (((int)index + 1) * 100.0 / (int)game_states.size()) << "% done with the Game States for Depth "
-          << depth << " for Possibility " << (index + 1) << " out of " << game_states.size() << std::endl;
-        }
-        if (!isPusher && bestVal == 1) {
-            break;
-        }
-        if (isPusher && bestVal > board.goal) {
-            break;
-        }
-        if (bestVal >= board.goal || beta <= alpha) {
-            break;
-        } 
     }
     if (isPusher) {
         if (bestVal < board.goal) {

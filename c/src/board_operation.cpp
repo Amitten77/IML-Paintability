@@ -57,7 +57,7 @@ void applyRemoverMove(Board& board, int col) {
 
     // Mark all as not pushed
     for (int i = 0; i < board.n; i++) {
-        for (int j = 0; j < board.n; j++) {
+        for (int j = 0; j < board.k; j++) {
             board.board[i][j].second = 0;
         }
     }

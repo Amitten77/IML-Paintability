@@ -88,9 +88,9 @@ void verifyPusherWin(const Board& board, const std::vector<Board>& winningStates
 void verifyRemoverWin(Board board, int goal);
 
 int main() {
-    int N = 4;
+    int N = 5;
     int K = 3;
-    int GOAL = 6;
+    int GOAL = 7;
 
     // Load the winning states
     std::stringstream winning_ss;
@@ -102,12 +102,12 @@ int main() {
 
     // Verify
     Board board(N, K, GOAL, {
-            {{2, 0}, {2, 0}, {2, 0}},
-            {{2, 0}, {2, 0}, {2, 0}},
-            {{2, 0}, {2, 0}, {2, 0}},
-            {{2, 0}, {2, 0}, {2, 0}},
-//            {{3, 0}, {3, 0}, {3, 0}},
-//            {{3, 0}, {3, 0}, {3, 0}}
+            {{0, 0}, {0, 0}, {0, 0}},
+            {{0, 0}, {0, 0}, {0, 0}},
+            {{0, 0}, {0, 0}, {0, 0}},
+            {{0, 0}, {0, 0}, {0, 0}},
+           {{0, 0}, {0, 0}, {0, 0}},
+           {{0, 0}, {0, 0}, {0, 0}}
     });
 
     verifyPusherWin(board, winningBoard);

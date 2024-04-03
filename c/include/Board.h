@@ -70,7 +70,7 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const Board& b);
 
     /// @return Finds all possible moves for Pusher, filtering out duplicate moves
-    std::vector<int> is_possible_push();
+    std::vector<std::vector<int>> is_possible_push();
 
     /// @brief Makes a move for pusher given a subset of tokens to move
     void make_pusher_board(std::vector<int> subset);
@@ -100,11 +100,18 @@ public:
     [[nodiscard]] std::string serialize() const;
 
 private:
-    /// @brief helper method for is_possible_push();
-    std::vector<std::vector<int>> get_poss(const std::vector<std::pair<int, int>>& col, int offset);
+    // /// @brief helper method for is_possible_push();
+    // std::vector<std::vector<int>> get_poss(const std::vector<std::pair<int, int>>& col, int offset);
 
-    /// @brief helper method for is_possible_push();
-    std::vector<std::vector<int>> recur_get_poss(const std::unordered_map<int, std::vector<std::vector<int>>>& poss, const std::unordered_map<int, std::vector<int>>& match, std::vector<int> prev_cols, int depth);
+    // /// @brief helper method for is_possible_push();
+    // std::vector<std::vector<int>> recur_get_poss(const std::unordered_map<int, std::vector<std::vector<int>>>& poss, const std::unordered_map<int, std::vector<int>>& match, const std::unordered_map<int, std::vector<int>>& spec_match, std::vector<int> prev_cols, int depth);
+    std::vector<std::vector<int>> recur_get_poss(
+    const std::unordered_map<int, std::vector<std::vector<int>>>& poss, 
+    const std::unordered_map<int, std::vector<int>>& match, 
+    const std::unordered_map<int, std::vector<int>>& spec_match,
+    std::vector<int> prev_cols, 
+    int depth);
+    std::vector<std::vector<int>> get_poss(int col);
 };
 
 /// @brief variables to keep track of Winning and Losing Boards discovered
