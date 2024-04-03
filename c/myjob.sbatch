@@ -1,9 +1,8 @@
 #!/bin/bash
 #
 #SBATCH --time=00:05:00
-#SBATCH --nodes=40
-#SBATCH --ntasks-per-node=16
-#SBATCH --job-name=traink35
+#SBATCH --nodes=16
+#SBATCH --job-name=traink35again
 #SBATCH --account=pb38-ic 
 ##SBATCH --mail-user=amitlk2@illinois.edu 
 ##SBATCH --mail-type=BEGIN,END
