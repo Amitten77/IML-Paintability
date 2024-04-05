@@ -24,9 +24,9 @@ g++ -std=c++20 -Iinclude -O3 -flto -march=native -o verify verify.cpp src/Board.
 int main() {
     // Start measuring time
     auto start = std::chrono::high_resolution_clock::now();
-    int N = 6;
+    int N = 5;
     int K = 3;
-    int GOAL = 8;
+    int GOAL = 7;
     std::stringstream losing_ss;
     losing_ss << "losing/N" << N << "_K" << K << "_goal" << GOAL << "_board.txt";
     std::string LOSING_FILE = losing_ss.str();
@@ -44,7 +44,6 @@ int main() {
                 {{0, 0}, {0, 0}, {0, 0}}, // Row 2
                 {{0, 0}, {0, 0}, {0, 0}},
                 {{0, 0}, {0, 0}, {0, 0}},
-                {{0, 0}, {0, 0}, {0, 0}}
             };
     int index = 0;
     while (true) {
