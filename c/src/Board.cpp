@@ -189,6 +189,12 @@ std::vector<std::vector<int>> Board::get_poss(int col) {
     return ans;
 }
 
+
+//NOTE THIS HEURISTIC IS ONLY VALID FOR THREE TOKENS PER COLUMN
+int Board::pusher_heuristic(const std::vector<int>& subset) {
+    return subset.size();
+}
+
 std::vector<std::vector<int>> Board::is_possible_push() {
     std::vector<int> diff_cols;
     for (int i = 0; i < this->n; ++i) {
@@ -249,73 +255,18 @@ std::vector<std::vector<int>> Board::is_possible_push() {
     std::vector<int> prev_cols; // Starts empty
     std::vector<std::vector<int>> subsets = recur_get_poss(poss, match, spec_match, prev_cols, 0);
     
-    std::sort(subsets.begin(), subsets.end(), [](const std::vector<int>& a, const std::vector<int>& b) {
-            return a.size() > b.size(); // Ensure longer vectors come first
-        });
+    // std::sort(subsets.begin(), subsets.end(), [](const std::vector<int>& a, const std::vector<int>& b) {
+    //         return a.size() > b.size(); // Ensure longer vectors come first
+    //     });
+
+    std::sort(subsets.begin(), subsets.end(), [this](const std::vector<int>& subset1, const std::vector<int>& subset2) {
+        // Call the pusher_heuristic function for both subsets and compare
+        return pusher_heuristic(subset1) > pusher_heuristic(subset2);
+    });
 
     return subsets;
 
 }
-
-// std::vector<std::vector<int>> Board::get_col_poss(int col) {
-//     std::unordered_map<int, std::vector<std::vector<int>>> tokens;
-//     for (int i = 0; i < this->k; i++) {
-//         if (this->board[col][i].first != -1) {
-//             if (tokens.find(this->board[col][i].first) == tokens.end()) {
-//                 tokens[this->board[col][i].first] = {{}};
-//             }
-//             std::vector<int> lis = tokens[this->board[col][i].first].back();
-//             lis.push_back(col * this->k + i);
-//             tokens[this->board[col][i].first].push_back(lis);
-//         }
-//     }
-
-//     if (tokens.empty()) {
-//         return {{}};
-//     }
-//     std::vector<std::vector<std::vector<int>>> pre_ans;
-//     for (const auto& [key, value] : tokens) {
-//             pre_ans.push_back(value);
-//     }
-
-//     std::vector<std::vector<int>> ans = product(pre_ans);
-//     return ans;
-// }
-
-// std::vector<std::vector<int>> Board::is_possible_push() {
-//   //Each column will have a list of subsets to push
-//   std::vector<std::vector<int>> match;
-//   std::vector<std::vector<int>> strict_match;
-//   for (int i = 0; i < this->n; i++) {
-//     for (int j = i + 1; j < this->n; j++) {
-//         bool isMatch = true;
-//         std::unordered_set<int> unique;
-//         for (int l = 0; l < this->k; l++) {
-//             if (this->board[i][l].first == this->board[j][l].first) {
-//                 unique.insert(this->board[i][l].first);
-//             } else {
-//                 isMatch = false;
-//                 break;
-//             }
-//         }
-//         if (isMatch) {
-//             if (unique.size() == 1 || (unique.size() == 2 && unique.find(-1) != unique.end())) {
-//                 strict_match[j].push_back(i);
-//             } else {
-//                 match[j].push_back(i);
-//             }
-//         }
-//     }
-//   }
-
-
-//   std::vector<std::vector<std::vector<int>>> col_poss;
-//   for (int i = 0; i < this->n; i++) {
-//     col_poss[i] = get_col_poss(i);
-//   }
-
-
-// }
 
 
 /*

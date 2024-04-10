@@ -69,6 +69,8 @@ public:
     /// @brief For printing the board
     friend std::ostream& operator<<(std::ostream& os, const Board& b);
 
+    int pusher_heuristic(const std::vector<int>& subset);
+
     /// @return Finds all possible moves for Pusher, filtering out duplicate moves
     std::vector<std::vector<int>> is_possible_push();
 

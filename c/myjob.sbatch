@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#SBATCH --time=00:05:00
+#SBATCH --time=00:15:00
 #SBATCH --nodes=16
 #SBATCH --job-name=traink35again
 #SBATCH --account=pb38-ic 

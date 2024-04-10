@@ -33,6 +33,10 @@ void prune_winning();
 */
 int negaMax(Board& board, bool isPusher, int alpha, int beta, int depth);
 
+int PVS(Board& board, bool isPusher, int alpha, int beta, int depth);
+
+int MTDF(Board& board, int guess);
+
 
 /**
  * @brief Checks if a board is Winning or Losing

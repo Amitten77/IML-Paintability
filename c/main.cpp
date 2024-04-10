@@ -57,7 +57,9 @@ int main() {
         Board myBoard(N, K, GOAL, curr);
         std::cout << "CURRENT BOARD" << std::endl;
         std::cout << myBoard << std::endl;
+       // int best = PVS(myBoard, true, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), 0);
         int best = negaMax(myBoard, true, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), 0);
+        //int best = MTDF(myBoard, -1);
         std::cout << "BEST SCORE WITH NEGAMAX: " << best << std::endl;
         saveBoardsToFile(LOSING, LOSING_FILE);
         saveBoardsToFile(WINNING, WINNING_FILE);
