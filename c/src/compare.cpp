@@ -116,7 +116,7 @@ CompResult compareBoards(const Board& board1, const Board& board2, Purpose purpo
     // Represent the boards in the standard notation
     std::vector<std::vector<int>> gameState1, gameState2;
     gameState1.resize(n); gameState2.resize(n);
-    for (size_t i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++) {
         gameState1[i].resize(k);
         gameState2[i].resize(k);
         for (int j = 0; j < k; j++) {
@@ -128,7 +128,7 @@ CompResult compareBoards(const Board& board1, const Board& board2, Purpose purpo
     // Prepare the graph
     Graph graph;
     std::unordered_map<std::string, int> partition;
-    for (size_t i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++) {
         std::string a = "A" + std::to_string(i);
         std::string b = "B" + std::to_string(i);
         partition[a] = 0; partition[b] = 1;
@@ -138,8 +138,8 @@ CompResult compareBoards(const Board& board1, const Board& board2, Purpose purpo
     // Find perfect matching
     if (purpose != Purpose::GREATER) {
         // Populate graph with edges
-        for (size_t i = 0; i < n; i++) {
-            for (size_t j = 0; j < n; j++) {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
                 switch (compareSortedCols(gameState1[i], gameState2[j])) {
                     case CompResult::LESS:
                     case CompResult::EQUAL: {
@@ -153,13 +153,13 @@ CompResult compareBoards(const Board& board1, const Board& board2, Purpose purpo
                 }
             }
         }
-        firstIsLess = hopcroftKarp(graph, partition) == n;
+        firstIsLess = (int)hopcroftKarp(graph, partition) == n;
     }
     if (purpose != Purpose::LESS) {
         graph.clearEdges();
         // Populate graph with edges
-        for (size_t i = 0; i < n; i++) {
-            for (size_t j = 0; j < n; j++) {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
                 switch (compareSortedCols(gameState1[i], gameState2[j])) {
                     case CompResult::GREATER:
                     case CompResult::EQUAL: {
@@ -173,7 +173,7 @@ CompResult compareBoards(const Board& board1, const Board& board2, Purpose purpo
                 }
             }
         }
-        secondIsLess = hopcroftKarp(graph, partition) == n;
+        secondIsLess = (int)hopcroftKarp(graph, partition) == n;
     }
 
     if (firstIsLess && secondIsLess) return CompResult::EQUAL;
@@ -276,15 +276,3 @@ CompResult compareBoards(const Board& board1, const Board& board2, Purpose purpo
 }
 
 #endif
-
-bool boardIsWinning(const Board& board, const std::vector<Board>& winningBoards) {
-    return std::ranges::any_of(winningBoards, [&board](const Board& other) {
-        return compareBoards(board, other, Purpose::GREATER) == CompResult::GREATER;
-    });
-}
-
-bool boardIsLosing(const Board& board, const std::vector<Board>& losingBoards) {
-    return std::ranges::any_of(losingBoards, [&board](const Board& other) {
-        return compareBoards(board, other, Purpose::LESS) == CompResult::LESS;
-    });
-}

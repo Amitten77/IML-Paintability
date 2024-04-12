@@ -63,18 +63,32 @@ CompResult compareBoards(const Board& board1, const Board& board2, Purpose purpo
 
 /**
  * @brief Compare a board with winning boards to check if it is winning.
+ * @tparam T Iterator type.
  * @param board The target board.
- * @param winningBoards A list of winning boards.
+ * @param winningBoardsBegin Starting iterator of a list of winning boards.
+ * @param winningBoardsEnd Ending iterator of a list of winning boards.
  * @return Whether it is winning.
  */
-bool boardIsWinning(const Board& board, const std::vector<Board>& winningBoards);
+template <typename T>
+bool boardIsWinning(const Board& board, T winningBoardsBegin, T winningBoardsEnd) {
+    return std::ranges::any_of(winningBoardsBegin, winningBoardsEnd, [&board](const Board& other) {
+        return compareBoards(board, other, Purpose::GREATER) == CompResult::GREATER;
+    });
+}
 
 /**
  * @brief Compare a board with losing boards to check if it is losing.
+ * @tparam T Iterator type.
  * @param board The target board.
- * @param losingBoards A list of losing boards.
+ * @param losingBoardsBegin Starting iterator of a list of losing boards.
+ * @param losingBoardsEnd Ending iterator of a list of losing boards.
  * @return Whether it is losing.
  */
-bool boardIsLosing(const Board& board, const std::vector<Board>& losingBoards);
+template <typename T>
+bool boardIsLosing(const Board& board, T losingBoardsBegin, T losingBoardsEnd) {
+    return std::ranges::any_of(losingBoardsBegin, losingBoardsEnd, [&board](const Board& other) {
+        return compareBoards(board, other, Purpose::LESS) == CompResult::LESS;
+    });
+}
 
 #endif // COMPARE_H

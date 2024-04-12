@@ -34,8 +34,6 @@ void applyPusherMove(Board& board, const std::vector<int>& tokensToMove) {
         if (board.board[i][j].first != -1) {
             board.board[i][j].first += 1;
             board.board[i][j].second = 1;
-            // Update max_score
-            board.max_score = std::max(board.max_score, board.board[i][j].first);
         }
     }
 
@@ -56,13 +54,18 @@ void applyRemoverMove(Board& board, int col) {
 
     // Mark all as not pushed
     for (int i = 0; i < board.n; i++) {
-        for (int j = 0; j < board.n; j++) {
+        for (int j = 0; j < board.k; j++) {
             board.board[i][j].second = 0;
         }
     }
 
     // Only need to update removed column
     std::sort(board.board[col].begin(), board.board[col].end());
+
+    // Update max_score
+    for (int i = 0; i < board.n; i++) {
+        board.max_score = std::max(board.max_score, board.board[i][board.k - 1].first);
+    }
 }
 
 // Helper
