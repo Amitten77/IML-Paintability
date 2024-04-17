@@ -61,13 +61,13 @@ int main() {
         int best = negaMax(myBoard, true, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), 0);
         //int best = MTDF(myBoard, -1);
         std::cout << "BEST SCORE WITH NEGAMAX: " << best << std::endl;
-        saveBoardsToFile(LOSING, LOSING_FILE);
-        saveBoardsToFile(WINNING, WINNING_FILE);
+        // saveBoardsToFile(LOSING, LOSING_FILE);
+        // saveBoardsToFile(WINNING, WINNING_FILE);
         break;
     }
 
-    saveBoardsToFile(LOSING, LOSING_FILE);
-    saveBoardsToFile(WINNING, WINNING_FILE);
+    // saveBoardsToFile(LOSING, LOSING_FILE);
+    // saveBoardsToFile(WINNING, WINNING_FILE);
     // Stop measuring time and calculate the elapsed duration
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
