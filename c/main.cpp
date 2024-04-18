@@ -11,7 +11,7 @@
 g++ -std=c++20 -O3 -flto -march=native -o main main.cpp src/Board.cpp src/helper.cpp src/graph.cpp src/compare.cpp
 ./main
 
-g++ -std=c++20 -Iinclude -O3 -flto -march=native -o verify verify.cpp src/Board.cpp src/helper.cpp src/graph.cpp src/compare.cpp src/get_moves_pruned.cpp src/board_operation.cpp
+g++ -std=c++20 -Iinclude -O3 -flto -march=native -o verify verify.cpp src/Board.cpp src/helper.cpp src/graph.cpp src/compare.cpp src/get_moves_pruned.cpp
 */
 /**
  * Using CMake:

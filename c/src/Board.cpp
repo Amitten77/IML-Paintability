@@ -19,6 +19,28 @@ Board::Board(int n, int k, int goal): n(n), k(k), goal(goal), max_score(0), num_
     this->board = std::vector<int>(n * k, 0);
 }
 
+Board::Board(int n, int k, int goal, const std::vector<std::vector<std::pair<int, int>>>& boardInput) : n(n), k(k), goal(goal), max_score(0), num_tokens(0) {
+    if (boardInput.empty()) {
+        this->board = std::vector<int>(n * k, 0);
+        this->num_tokens = n*k;
+    } else {
+        this->board = std::vector<int>(n * k, 0);
+        int index = 0;
+        for (size_t i = 0; i < boardInput.size(); i++) {
+            for (size_t j = 0; j < boardInput[0].size(); j++) {
+                this->board[index] = boardInput[i][j].first;
+                if (boardInput[i][j].first) {
+                    this->num_tokens += 1;
+                }
+                index += 1;
+            }
+        }
+        this->max_score = *std::max_element(this->board.begin(), this->board.end());
+        this->n = (int)boardInput.size();
+        this->k = (int)boardInput[0].size();
+    }
+}
+
 bool Board::game_over() const {
     return this->max_score >= this->goal || this->num_tokens == 0;
 }
@@ -26,7 +48,7 @@ bool Board::game_over() const {
 std::ostream& operator<<(std::ostream& os, const Board& b) {
     for (int i = 0; i < b.n; ++i) {
         os << "Column " << i << ": [";
-        for (size_t j = 0; j < b.k; ++j) {
+        for (int j = 0; j < b.k; ++j) {
             int index = i * b.k + j;
             int found = 0;
             if (b.selected.find(index) != b.selected.end()) {
@@ -268,7 +290,7 @@ void Board::make_move_pusher() {
     this->make_pusher_board(subset);
 }
 
-const int Board::get_index(int i, int j) const {
+int Board::get_index(int i, int j) const {
     return i * this->k + j;
 }
 
@@ -414,7 +436,7 @@ void Board::make_remover_board(int action) {
         }
     }
     this->selected.clear();
-    for (size_t i = 0; i < this->n * this->k; i++) {
+    for (int i = 0; i < this->n * this->k; i++) {
         this->max_score = std::max(this->max_score, this->board[i]);
     }
     this->organize_board();
