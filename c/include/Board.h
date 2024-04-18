@@ -41,7 +41,8 @@ public:
     Note: Pusher has only 'reached' a row number after Remover's turn is over and the token remains on the board.
      */
     int n, k, goal, max_score, num_tokens;
-    std::vector<std::vector<std::pair<int, int> > > board;
+    std::vector<int> board;
+    std::unordered_set<int> selected;
 
     /**
      * @brief Empty Constructor.
@@ -51,12 +52,11 @@ public:
     Board();
 
     /// @brief Default Constructor. If BoardInput not defined, creates a n x k board with all tokens at row 0. 
-    Board(int n, int k, int goal = 10,
-          const std::vector<std::vector<std::pair<int, int>>>& boardInput = std::vector<std::vector<std::pair<int, int>>>());
+    Board(int n, int k, int goal = 10);
 
     /// @brief  Deserializes a string into a Board
     /// @param serializedBoard 
-    explicit Board(const std::string& serializedBoard);
+    // explicit Board(const std::string& serializedBoard);
  
     /**
      @return whether a game is over.
@@ -80,6 +80,11 @@ public:
     /// @brief Makes a random move for pusher
     void make_move_pusher();
 
+    const int get_index(int i, int j) const;
+
+    void organize_board();
+
+
 
     /**
      * @return All possible moves for Remover
@@ -99,7 +104,7 @@ public:
     
     void sim_game();
 
-    [[nodiscard]] std::string serialize() const;
+    // [[nodiscard]] std::string serialize() const;
 
 private:
     // /// @brief helper method for is_possible_push();

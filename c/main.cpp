@@ -30,7 +30,6 @@ int main() {
     std::stringstream losing_ss;
     losing_ss << "losing/N" << N << "_K" << K << "_goal" << GOAL << "_board.txt";
     std::string LOSING_FILE = losing_ss.str();
-
     std::stringstream winning_ss;
     winning_ss << "winning/N" << N << "_K" << K << "_goal" << GOAL << "_board.txt";
     std::string WINNING_FILE = winning_ss.str();
@@ -38,13 +37,6 @@ int main() {
     // loadBoardsFromFile(LOSING_FILE, LOSING);
     // loadBoardsFromFile(WINNING_FILE, WINNING);
     initMap(N, K);
-    std::vector<std::vector<std::pair<int, int>>> curr = {
-                {{0, 0}, {0, 0}, {0, 0}}, // Row 0
-                {{0, 0}, {0, 0}, {0, 0}}, // Row 1
-                {{0, 0}, {0, 0}, {0, 0}}, // Row 2
-                {{0, 0}, {0, 0}, {0, 0}},
-                {{0, 0}, {0, 0}, {0, 0}},
-            };
     int index = 0;
     while (true) {
         // val = val % 18;
@@ -54,20 +46,38 @@ int main() {
         //     curr[int(val/3)][val % 3].first -= 1;
         //     val += 1;
         // }
-        Board myBoard(N, K, GOAL, curr);
-        std::cout << "CURRENT BOARD" << std::endl;
-        std::cout << myBoard << std::endl;
+     Board myBoard(N, K, GOAL);
+        // std::cout << "CURRENT BOARD" << std::endl;
+        // std::cout << myBoard << std::endl;
+
+        // std::vector<std::vector<int>> pusher_moves = myBoard.is_possible_push();
+        // myBoard.make_pusher_board(pusher_moves[0]);
+
+        // std::vector<int> remover_moves = myBoard.is_possible_remove();
+        // myBoard.make_remover_board(remover_moves[0]);
+
+        // pusher_moves = myBoard.is_possible_push();
+        // std::cout << pusher_moves.size() << std::endl;
+        // myBoard.make_pusher_board(pusher_moves[0]);
+
+        // remover_moves = myBoard.is_possible_remove();
+        // myBoard.make_remover_board(remover_moves[0]);
+
+        // std::cout << myBoard << std::endl;
+
+
+
        // int best = PVS(myBoard, true, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), 0);
         int best = negaMax(myBoard, true, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), 0);
         //int best = MTDF(myBoard, -1);
         std::cout << "BEST SCORE WITH NEGAMAX: " << best << std::endl;
-        saveBoardsToFile(LOSING, LOSING_FILE);
-        saveBoardsToFile(WINNING, WINNING_FILE);
+        // saveBoardsToFile(LOSING, LOSING_FILE);
+        // saveBoardsToFile(WINNING, WINNING_FILE);
         break;
     }
 
-    saveBoardsToFile(LOSING, LOSING_FILE);
-    saveBoardsToFile(WINNING, WINNING_FILE);
+    // saveBoardsToFile(LOSING, LOSING_FILE);
+    // saveBoardsToFile(WINNING, WINNING_FILE);
     // Stop measuring time and calculate the elapsed duration
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);

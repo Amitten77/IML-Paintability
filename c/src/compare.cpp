@@ -211,8 +211,8 @@ CompResult compareBoards(const Board& board1, const Board& board2, Purpose purpo
     std::vector<int> board1bst;
     std::vector<int> board2bst;
     for (int i = 0; i < n; ++i) {
-        board1bst.push_back(board1.board[i][k - 1].first);
-        board2bst.push_back(board2.board[i][k - 1].first);
+        board1bst.push_back(board1.board[board1.get_index(i, k-1)]);
+        board2bst.push_back(board2.board[board2.get_index(i, k-1)]);
     }
     std::sort(board1bst.begin(), board1bst.end());
     std::sort(board2bst.begin(), board2bst.end());
@@ -236,8 +236,8 @@ CompResult compareBoards(const Board& board1, const Board& board2, Purpose purpo
         for (int j = 0; j < n; ++j) {
             bool less = true, greater = true;
             for (int item = 0; item < board1.k; ++item) {
-                int item1 = board1.board[i][item].first;
-                int item2 = board2.board[j][item].first;
+                int item1 = board1.board[board1.get_index(i, item)];
+                int item2 = board2.board[board2.get_index(i, item)];
                 if (item1 > item2) less = false;
                 if (item1 < item2) greater = false;
                 if (!greater && !less) break;

@@ -9,46 +9,46 @@
 
 const int SCALE_FACTOR = 3;
 
-void saveBoardsToFile(const std::vector<Board>& boards, const std::string& filename) {
-    std::ofstream file(filename);
-    if (!file.is_open()) {
-        std::cerr << "Failed to open file for writing: " << filename << std::endl;
-        return;
-    }
+// void saveBoardsToFile(const std::vector<Board>& boards, const std::string& filename) {
+//     std::ofstream file(filename);
+//     if (!file.is_open()) {
+//         std::cerr << "Failed to open file for writing: " << filename << std::endl;
+//         return;
+//     }
 
-    for (const Board& board : boards) {
-        file << board.serialize();
-        file << "---\n"; // Use a delimiter to separate boards
-    }
+//     for (const Board& board : boards) {
+//         file << board.serialize();
+//         file << "---\n"; // Use a delimiter to separate boards
+//     }
 
-    file.close();
-}
+//     file.close();
+// }
 
-void loadBoardsFromFile(const std::string& filename, std::vector<Board>& boards) {
-    std::ifstream file(filename);
-    if (!file.is_open()) {
-        std::cerr << "Failed to open file for reading: " << filename << std::endl;
-        return;
-    }
+// void loadBoardsFromFile(const std::string& filename, std::vector<Board>& boards) {
+//     std::ifstream file(filename);
+//     if (!file.is_open()) {
+//         std::cerr << "Failed to open file for reading: " << filename << std::endl;
+//         return;
+//     }
 
-    std::string line;
-    std::string serializedBoard;
-    while (std::getline(file, line)) {
-        if (line == "---") { // Board delimiter
-            if (!serializedBoard.empty()) {
-                boards.emplace_back(serializedBoard);
-                serializedBoard.clear();
-            }
-        } else {
-            serializedBoard += line + "\n";
-        }
-    }
+//     std::string line;
+//     std::string serializedBoard;
+//     while (std::getline(file, line)) {
+//         if (line == "---") { // Board delimiter
+//             if (!serializedBoard.empty()) {
+//                 boards.emplace_back(serializedBoard);
+//                 serializedBoard.clear();
+//             }
+//         } else {
+//             serializedBoard += line + "\n";
+//         }
+//     }
     
-    // Don't forget to add the last board if the file doesn't end with "---"
-    if (!serializedBoard.empty()) {
-        boards.emplace_back(serializedBoard);
-    }
-}
+//     // Don't forget to add the last board if the file doesn't end with "---"
+//     if (!serializedBoard.empty()) {
+//         boards.emplace_back(serializedBoard);
+//     }
+// }
 
 std::vector<std::vector<int>> product(const std::vector<std::vector<std::vector<int>>>& lists) {
     std::vector<std::vector<int>> result;
@@ -179,13 +179,14 @@ std::string checkStatus(const Board &board) {
     int maxTokens = 0;
     std::vector<int> rowsFilled;
 
-    for (const auto& row : board.board) {
+    for (int i = 0; i < board.n; i++) {
         int currTokens = 0;
         int tempMax = 0;
-        for (const auto& item : row) {
-            if (item.first != -1) {
+        for (int j = 0; j < board.k; j++) {
+            const int index = board.get_index(i, j);
+            if (board.board[index] != -1) {
                 currTokens++;
-                tempMax = std::max(tempMax, item.first);
+                tempMax = std::max(tempMax, board.board[index]);
             }
         }
         maxTokens = std::max(maxTokens, currTokens);
