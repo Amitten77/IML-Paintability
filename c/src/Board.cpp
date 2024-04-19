@@ -12,10 +12,13 @@ size_t PREV_LOSING = 0;
 size_t PREV_WINNING = 0;
 std::unordered_map<int, std::vector<int>> subset_graph;
 std::map<std::vector<int>, int> num_graph;
+std::unordered_map<std::string, int> stats;
+int freq_total;
+int freq_count;
 
 Board::Board() = default;
 
-Board::Board(int n, int k, int goal): n(n), k(k), goal(goal), max_score(0), num_tokens(n * k) {
+Board::Board(int n, int k): n(n), k(k), goal(10), max_score(0), num_tokens(n * k) {
     this->board = std::vector<int>(n * k, 0);
 }
 
@@ -29,12 +32,13 @@ Board::Board(int n, int k, int goal, const std::vector<std::vector<std::pair<int
         for (size_t i = 0; i < boardInput.size(); i++) {
             for (size_t j = 0; j < boardInput[0].size(); j++) {
                 this->board[index] = boardInput[i][j].first;
-                if (boardInput[i][j].first) {
+                if (boardInput[i][j].first != -1) {
                     this->num_tokens += 1;
                 }
                 index += 1;
             }
         }
+        this->organize_board();
         this->max_score = *std::max_element(this->board.begin(), this->board.end());
         this->n = (int)boardInput.size();
         this->k = (int)boardInput[0].size();
@@ -388,7 +392,7 @@ std::vector<int> Board::is_possible_remove() {
             }
         }   
     }
-    std::set<int> not_include;
+    std::unordered_set<int> not_include;
     if (poss.size() > 1) {
         std::vector<std::unique_ptr<Board>> temp_boards;
         for (auto item : poss) {
@@ -398,18 +402,20 @@ std::vector<int> Board::is_possible_remove() {
         }
         for (size_t i = 0; i < poss.size(); ++i) {
             for (size_t j = i + 1; j < poss.size(); ++j) {
-                switch (compareBoards(*temp_boards[i], *temp_boards[j])) {
-                    case CompResult::GREATER:
-                        not_include.insert(poss[i]);
-                        break;
-                    case CompResult::EQUAL:
-                        not_include.insert(poss[i]);
-                        break;
-                    case CompResult::LESS:
-                        not_include.insert(poss[j]);
-                        break;
-                    default:
-                        break;
+                if (not_include.find(poss[i]) == not_include.end() && not_include.find(poss[j]) == not_include.end()) {
+                    switch (compareBoards(*temp_boards[i], *temp_boards[j])) {
+                        case CompResult::GREATER:
+                            not_include.insert(poss[i]);
+                            break;
+                        case CompResult::EQUAL:
+                            not_include.insert(poss[i]);
+                            break;
+                        case CompResult::LESS:
+                            not_include.insert(poss[j]);
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
         }

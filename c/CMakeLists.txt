@@ -41,13 +41,6 @@ set_target_properties(main PROPERTIES
 )
 target_include_directories(main PRIVATE "${CMAKE_SOURCE_DIR}/include")
 
-# Verify target
-add_executable(verify verify.cpp ${SOURCES})
-set_target_properties(verify PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
-        DEBUG_POSTFIX -d
-)
-target_include_directories(verify PRIVATE "${CMAKE_SOURCE_DIR}/include")
 
 # Testcases
 if (BUILD_TESTS)

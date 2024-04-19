@@ -51,10 +51,10 @@ public:
      */
     Board();
 
-    Board(int n, int k, int goal = 10);
+    Board(int n, int k);
 
     /// @brief Default Constructor. If BoardInput not defined, creates a n x k board with all tokens at row 0. 
-    Board(int n, int k, int goal = 10, const std::vector<std::vector<std::pair<int, int>>>& boardInput = std::vector<std::vector<std::pair<int, int>>>());
+    Board(int n, int k, int goal, const std::vector<std::vector<std::pair<int, int>>>& boardInput = std::vector<std::vector<std::pair<int, int>>>());
 
     /// @brief  Deserializes a string into a Board
     /// @param serializedBoard 

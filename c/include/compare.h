@@ -41,16 +41,6 @@ inline std::string toString(CompResult result) {
 int checkHallsCondition(const std::vector<std::unordered_set<int>>& relation, int n);
 
 /**
- * @param col1 First column, using the standard math notation, sorted from largest to smallest.
- * @param col2 Second column, using the standard math notation, sorted from largest to smallest.
- * @return Compare result.
- */
-CompResult compareSortedCols(const std::vector<int>& col1, const std::vector<int>& col2);
-
-/// @brief Same function, but different param types.
-CompResult compareBoardCols(const std::vector<std::pair<int, int>>& col1, const std::vector<std::pair<int, int>>& col2);
-
-/**
  * @brief Comparing two game states.
  * @param board1 First game state.
  * @param board2 Second game state.
