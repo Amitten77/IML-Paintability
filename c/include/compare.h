@@ -59,4 +59,10 @@ CompResult compareBoards(const Board& board1, const Board& board2, Purpose purpo
  */
 bool boardIsWinning(const Board& board, const std::vector<Board>& winningBoards);
 
+bool bfs(const std::vector<std::unordered_set<int>>& relation, std::vector<int>& distance, std::vector<int>& pairU, std::vector<int>& pairV, int n);
+
+bool dfs(int u, const std::vector<std::unordered_set<int>>& relation, std::vector<int>& distance, std::vector<int>& pairU, std::vector<int>& pairV);
+
+bool checkHopcroft(const std::vector<std::unordered_set<int>>& relation, int n);
+
 #endif // COMPARE_H

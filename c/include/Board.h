@@ -74,7 +74,7 @@ public:
     int pusher_heuristic(const std::vector<int>& subset);
 
     /// @return Finds all possible moves for Pusher, filtering out duplicate moves
-    std::vector<std::vector<int>> is_possible_push();
+    const std::vector<std::vector<int>> is_possible_push();
 
     /// @brief Makes a move for pusher given a subset of tokens to move
     void make_pusher_board(std::vector<int> subset);
@@ -94,7 +94,7 @@ public:
      * 
      * Time Complexity: 
     */
-    std::vector<int> is_possible_remove();
+    const std::vector<int> is_possible_remove();
 
     /// @brief Makes a move for pusher given a column to remove
     void make_remover_board(int action);
@@ -134,5 +134,7 @@ extern size_t PREV_WINNING;
 /// @brief Maps an integer to a subset of tokens (2^(nk) total possibilities). Initalized in initMap() in helper.h
 extern std::unordered_map<int, std::vector<int>> subset_graph;
 extern std::map<std::vector<int>, int> num_graph;
+extern int board_total;
+extern int pruned_total;
 
 #endif // BOARD_H

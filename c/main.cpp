@@ -8,10 +8,12 @@
 
 /*
 g++ -std=c++20 -O3 -fno-omit-frame-pointer -o main main.cpp src/Board.cpp src/helper.cpp src/compare.cpp
-g++ -std=c++20 -O3 -o main main.cpp src/Board.cpp src/helper.cpp src/compare.cpp
+
+
+g++ -std=c++20 -funroll-loops -O3 -o main main.cpp src/Board.cpp src/helper.cpp src/compare.cpp
 ./main
 
-g++ -std=c++20 -Iinclude -O3 -flto -march=native -o verify verify.cpp src/Board.cpp src/helper.cpp src/graph.cpp src/compare.cpp src/get_moves_pruned.cpp
+
 */
 /**
  * Using CMake:
@@ -24,9 +26,9 @@ g++ -std=c++20 -Iinclude -O3 -flto -march=native -o verify verify.cpp src/Board.
 int main() {
     // Start measuring time
     auto start = std::chrono::high_resolution_clock::now();
-    int N = 7;
+    int N = 6;
     int K = 3;
-    int GOAL = 9;
+    int GOAL = 8;
     // std::stringstream losing_ss;
     // losing_ss << "losing/N" << N << "_K" << K << "_goal" << GOAL << "_board.txt";
     // std::string LOSING_FILE = losing_ss.str();
@@ -37,6 +39,15 @@ int main() {
     // loadBoardsFromFile(LOSING_FILE, LOSING);
     // loadBoardsFromFile(WINNING_FILE, WINNING);
     initMap(N, K);
+    // int val = 0;
+    // std::vector<std::vector<std::pair<int, int>>> curr = {
+    //             {{1, 0}, {1, 0}, {1, 0}}, // Row 0
+    //             {{1, 0}, {1, 0}, {1, 0}}, // Row 1
+    //             {{1, 0}, {1, 0}, {1, 0}}, // Row 2
+    //             {{1, 0}, {1, 0}, {1, 0}},
+    //            {{1, 0}, {1, 0}, {1, 0}},
+    //            {{1, 0}, {1, 0}, {1, 0}},
+    //         };
     while (true) {
         // val = val % 18;
         // if (val == 0 && curr[int(val/6)][val % 3].first == 0) {
@@ -45,22 +56,14 @@ int main() {
         //     curr[int(val/3)][val % 3].first -= 1;
         //     val += 1;
         // }
-    // std::vector<std::vector<std::pair<int, int>>> curr = {
-    //             {{-1, 0}, {-1, 0}, {-1, 0}}, // Row 0
-    //             {{0, 0}, {1, 0}, {2, 0}}, // Row 1
-    //             {{0, 0}, {1, 0}, {2, 0}}, // Row 2
-    //             {{0, 0}, {1, 0}, {2, 0}},
-    //            {{0, 0}, {1, 0}, {2, 0}},
-    //            {{0, 0}, {1, 0}, {2, 0}},
-    //         };
-        Board myBoard(N, K, GOAL);
+         Board myBoard(N, K, GOAL);
 
 
 
        // int best = PVS(myBoard, true, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), 0);
         int best = negaMax(myBoard, true, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), 0);
+        std::cout << best << std::endl;
         //int best = MTDF(myBoard, -1);
-        std::cout << "BEST SCORE WITH NEGAMAX: " << best << std::endl;
         // saveBoardsToFile(LOSING, LOSING_FILE);
         // saveBoardsToFile(WINNING, WINNING_FILE);
         // for (const auto& pair : stats) {

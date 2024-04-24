@@ -13,8 +13,8 @@ size_t PREV_WINNING = 0;
 std::unordered_map<int, std::vector<int>> subset_graph;
 std::map<std::vector<int>, int> num_graph;
 std::unordered_map<std::string, int> stats;
-int freq_total;
-int freq_count;
+int board_total;
+int pruned_total;
 
 Board::Board() = default;
 
@@ -95,16 +95,27 @@ std::vector<std::vector<int>> Board::recur_get_poss(
 
         int strict_req = -1;
         auto matchIt = spec_match.find(depth);
-        if (matchIt != match.end()) {
+        if (matchIt != spec_match.end()) {
             for (auto item : matchIt->second) {
                 strict_req = prev_cols[item];
             }
         }
         int req = -1;
         matchIt = match.find(depth);
+        int initIndex = this->get_index(depth, 0);
+        int curr_tokens = 0;
+        for (int i = initIndex; i < initIndex + this->k; i++) {
+            if (this->board[i] != -1) {
+                curr_tokens += 1;
+            }
+        }
         if (matchIt != match.end()) {
             for (auto item : matchIt->second) {
                 req = prev_cols[item];
+                if (req == curr_tokens) {
+                    strict_req = curr_tokens;
+                    break;
+                }
             }
         }
 
@@ -202,7 +213,7 @@ int Board::pusher_heuristic(const std::vector<int>& subset) {
     return subset.size();
 }
 
-std::vector<std::vector<int>> Board::is_possible_push() {
+const std::vector<std::vector<int>> Board::is_possible_push() {
     std::vector<int> diff_cols;
     for (int i = 0; i < this->n; ++i) {
         for (int j = 0; j < this->k; j++) {
@@ -363,7 +374,7 @@ double Board::remover_heuristic(int col) {
     return score;
 }
 
-std::vector<int> Board::is_possible_remove() {
+const std::vector<int> Board::is_possible_remove() {
     std::vector<int> poss;
     std::set<std::vector<std::pair<int, int>>> visited;
     for (int i = 0; i < this->n; i++) {
