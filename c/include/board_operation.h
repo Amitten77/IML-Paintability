@@ -15,6 +15,8 @@ size_t integerPow(size_t base, size_t exponent);
  */
 size_t countMovableTokens(const std::vector<std::pair<int, int>>& col);
 
+bool operator==(const Board& board1, const Board& board2);
+
 /**
  * @brief Checks the winner of the current board.
  * @param board Target board to check.

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <queue>
 #include "Board.h"
 #include "board_operation.h"
@@ -88,7 +89,7 @@ void verifyPusherWin(const Board& board, const std::vector<Board>& winningStates
 // Not implemented
 void verifyRemoverWin(Board board, int goal);
 
-void verifyWinningStates(const std::vector<Board>& winningStates) {
+size_t verifyWinningStates(const std::vector<Board>& winningStates) {
     // Sort the winning states by their number of tokens
     std::vector<Board> winningStates_ = winningStates;
     std::sort(winningStates_.begin(), winningStates_.end(), [](const Board& board1, const Board& board2) {
@@ -144,20 +145,22 @@ void verifyWinningStates(const std::vector<Board>& winningStates) {
     } else {
         printf("All states confirmed.\n");
     }
+
+    return countUnverified;
 }
 
-void verifyLosingStates(const std::vector<Board>& losingStates) {
-    // Sort the winning states by their number of tokens
+size_t verifyLosingStates(const std::vector<Board>& losingStates) {
+    // Sort the losing states by their number of tokens
     std::vector<Board> losingStates_ = losingStates;
     std::sort(losingStates_.begin(), losingStates_.end(), [](const Board& board1, const Board& board2) {
-        return board1.num_tokens < board2.num_tokens;
+        return board1.num_tokens > board2.num_tokens;
     });
 
     size_t total = losingStates_.size();
     size_t countUnverified = 0;
     for (size_t i = 0; i < total; i++) {
         // Log progress
-        if ((i + 1) % 10 == 0 || i + 1 == total) {
+        if ((i + 1) % 50 == 0 || i + 1 == total) {
             printf("[Verify Losing] %zu / %zu\n", i + 1, total);
         }
 
@@ -177,16 +180,16 @@ void verifyLosingStates(const std::vector<Board>& losingStates) {
                     std::vector<int> removerMoves;
                     getAllRemoverMovesPruned(board1, removerMoves);
 
-                    // If all moves lead to Pusher victory or a confirmed winning state, then this is a winning state
+                    // If all moves lead to Pusher losing or another losing state, then this is a losing state
                     return std::any_of(
                             removerMoves.begin(), removerMoves.end(),
-                            [&losingStates_, i, board1](const int removerMove) {
+                            [&losingStates_, board1](const int removerMove) {
                                 Board board2 = board1;
                                 applyRemoverMove(board2, removerMove);
 
                                 // Check if state is winning or this board is a confirmed "winning state"
                                 if (checkStatus(board2) == "LOSING") return true;
-                                return boardIsLosing(board2, losingStates_.begin(), losingStates_.begin() + i);
+                                return boardIsLosing(board2, losingStates_.begin(), losingStates_.end());
                             });
                 });
 
@@ -202,12 +205,14 @@ void verifyLosingStates(const std::vector<Board>& losingStates) {
     } else {
         printf("All states confirmed.\n");
     }
+
+    return countUnverified;
 }
 
 int main() {
-    int N = 4;
+    int N = 5;
     int K = 3;
-    int GOAL = 4;
+    int GOAL = 7;
 
     // Load the winning states
     std::stringstream winning_ss, losing_ss;
@@ -220,18 +225,39 @@ int main() {
     loadBoardsFromFile(WINNING_FILE, winningBoard);
     loadBoardsFromFile(LOSING_FILE, losingBoard);
 
-    // Verify
-    Board board(N, K, GOAL, {
-            {{0, 0}, {0, 0}, {0, 0}},
-            {{0, 0}, {0, 0}, {0, 0}},
-            {{0, 0}, {0, 0}, {0, 0}},
-            {{0, 0}, {0, 0}, {0, 0}},
-//            {{0, 0}, {0, 0}, {0, 0}},
-//            {{3, 0}, {3, 0}, {3, 0}}
-    });
+    // Check if board is winning or losing
+    Board board(N, K, GOAL,
+                std::vector<std::vector<std::pair<int, int>>>(N, std::vector<std::pair<int, int>>(K, {0, 0})));
+    bool pusherWillWin = std::find(winningBoard.begin(), winningBoard.end(), board) != winningBoard.end();
+    bool pusherWillLose = std::find(losingBoard.begin(), losingBoard.end(), board) != losingBoard.end();
 
-//    verifyPusherWin(board, winningBoard);
-    verifyWinningStates(winningBoard);
-    printf("\n");
-    verifyLosingStates(losingBoard);
+    if (pusherWillWin && pusherWillLose) {
+        printf("\nPrediction not available (starting state is in both winning and losing states).\n");
+    } else if (!pusherWillWin && !pusherWillLose) {
+        printf("\nPrediction not available (starting state is in neither winning nor losing states).\n");
+    } else {
+        if (pusherWillWin) {
+            size_t unverifiedWinningStates = verifyWinningStates(winningBoard);
+            printf("\n");
+
+            printf("Summary:\nPusher predicted to win");
+            if (unverifiedWinningStates) {
+                printf(" (%zu states unverified).\n", unverifiedWinningStates);
+            } else {
+                printf(" (verified).\n");
+            }
+        } else {
+            size_t unverifiedLosingStates = verifyLosingStates(losingBoard);
+            printf("\n");
+
+            printf("Summary:\nPusher predicted to lose");
+            if (unverifiedLosingStates) {
+                printf(" (%zu states unverified).\n", unverifiedLosingStates);
+            } else {
+                printf(" (verified).\n");
+            }
+        }
+    }
+
+    return 0;
 }

@@ -17,6 +17,10 @@ size_t countMovableTokens(const std::vector<std::pair<int, int>>& col) {
     return i;
 }
 
+bool operator==(const Board& board1, const Board& board2) {
+    return board1.serialize() == board2.serialize();
+}
+
 Player checkWinner(Board& board) {
     if (board.num_tokens == 0) return Player::REMOVER;
     else if (board.max_score >= board.goal) return Player::PUSHER;
