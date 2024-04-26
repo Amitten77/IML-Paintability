@@ -1,9 +1,14 @@
 #include <algorithm>
+#include <mutex>
 #include <queue>
+#include <future>
+#include <vector>
 #include "Board.h"
 #include "board_operation.h"
 #include "compare.h"
 #include "helper.h"
+
+#define NUM_THREADS 24
 
 // Verify the correctness of Pusher strategy
 // 1. We provide the starting state and a list of "winning states" to the system.
@@ -149,31 +154,29 @@ size_t verifyWinningStates(const std::vector<Board>& winningStates) {
     return countUnverified;
 }
 
-size_t verifyLosingStates(const std::vector<Board>& losingStates) {
-    // Sort the losing states by their number of tokens
-    std::vector<Board> losingStates_ = losingStates;
-    std::sort(losingStates_.begin(), losingStates_.end(), [](const Board& board1, const Board& board2) {
-        return board1.num_tokens > board2.num_tokens;
-    });
-
-    size_t total = losingStates_.size();
+size_t verifyLosingStatesThread(size_t index, size_t j, const std::vector<Board>& losingStates, std::mutex& mutex, size_t& numProcessed) {
+    size_t total = losingStates.size();
     size_t countUnverified = 0;
-    for (size_t i = 0; i < total; i++) {
+    for (size_t i = index; i < total; i += j) {
         // Log progress
-        if ((i + 1) % 50 == 0 || i + 1 == total) {
-            printf("[Verify Losing] %zu / %zu\n", i + 1, total);
+        {
+            std::lock_guard<std::mutex> guard(mutex);
+            numProcessed++;
+            if (numProcessed % 50 == 0 || numProcessed == total) {
+                printf("[Verify Losing] %zu / %zu\n", numProcessed, total);
+            }
         }
 
-        const Board& board = losingStates_[i];
+        const Board& board = losingStates[i];
 
         // Get all pusher moves
         std::vector<PusherMove> pusherMoves;
         getAllPusherMovesPruned(board, pusherMoves);
         bool canGuaranteeLosing = std::all_of(
                 pusherMoves.begin(), pusherMoves.end(),
-                [&losingStates_, i](const PusherMove& pusherMove) {
+                [&losingStates, i](const PusherMove& pusherMove) {
                     // Apply pusher move
-                    Board board1 = losingStates_[i];
+                    Board board1 = losingStates[i];
                     applyPusherMove(board1, pusherMove);
 
                     // Get all remover moves
@@ -183,13 +186,13 @@ size_t verifyLosingStates(const std::vector<Board>& losingStates) {
                     // If all moves lead to Pusher losing or another losing state, then this is a losing state
                     return std::any_of(
                             removerMoves.begin(), removerMoves.end(),
-                            [&losingStates_, board1](const int removerMove) {
+                            [&losingStates, board1](const int removerMove) {
                                 Board board2 = board1;
                                 applyRemoverMove(board2, removerMove);
 
                                 // Check if state is winning or this board is a confirmed "winning state"
                                 if (checkStatus(board2) == "LOSING") return true;
-                                return boardIsLosing(board2, losingStates_.begin(), losingStates_.end());
+                                return boardIsLosing(board2, losingStates.begin(), losingStates.end());
                             });
                 });
 
@@ -199,6 +202,61 @@ size_t verifyLosingStates(const std::vector<Board>& losingStates) {
         }
     }
 
+    printf("Thread %zu done (unconfirmed: %zu).\n", index, countUnverified);
+
+    return countUnverified;
+}
+
+std::vector<std::pair<size_t, size_t>> breakIntoIntervals(size_t total, size_t j) {
+    // Find the quotient and remainder
+    size_t q = total / j;
+    size_t r = total - q * j;
+
+    // Break into intervals
+    size_t current = 0;
+    std::vector<std::pair<size_t, size_t>> intervals;
+    intervals.reserve(j);
+    for (size_t i = 0; i < j; i++) {
+        size_t count = i < r ? (q + 1) : q;
+        intervals.emplace_back(current, current + count);
+        current += count;
+    }
+
+    return intervals;
+}
+
+size_t verifyLosingStates(const std::vector<Board>& losingStates) {
+    // Sort the losing states by their number of tokens
+    std::vector<Board> losingStates_ = losingStates;
+    std::sort(losingStates_.begin(), losingStates_.end(), [](const Board& board1, const Board& board2) {
+        return board1.num_tokens > board2.num_tokens;
+    });
+
+    // Define variables
+    size_t total = losingStates_.size();
+    size_t numProcessed = 0;
+    std::mutex mutex;
+    std::vector<std::future<size_t>> futures;
+    size_t j = NUM_THREADS;  // Number of threads
+    futures.reserve(j);
+
+    // Create threads
+//    std::vector<std::pair<size_t, size_t>> intervals = breakIntoIntervals(total, j);
+    for (size_t index = 0; index < j; index++) {
+//        auto [start, end] = intervals[index];
+        futures.push_back(std::async(
+                std::launch::async,
+                verifyLosingStatesThread,
+                index, j, std::ref(losingStates_), std::ref(mutex), std::ref(numProcessed)));
+    }
+
+    // Join threads
+    size_t countUnverified = 0;
+    for (auto& fut : futures) {
+        countUnverified += fut.get();
+    }
+
+    // Print results
     printf("Verified all losing states.\n");
     if (countUnverified) {
         printf("%zu (out of %zu) states not confirmed.\n", countUnverified, total);
@@ -210,9 +268,9 @@ size_t verifyLosingStates(const std::vector<Board>& losingStates) {
 }
 
 int main() {
-    int N = 5;
+    int N = 6;
     int K = 3;
-    int GOAL = 7;
+    int GOAL = 8;
 
     // Load the winning states
     std::stringstream winning_ss, losing_ss;
@@ -242,9 +300,9 @@ int main() {
 
             printf("Summary:\nPusher predicted to win");
             if (unverifiedWinningStates) {
-                printf(" (%zu states unverified).\n", unverifiedWinningStates);
+                printf(" (%zu states unconfirmed).\n", unverifiedWinningStates);
             } else {
-                printf(" (verified).\n");
+                printf(" (confirmed).\n");
             }
         } else {
             size_t unverifiedLosingStates = verifyLosingStates(losingBoard);
@@ -252,9 +310,9 @@ int main() {
 
             printf("Summary:\nPusher predicted to lose");
             if (unverifiedLosingStates) {
-                printf(" (%zu states unverified).\n", unverifiedLosingStates);
+                printf(" (%zu states unconfirmed).\n", unverifiedLosingStates);
             } else {
-                printf(" (verified).\n");
+                printf(" (confirmed).\n");
             }
         }
     }
