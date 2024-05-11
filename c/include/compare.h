@@ -1,8 +1,9 @@
 #ifndef COMPARE_H
 #define COMPARE_H
 
-#include <vector>
+#include <algorithm>
 #include <unordered_set>
+#include <vector>
 #include "Board.h"
 
 /**
@@ -71,7 +72,7 @@ CompResult compareBoards(const Board& board1, const Board& board2, Purpose purpo
  */
 template <typename T>
 bool boardIsWinning(const Board& board, T winningBoardsBegin, T winningBoardsEnd) {
-    return std::ranges::any_of(winningBoardsBegin, winningBoardsEnd, [&board](const Board& other) {
+    return std::any_of(winningBoardsBegin, winningBoardsEnd, [&board](const Board& other) {
         return compareBoards(board, other, Purpose::GREATER) == CompResult::GREATER;
     });
 }
@@ -86,7 +87,7 @@ bool boardIsWinning(const Board& board, T winningBoardsBegin, T winningBoardsEnd
  */
 template <typename T>
 bool boardIsLosing(const Board& board, T losingBoardsBegin, T losingBoardsEnd) {
-    return std::ranges::any_of(losingBoardsBegin, losingBoardsEnd, [&board](const Board& other) {
+    return std::any_of(losingBoardsBegin, losingBoardsEnd, [&board](const Board& other) {
         return compareBoards(board, other, Purpose::LESS) == CompResult::LESS;
     });
 }

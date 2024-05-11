@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <functional>
-#include <ranges>
 #include "../include/compare.h"
 #include "../include/graph.h"
 

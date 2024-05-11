@@ -9,6 +9,7 @@
 #include "helper.h"
 
 #define NUM_THREADS 24
+//#define USE_PRUNED_MOVES_FOR_VERIFICATION
 
 // Verify the correctness of Pusher strategy
 // 1. We provide the starting state and a list of "winning states" to the system.
@@ -113,7 +114,11 @@ size_t verifyWinningStates(const std::vector<Board>& winningStates) {
 
         // Get all pusher moves
         std::vector<PusherMove> pusherMoves;
+#ifdef USE_PRUNED_MOVES_FOR_VERIFICATION
         getAllPusherMovesPruned(board, pusherMoves);
+#else
+        pusherMoves = getAllPusherMoves(board);
+#endif
         bool canGuaranteeWinning = std::any_of(
                 pusherMoves.begin(), pusherMoves.end(),
                 [&winningStates_, i](const PusherMove& pusherMove) {
@@ -171,7 +176,11 @@ size_t verifyLosingStatesThread(size_t index, size_t j, const std::vector<Board>
 
         // Get all pusher moves
         std::vector<PusherMove> pusherMoves;
+#ifdef USE_PRUNED_MOVES_FOR_VERIFICATION
         getAllPusherMovesPruned(board, pusherMoves);
+#else
+        pusherMoves = getAllPusherMoves(board);
+#endif
         bool canGuaranteeLosing = std::all_of(
                 pusherMoves.begin(), pusherMoves.end(),
                 [&losingStates, i](const PusherMove& pusherMove) {
@@ -207,24 +216,6 @@ size_t verifyLosingStatesThread(size_t index, size_t j, const std::vector<Board>
     return countUnverified;
 }
 
-std::vector<std::pair<size_t, size_t>> breakIntoIntervals(size_t total, size_t j) {
-    // Find the quotient and remainder
-    size_t q = total / j;
-    size_t r = total - q * j;
-
-    // Break into intervals
-    size_t current = 0;
-    std::vector<std::pair<size_t, size_t>> intervals;
-    intervals.reserve(j);
-    for (size_t i = 0; i < j; i++) {
-        size_t count = i < r ? (q + 1) : q;
-        intervals.emplace_back(current, current + count);
-        current += count;
-    }
-
-    return intervals;
-}
-
 size_t verifyLosingStates(const std::vector<Board>& losingStates) {
     // Sort the losing states by their number of tokens
     std::vector<Board> losingStates_ = losingStates;
@@ -241,9 +232,7 @@ size_t verifyLosingStates(const std::vector<Board>& losingStates) {
     futures.reserve(j);
 
     // Create threads
-//    std::vector<std::pair<size_t, size_t>> intervals = breakIntoIntervals(total, j);
     for (size_t index = 0; index < j; index++) {
-//        auto [start, end] = intervals[index];
         futures.push_back(std::async(
                 std::launch::async,
                 verifyLosingStatesThread,
@@ -268,14 +257,15 @@ size_t verifyLosingStates(const std::vector<Board>& losingStates) {
 }
 
 int main() {
-    int N = 6;
+    int N = 5;
     int K = 3;
-    int GOAL = 8;
+    int GOAL = 6;
+    std::string suffix = "board"; // "2024-05-02_09-48";
 
     // Load the winning states
     std::stringstream winning_ss, losing_ss;
-    winning_ss << "winning/N" << N << "_K" << K << "_goal" << GOAL << "_board.txt";
-    losing_ss << "losing/N" << N << "_K" << K << "_goal" << GOAL << "_board.txt";
+    winning_ss << "winning/N" << N << "_K" << K << "_goal" << GOAL << "_" << suffix << ".txt";
+    losing_ss << "losing/N" << N << "_K" << K << "_goal" << GOAL << "_" << suffix << ".txt";
     std::string WINNING_FILE = winning_ss.str();
     std::string LOSING_FILE = losing_ss.str();
 
@@ -293,6 +283,13 @@ int main() {
         printf("\nPrediction not available (starting state is in both winning and losing states).\n");
     } else if (!pusherWillWin && !pusherWillLose) {
         printf("\nPrediction not available (starting state is in neither winning nor losing states).\n");
+        size_t unverifiedWinningStates = verifyWinningStates(winningBoard);
+        printf("\n");
+        size_t unverifiedLosingStates = verifyLosingStates(losingBoard);
+        printf("\n");
+        printf("Summary:\nPrediction not available.\n");
+        printf("Winning states: %zu unconfirmed.\n", unverifiedWinningStates);
+        printf("Losing states: %zu unconfirmed.\n", unverifiedLosingStates);
     } else {
         if (pusherWillWin) {
             size_t unverifiedWinningStates = verifyWinningStates(winningBoard);

@@ -1,9 +1,11 @@
 #include <algorithm>
+#include <chrono>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <numeric>
 #include <queue>
+#include <sstream>
 #include <stack>
 #include "../include/Board.h"
 #include "../include/compare.h"
@@ -348,6 +350,25 @@ int negaMax(Board& board, bool isPusher, int alpha, int beta, int depth) {
                 prune_losing();
                 std::cout << "Losing Length After Pruning: " << LOSING.size() << std::endl;
                 LOSING_BOUND = std::max(LOSING_BOUND, int((LOSING.size() * SCALE_FACTOR)));
+                // Output current winning and losing boards
+
+                if (LOSING.size() >= 1000) {
+                    prune_winning();
+
+                    std::stringstream currentTime;
+                    auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+                    std::tm buf;
+                    localtime_s(&buf, &now);
+                    currentTime << std::put_time(&buf, "%Y-%m-%d_%H-%M");
+                    std::string FILE_NAME = "N" + std::to_string(board.n)
+                                            + "_K" + std::to_string(board.k)
+                                            + "_goal" + std::to_string(board.goal)
+                                            + "_" + currentTime.str() + ".txt";
+                    std::string WINNING_FILE = "winning/" + FILE_NAME;
+                    std::string LOSING_FILE = "losing/" + FILE_NAME;
+                    saveBoardsToFile(WINNING, WINNING_FILE);
+                    saveBoardsToFile(LOSING, LOSING_FILE);
+                }
             }
         } else {
             WINNING.push_back(board);
