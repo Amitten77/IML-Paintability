@@ -13,6 +13,7 @@
 #include "../include/board_operation.h"
 
 //#define USE_NEW_NEGAMAX
+//#define RECORD_PARTIAL_RESULT
 
 const int SCALE_FACTOR = 3;
 
@@ -112,6 +113,13 @@ void initMap(int N, int K) {
         num_graph[s] = index;
         ++index;
     }
+}
+
+std::pair<std::string, std::string> getFileNames(int n, int k, int goal) {
+    std::stringstream ssWinning, ssLosing;
+    ssWinning << "winning/N" << n << "_K" << k << "_goal" << goal << "_board.txt";
+    ssLosing << "losing/N" << n << "_K" << k << "_goal" << goal << "_board.txt";
+    return { ssWinning.str(), ssLosing.str() };
 }
 
 void prune_losing() {
@@ -352,6 +360,7 @@ int negaMax(Board& board, bool isPusher, int alpha, int beta, int depth) {
                 LOSING_BOUND = std::max(LOSING_BOUND, int((LOSING.size() * SCALE_FACTOR)));
                 // Output current winning and losing boards
 
+#ifdef RECORD_PARTIAL_RESULT
                 if (LOSING.size() >= 1000) {
                     prune_winning();
 
@@ -369,6 +378,7 @@ int negaMax(Board& board, bool isPusher, int alpha, int beta, int depth) {
                     saveBoardsToFile(WINNING, WINNING_FILE);
                     saveBoardsToFile(LOSING, LOSING_FILE);
                 }
+#endif
             }
         } else {
             WINNING.push_back(board);

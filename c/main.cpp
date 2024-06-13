@@ -2,7 +2,9 @@
 
 #include <limits>
 #include <chrono> // Include for high-resolution timing
+#include <filesystem>
 #include "include/Board.h"
+#include "include/board_operation.h"
 #include "include/helper.h"
 #include "include/compare.h"
 #include "include/graph.h"
@@ -23,44 +25,52 @@ g++ -std=c++20 -O3 -flto -march=native -o main main.cpp src/Board.cpp src/helper
 int main() {
     // Start measuring time
     auto start = std::chrono::high_resolution_clock::now();
-    int N = 5;
-    int K = 3;
-    int GOAL = 6;
-    std::string suffix_to_load_from;  // "2024-05-07_07-17";
 
-    std::stringstream losing_ss, losing_ss_load;
-    losing_ss << "losing/N" << N << "_K" << K << "_goal" << GOAL << "_board.txt";
-    losing_ss_load << "losing/N" << N << "_K" << K << "_goal" << GOAL << "_" << suffix_to_load_from << ".txt";
-    std::string LOSING_FILE = losing_ss.str();
-    std::string LOSING_FILE_LOAD = losing_ss_load.str();
+    // Parameters
+    std::vector<std::pair<int, int>> k_and_n = { {1, 2}, {3, 5} };
+    int GOAL = 7;  // Paintability = GOAL + 1
+    std::string WINNING_FILE_LOAD;  // "winning/2024-05-07_07-17.txt";
+    std::string LOSING_FILE_LOAD;  // "losing/2024-05-07_07-17.txt";
 
-    std::stringstream winning_ss, winning_ss_load;
-    winning_ss << "winning/N" << N << "_K" << K << "_goal" << GOAL << "_board.txt";
-    winning_ss_load << "winning/N" << N << "_K" << K << "_goal" << GOAL << "_" << suffix_to_load_from << ".txt";
-    std::string WINNING_FILE = winning_ss.str();
-    std::string WINNING_FILE_LOAD = winning_ss_load.str();
+    // Initialize board
+    int N, K;
+    std::vector<std::vector<std::pair<int, int>>> startingBoard;
+    createBoard(startingBoard, N, K, k_and_n);
+    initMap(N, K);
 
-    if (!suffix_to_load_from.empty()) {
-        loadBoardsFromFile(LOSING_FILE_LOAD, LOSING);
+    // Files
+    auto [WINNING_FILE, LOSING_FILE] = getFileNames(N, K, GOAL);
+    if (WINNING_FILE_LOAD.empty()) {
+        WINNING_FILE_LOAD = WINNING_FILE;
+    }
+    if (LOSING_FILE_LOAD.empty()) {
+        LOSING_FILE_LOAD = LOSING_FILE;
+    }
+    if (std::filesystem::exists(WINNING_FILE_LOAD)) {
         loadBoardsFromFile(WINNING_FILE_LOAD, WINNING);
     }
-    initMap(N, K);
-    std::vector<std::vector<std::pair<int, int>>> curr(N, {
-        {0, 0}, {0, 0}, {0, 0}
-    });
+    if (std::filesystem::exists(LOSING_FILE_LOAD)) {
+        loadBoardsFromFile(LOSING_FILE_LOAD, LOSING);
+    }
 
-    Board myBoard(N, K, GOAL, curr);
-    std::cout << "CURRENT BOARD" << std::endl;
-    std::cout << myBoard << std::endl;
-    int best = negaMax(myBoard, true, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), 0);
+    // Use negamax to find answer
+    Board board(N, K, GOAL, startingBoard);
+    printf("N: %d, K: %d\n", N, K);
+    printf("Starting board:\n%s\n", board.serialize().c_str());
+
+    int best = negaMax(board, true, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), 0);
+
     std::cout << "BEST SCORE WITH NEGAMAX: " << best << std::endl;
-    saveBoardsToFile(LOSING, LOSING_FILE);
+    prune_winning();
+    prune_losing();
     saveBoardsToFile(WINNING, WINNING_FILE);
+    saveBoardsToFile(LOSING, LOSING_FILE);
+    printf("Winning states saved to file: %s\n", WINNING_FILE.c_str());
+    printf("Losing states saved to file: %s\n", LOSING_FILE.c_str());
 
     // Stop measuring time and calculate the elapsed duration
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
-
     std::cout << "Execution time: " << duration.count() << " seconds" << std::endl;
 
     return 0;

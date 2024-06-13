@@ -257,25 +257,28 @@ size_t verifyLosingStates(const std::vector<Board>& losingStates) {
 }
 
 int main() {
-    int N = 5;
-    int K = 3;
-    int GOAL = 6;
+    // Parameters
+    std::vector<std::pair<int, int>> k_and_n = { {1, 3}, {3, 4} };
+    int GOAL = 7;  // Paintability = GOAL + 1
     std::string suffix = "board"; // "2024-05-02_09-48";
 
+    // Initialize board
+    int N, K;
+    std::vector<std::vector<std::pair<int, int>>> startingBoard;
+    createBoard(startingBoard, N, K, k_and_n);
+
     // Load the winning states
-    std::stringstream winning_ss, losing_ss;
-    winning_ss << "winning/N" << N << "_K" << K << "_goal" << GOAL << "_" << suffix << ".txt";
-    losing_ss << "losing/N" << N << "_K" << K << "_goal" << GOAL << "_" << suffix << ".txt";
-    std::string WINNING_FILE = winning_ss.str();
-    std::string LOSING_FILE = losing_ss.str();
+    auto [WINNING_FILE, LOSING_FILE] = getFileNames(N, K, GOAL);
+
+    printf("Winning file: %s\n", WINNING_FILE.c_str());
+    printf("Losing file: %s\n", LOSING_FILE.c_str());
 
     std::vector<Board> winningBoard, losingBoard;
     loadBoardsFromFile(WINNING_FILE, winningBoard);
     loadBoardsFromFile(LOSING_FILE, losingBoard);
 
     // Check if board is winning or losing
-    Board board(N, K, GOAL,
-                std::vector<std::vector<std::pair<int, int>>>(N, std::vector<std::pair<int, int>>(K, {0, 0})));
+    Board board(N, K, GOAL, startingBoard);
     bool pusherWillWin = std::find(winningBoard.begin(), winningBoard.end(), board) != winningBoard.end();
     bool pusherWillLose = std::find(losingBoard.begin(), losingBoard.end(), board) != losingBoard.end();
 
