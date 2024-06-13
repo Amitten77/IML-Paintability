@@ -2,38 +2,6 @@
 #include <ranges>
 #include "board_operation.h"
 
-
-void createBoard(
-        std::vector<std::vector<std::pair<int, int>>>& board, int& N, int& K,
-        const std::vector<std::pair<int, int>>& pairsOfKAndN) {
-
-    // First find N and K
-    N = 0;
-    K = 0;
-    for (auto [k, n] : pairsOfKAndN) {
-        N += n;
-        K = std::max(K, k);
-    }
-
-    // Now populate board
-    board.clear();
-    board.resize(N);
-    int i = 0;
-    for (auto [k, n] : pairsOfKAndN) {
-        // Create a vector with K - k of -1 and k of 0
-        std::vector<std::pair<int, int>> row(K, { 0, 0 });
-        for (int j = 0; j < K - k; j++) {
-            row[j].first = -1;
-        }
-
-        // Then copy this to the next n rows
-        for (int j = 0; j < n; j++) {
-            board[i] = row;
-            i++;
-        }
-    }
-}
-
 size_t integerPow(size_t base, size_t exponent) {
     size_t result = 1;
     for (size_t i = 0; i < exponent; i++) result *= base;

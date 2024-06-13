@@ -1,12 +1,15 @@
 #include <algorithm>
+#include <fstream>
+#include <future>
 #include <mutex>
 #include <queue>
-#include <future>
 #include <vector>
+#include "json.hpp"
 #include "Board.h"
 #include "board_operation.h"
 #include "compare.h"
 #include "helper.h"
+#include "init.h"
 
 #define NUM_THREADS 24
 //#define USE_PRUNED_MOVES_FOR_VERIFICATION
@@ -256,11 +259,28 @@ size_t verifyLosingStates(const std::vector<Board>& losingStates) {
     return countUnverified;
 }
 
-int main() {
+int main(int argc, char** argv) {
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <JSON config file>\n", argv[0]);
+        exit(1);
+    }
+
+    // Load config
+    nlohmann::json config;
+    std::filesystem::path configFilePath = argv[1];
+    std::ifstream fs(configFilePath);
+    if (fs.is_open()) {
+        fs >> config;
+        fs.close();
+    } else {
+        fprintf(stderr, "Config file cannot be opened\n");
+        exit(1);
+    }
+
     // Parameters
-    std::vector<std::pair<int, int>> k_and_n = { {1, 3}, {3, 4} };
-    int GOAL = 7;  // Paintability = GOAL + 1
-    std::string suffix = "board"; // "2024-05-02_09-48";
+    std::vector<std::pair<int, int>> k_and_n;
+    load_k_and_n(k_and_n, config["k-and-n"]);
+    int GOAL = config["goal"];  // Paintability = GOAL + 1
 
     // Initialize board
     int N, K;
@@ -269,10 +289,6 @@ int main() {
 
     // Load the winning states
     auto [WINNING_FILE, LOSING_FILE] = getFileNames(N, K, GOAL);
-
-    printf("Winning file: %s\n", WINNING_FILE.c_str());
-    printf("Losing file: %s\n", LOSING_FILE.c_str());
-
     std::vector<Board> winningBoard, losingBoard;
     loadBoardsFromFile(WINNING_FILE, winningBoard);
     loadBoardsFromFile(LOSING_FILE, losingBoard);

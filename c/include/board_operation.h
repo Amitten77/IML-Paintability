@@ -5,11 +5,6 @@
 #include <vector>
 #include "Board.h"
 
-/// @brief Initialize the board with the given pairs of k and n.
-void createBoard(
-        std::vector<std::vector<std::pair<int, int>>>& board, int& N, int& K,
-        const std::vector<std::pair<int, int>>& pairsOfKAndN);
-
 /// @brief Integer version of std::pow.
 size_t integerPow(size_t base, size_t exponent);
 

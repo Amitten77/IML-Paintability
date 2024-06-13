@@ -1,0 +1,8 @@
+{
+    "k-and-n": [[3, 6]],
+    "goal": 8,
+    "files-to-load-from": {
+        "winning": [],
+        "losing": []
+    }
+}

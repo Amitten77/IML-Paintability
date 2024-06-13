@@ -7,23 +7,6 @@
 class Board;
 
 /**
-* @brief Given a Board with N columns and K tokens, initalizes subset_graph and num_graph
-* mapping each subset of tokens to a move number
-* @param N Numbers of Columns
-* @param K Tokens in each Column
-*/
-void initMap(int N, int K);
-
-/**
- * @brief Generate the file names associated with the given n, k, and goal.
- * @param n Number of columns.
- * @param k Tokens in each column.
- * @param goal Target row to reach.
- * @return Two strings, the path to the winning board and the losing board.
- */
-std::pair<std::string, std::string> getFileNames(int n, int k, int goal);
-
-/**
  * @brief prunes database of losing states (LOSING) by removing losing states that are
  * less than other states in the list.
 */

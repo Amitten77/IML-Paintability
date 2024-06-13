@@ -3,11 +3,14 @@
 #include <limits>
 #include <chrono> // Include for high-resolution timing
 #include <filesystem>
+#include <fstream>
+#include "include/json.hpp"
 #include "include/Board.h"
 #include "include/board_operation.h"
-#include "include/helper.h"
 #include "include/compare.h"
 #include "include/graph.h"
+#include "include/helper.h"
+#include "include/init.h"
 
 
 /*
@@ -22,15 +25,28 @@ g++ -std=c++20 -O3 -flto -march=native -o main main.cpp src/Board.cpp src/helper
  * ./build/test/iml_test
  * ```
  */
-int main() {
-    // Start measuring time
-    auto start = std::chrono::high_resolution_clock::now();
+int main(int argc, char** argv) {
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <JSON config file>\n", argv[0]);
+        exit(1);
+    }
+
+    // Load config
+    nlohmann::json config;
+    std::filesystem::path configFilePath = argv[1];
+    std::ifstream fs(configFilePath);
+    if (fs.is_open()) {
+        fs >> config;
+        fs.close();
+    } else {
+        fprintf(stderr, "Config file cannot be opened\n");
+        exit(1);
+    }
 
     // Parameters
-    std::vector<std::pair<int, int>> k_and_n = { {1, 2}, {3, 5} };
-    int GOAL = 7;  // Paintability = GOAL + 1
-    std::string WINNING_FILE_LOAD;  // "winning/2024-05-07_07-17.txt";
-    std::string LOSING_FILE_LOAD;  // "losing/2024-05-07_07-17.txt";
+    std::vector<std::pair<int, int>> k_and_n;
+    load_k_and_n(k_and_n, config["k-and-n"]);
+    int GOAL = config["goal"];  // Paintability = GOAL + 1
 
     // Initialize board
     int N, K;
@@ -38,25 +54,35 @@ int main() {
     createBoard(startingBoard, N, K, k_and_n);
     initMap(N, K);
 
-    // Files
+    // Files and boards
     auto [WINNING_FILE, LOSING_FILE] = getFileNames(N, K, GOAL);
-    if (WINNING_FILE_LOAD.empty()) {
-        WINNING_FILE_LOAD = WINNING_FILE;
+    if (std::filesystem::exists(WINNING_FILE)) {
+        loadBoardsFromFile(WINNING_FILE, WINNING);
     }
-    if (LOSING_FILE_LOAD.empty()) {
-        LOSING_FILE_LOAD = LOSING_FILE;
+    if (std::filesystem::exists(LOSING_FILE)) {
+        loadBoardsFromFile(LOSING_FILE, LOSING);
     }
-    if (std::filesystem::exists(WINNING_FILE_LOAD)) {
-        loadBoardsFromFile(WINNING_FILE_LOAD, WINNING);
+    for (std::filesystem::path winningFile : config["files-to-load-from"]["winning"]) {
+        if (std::filesystem::exists(winningFile)) {
+            printf("Loading winning boards from %s...\n", winningFile.string().c_str());
+            loadBoardsFromFile(winningFile, WINNING);
+        }
     }
-    if (std::filesystem::exists(LOSING_FILE_LOAD)) {
-        loadBoardsFromFile(LOSING_FILE_LOAD, LOSING);
+    for (std::filesystem::path losingFile : config["files-to-load-from"]["losing"]) {
+        if (std::filesystem::exists(losingFile)) {
+            printf("Loading losing boards from %s...\n", losingFile.string().c_str());
+            loadBoardsFromFile(losingFile, WINNING);
+        }
     }
+    prune_winning();
+    prune_losing();
 
-    // Use negamax to find answer
     Board board(N, K, GOAL, startingBoard);
     printf("N: %d, K: %d\n", N, K);
     printf("Starting board:\n%s\n", board.serialize().c_str());
+
+    // Start measuring time
+    auto start = std::chrono::high_resolution_clock::now();
 
     int best = negaMax(board, true, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), 0);
 

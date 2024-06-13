@@ -83,45 +83,6 @@ std::vector<std::vector<int>> product(const std::vector<std::vector<std::vector<
     return result;
 }
 
-
-void generateCombinations(std::vector<std::vector<int>>& subsets, std::vector<int>& subset, int start, int n, int k) {
-    if (k == 0) {
-        subsets.push_back(subset);
-        return;
-    }
-    for (int i = start; i <= n - k; ++i) {
-        subset.push_back(i);
-        generateCombinations(subsets, subset, i + 1, n, k - 1);
-        subset.pop_back();
-    }
-}
-
-void initMap(int N, int K) {
-    std::vector<int> values(N * K);
-    std::iota(values.begin(), values.end(), 0);
-
-    std::vector<std::vector<int>> subsets;
-    std::vector<int> subset;
-    int index = 0;
-
-    for (int i = 0; i <= N * K; ++i) {
-        generateCombinations(subsets, subset, 0, N * K, i);
-    }
-
-    for (const auto& s : subsets) {
-        subset_graph[index] = s;
-        num_graph[s] = index;
-        ++index;
-    }
-}
-
-std::pair<std::string, std::string> getFileNames(int n, int k, int goal) {
-    std::stringstream ssWinning, ssLosing;
-    ssWinning << "winning/N" << n << "_K" << k << "_goal" << goal << "_board.txt";
-    ssLosing << "losing/N" << n << "_K" << k << "_goal" << goal << "_board.txt";
-    return { ssWinning.str(), ssLosing.str() };
-}
-
 void prune_losing() {
     std::vector<bool> not_include(LOSING.size(), false);
     for (size_t i = 0; i < LOSING.size(); i++) {
