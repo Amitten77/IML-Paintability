@@ -45,8 +45,8 @@ int main(int argc, char** argv) {
 
     // Parameters
     std::vector<std::pair<int, int>> k_and_n;
-    load_k_and_n(k_and_n, config["k-and-n"]);
-    int GOAL = config["goal"];  // Paintability = GOAL + 1
+    load_k_and_n(k_and_n, config["common"]["k-and-n"]);
+    int GOAL = config["common"]["goal"];  // Paintability = GOAL + 1
 
     // Initialize board
     int N, K;
@@ -62,13 +62,13 @@ int main(int argc, char** argv) {
     if (std::filesystem::exists(LOSING_FILE)) {
         loadBoardsFromFile(LOSING_FILE, LOSING);
     }
-    for (std::filesystem::path winningFile : config["files-to-load-from"]["winning"]) {
+    for (std::filesystem::path winningFile : config["negamax"]["files-to-load-from"]["winning"]) {
         if (std::filesystem::exists(winningFile)) {
             printf("Loading winning boards from %s...\n", winningFile.string().c_str());
             loadBoardsFromFile(winningFile, WINNING);
         }
     }
-    for (std::filesystem::path losingFile : config["files-to-load-from"]["losing"]) {
+    for (std::filesystem::path losingFile : config["negamax"]["files-to-load-from"]["losing"]) {
         if (std::filesystem::exists(losingFile)) {
             printf("Loading losing boards from %s...\n", losingFile.string().c_str());
             loadBoardsFromFile(losingFile, WINNING);

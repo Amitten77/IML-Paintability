@@ -1,8 +1,19 @@
 {
-    "k-and-n": [[3, 6]],
-    "goal": 8,
-    "files-to-load-from": {
-        "winning": [],
-        "losing": []
+    "common": {
+        "k-and-n": [[3, 6]],
+        "goal": 8
+    },
+    "negamax": {
+        "files-to-load-from": {
+            "winning": [],
+            "losing": []
+        }
+    },
+    "verify": {
+        "threads": 24,
+        "log-frequency": {
+            "winning": 10,
+            "losing": 20
+        }
     }
 }
