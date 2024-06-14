@@ -295,8 +295,8 @@ int main(int argc, char** argv) {
 
     // Check if board is winning or losing
     Board board(N, K, GOAL, startingBoard);
-    bool pusherWillWin = std::find(winningBoard.begin(), winningBoard.end(), board) != winningBoard.end();
-    bool pusherWillLose = std::find(losingBoard.begin(), losingBoard.end(), board) != losingBoard.end();
+    bool pusherWillWin = boardIsWinning(board, winningBoard.begin(), winningBoard.end());
+    bool pusherWillLose = boardIsLosing(board, losingBoard.begin(), losingBoard.end());
 
     if (pusherWillWin && pusherWillLose) {
         printf("\nPrediction not available (starting state is in both winning and losing states).\n");
