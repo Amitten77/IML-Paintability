@@ -1,16 +1,19 @@
-#include <algorithm>
-#include <chrono>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
-#include <numeric>
-#include <queue>
-#include <sstream>
-#include <stack>
-#include "../include/Board.h"
-#include "../include/compare.h"
-#include "../include/helper.h"
-#include "../include/board_operation.h"
+#include "helper.h"
+
+size_t integerPow(size_t base, size_t exponent) {
+    size_t result = 1;
+    for (size_t i = 0; i < exponent; i++) result *= base;
+    return result;
+}
+
+size_t countMovableChips(const std::vector<int>& column) {
+    size_t count = 0;
+    for (int r : column) {
+        if (r < 0) break;
+        count++;
+    }
+    return count;
+}
 
 std::vector<std::vector<int>> product(const std::vector<std::vector<std::vector<int>>>& lists) {
     std::vector<std::vector<int>> result;

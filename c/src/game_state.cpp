@@ -30,12 +30,35 @@ Board GameState::getBoardWithoutMovedChips() const noexcept {
     return { n, k, boardState };
 }
 
-std::vector<GameState> GameState::step() const noexcept {
+bool GameState::apply(const PusherMove& move) {
+    if (this->currentPlayer_ != Player::PUSHER) {
+        return false;
+    }
+
+    bool result = this->board_.apply(move);
+
+    this->currentPlayer_ = Player::REMOVER;
+    return result;
+}
+
+bool GameState::apply(RemoverMove move) {
+    if (this->currentPlayer_ != Player::REMOVER) {
+        return false;
+    }
+
+    bool result = this->board_.apply(move);
+
+    this->currentScore_ = std::max(this->currentScore_, this->board_.checkMaxRow());
+    this->currentPlayer_ = Player::PUSHER;
+    return result;
+}
+
+std::vector<GameState> GameState::step() const {
     // todo
     return {};
 }
 
-std::vector<GameState> GameState::stepPruned() const noexcept {
+std::vector<GameState> GameState::stepPruned() const {
     // todo
     return {};
 }

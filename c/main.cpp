@@ -7,7 +7,6 @@
 #include "json.hpp"
 #include "archive.h"
 #include "board.h"
-#include "board_operation.h"
 #include "compare.h"
 #include "graph.h"
 #include "helper.h"
@@ -71,14 +70,14 @@ int main(int argc, char** argv) {
     printf("\n<Negamax start>\n");
     auto start = std::chrono::high_resolution_clock::now();
     size_t count;
-    int best = negamax(initialGameState, count);
+    Player winner = minimax(initialGameState, archive, count);
 
     // End negamax algorithm
     auto stop = std::chrono::high_resolution_clock::now();
     std::chrono::seconds duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
     printf("\n<Negamax end>\n");
     printf("Total number of cases evaluated: %zu\n", count);
-    printf("Best score: %d\n", best);
+    printf("Winner: %s\n", toString(winner).c_str());
     printf("Execution time: %lld seconds\n", duration.count());
 
     // Save the winning and losing states to files

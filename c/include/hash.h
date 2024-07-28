@@ -15,18 +15,18 @@
 /**
  * A move on a column is defined as a list of bits, representing whether or not to push the corresponding tokens.
  *
- * E.g. the move `1011` means pushing the 1st, 2nd, and 4th tokens FROM THE BACK. Applying it to the following column
- * state:
- *              [-1, -1, 2, 2, 3, 5]    : Column state
- *   --(move)-> [-1, -1, 3, 2, 4, 6]    : Column state
- *   --(sort)-> [-1, -1, 2, 3, 4, 6]    : Column state
+ * E.g. the move `1011 = 2^0 + 2^1 + 2^3` means pushing the 1st, 2nd, and 4th tokens. Applying it to the following
+ * column state:
+ *              [5, 3, 2, 2, -1, -1]    : Column state
+ *   --(move)-> [6, 4, 2, 3, -1, -1]    : Column state
+ *   --(sort)-> [6, 4, 3, 2, -1, -1]    : Column state
  *
  * To encode this bit string into a number, we convert it into binary:
  *                          "1011"      : string
- *   -----(reverse)->       0x1011      : binary
+ *   ---(as binary)->       0x1011      : binary
  *   --(to decimal)->       11          : decimal
  *
- * Note: The leading 0's do not matter.
+ * Note: The leading 0's do not matter, i.e. `1011` and `00001011` are equivalent.
  */
 using EncodedMove = size_t;
 
@@ -35,14 +35,14 @@ using EncodedMove = size_t;
  *
  * E.g. the following columns state represents a column containing one token on row 5, one token on row 3, two tokens on
  * row 2, and two tokens removed from board:
- *             [-1, -1, 2, 2, 3, 5]
+ *             [5, 3, 2, 2, -1, -1]
  *
- * To encode this column state into a number:
+ * To encode this column state into a number, let:
  *   B = goal + 2
  *   Encoded value: (5 + 1) * B^0 + (3 + 1) * B^1 + (2 + 1) * B^2 + (2 + 1) * B^3
  *                  or 3346 in base B.
  */
-using EncodedColState = size_t;
+using EncodedColumnState = size_t;
 
 /**
  * @brief Decode a number into a pusher move.
@@ -61,7 +61,14 @@ void decodeMove(EncodedMove encoded, PusherMove& decoded, int k, size_t col = 0)
  * @param goal An upper bound on the row number of each token. This is for avoiding hash collisions.
  * @return The column state encoded as a number.
  */
-EncodedColState encodeColState(const std::vector<int>& column, unsigned int goal);
+EncodedColumnState encodeColState(const std::vector<int>& column, unsigned int goal);
+
+/**
+ * @brief Applies the encoded move to the column state in-place.
+ * @param column The column to apply the move to.
+ * @param move The encoded move to apply.
+ */
+void applyMoveToColumn(std::vector<int>& column, EncodedMove move);
 
 /**
  * @brief Converts a move (on a column) into a bit string for logging.
@@ -69,6 +76,6 @@ EncodedColState encodeColState(const std::vector<int>& column, unsigned int goal
  * @param k The number of tokens in the target column.
  * @return String representation.
  */
-std::string toString(EncodedMove move, int k);
+std::string toString(EncodedMove move, size_t k);
 
 #endif //HASH_H

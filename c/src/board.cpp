@@ -3,6 +3,17 @@
 #include <sstream>
 #include "board.h"
 
+std::string toString(Player player) {
+    switch (player) {
+        case Player::PUSHER:
+            return "Player::PUSHER";
+        case Player::REMOVER:
+            return "Player::REMOVER";
+        case Player::NONE:
+            return "Player::NONE";
+    }
+}
+
 Board::Board() : Board(0, 0) {}
 
 Board::Board(size_t n, size_t k)
@@ -130,4 +141,9 @@ void Board::tidy() noexcept {
     for (std::vector<int>& col : this->boardState_) {
         std::sort(col.begin(), col.end(), std::greater<>());
     }
+}
+
+void Board::tidy(size_t c) noexcept {
+    // Sort the chips in the specified column from largest to smallest
+    std::sort(this->boardState_[c].begin(), this->boardState_[c].end(), std::greater<>());
 }
