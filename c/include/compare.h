@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <unordered_set>
 #include <vector>
-#include "Board.h"
+#include "game_state.h"
 
 /**
  * @class Purpose
@@ -16,11 +16,11 @@ enum class CompResult { LESS, GREATER, EQUAL, INCOMPARABLE };
 inline std::string toString(Purpose purpose) {
     switch (purpose) {
         case Purpose::LESS:
-            return "LESS";
+            return "Purpose::LESS";
         case Purpose::GREATER:
-            return "GREATER";
+            return "Purpose::GREATER";
         case Purpose::BOTH:
-            return "BOTH";
+            return "Purpose::BOTH";
     }
     return "";
 }
@@ -28,13 +28,13 @@ inline std::string toString(Purpose purpose) {
 inline std::string toString(CompResult result) {
     switch (result) {
         case CompResult::LESS:
-            return "LESS";
+            return "CompResult::LESS";
         case CompResult::GREATER:
-            return "GREATER";
+            return "CompResult::GREATER";
         case CompResult::EQUAL:
-            return "EQUAL";
+            return "CompResult::EQUAL";
         case CompResult::INCOMPARABLE:
-            return "INCOMPARABLE";
+            return "CompResult::INCOMPARABLE";
     }
     return "";
 }
@@ -48,17 +48,16 @@ int checkHallsCondition(const std::vector<std::unordered_set<int>>& relation, in
  */
 CompResult compareSortedCols(const std::vector<int>& col1, const std::vector<int>& col2);
 
-/// @brief Same function, but different param types.
-CompResult compareBoardCols(const std::vector<std::pair<int, int>>& col1, const std::vector<std::pair<int, int>>& col2);
-
 /**
  * @brief Comparing two game states.
  * @param board1 First game state.
  * @param board2 Second game state.
  * @param purpose Can be "GREATER", "LESS", or "BOTH".
- *  If is "LESS": Only care about CompResult::LESS or otherwise.
- *  If is "GREATER": Only care about CompResult::GREATER or otherwise.
  * @return Compare result.
+ *
+ * If purpose is Purpose::GREATER: Result will be CompResult::GREATER or otherwise.
+ * If purpose is Purpose::LESS: Result will be CompResult::LESS or otherwise.
+ * If purpose is Purpose::BOTH: Result will be accurate in all cases.
  */
 CompResult compareBoards(const Board& board1, const Board& board2, Purpose purpose = Purpose::BOTH);
 

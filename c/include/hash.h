@@ -1,9 +1,16 @@
+/**
+ * @file hash.h
+ *
+ * This file contains functions for encoding and decoding pusher moves and column states. It allows easier storage and
+ * iteration.
+ */
+
 #ifndef HASH_H
 #define HASH_H
 
 #include <string>
 #include <vector>
-#include "Board.h"
+#include "board.h"
 
 /**
  * A move on a column is defined as a list of bits, representing whether or not to push the corresponding tokens.

@@ -1,36 +1,55 @@
+/**
+ * @file init.h
+ * @brief Initialize the game board.
+ *
+ * This file contains functions to initialize the game board according to the configuration file. A configuration file
+ * has the following format:
+ *
+ * ```json
+ * {
+ *   todo
+ * }
+ * ```
+ *
+ * todo
+ */
+
 #ifndef INIT_H
 #define INIT_H
 
+#include <filesystem>
 #include <string>
 #include "json.hpp"
 
 /**
  * @brief Load the pairs of k*n from the given JSON 2D array.
- * @param target The target to load into.
  * @param arr The JSON array.
+ * @return A vector of pairs of k_ and n_.
+ *
+ * Each pair of k_ and n_ represents n_ columns with k_ chips on row 0. The actual n is the sum of all n_, and the
+ * actual k is the maximum of all k_.
+ *
+ * E.g.
+ * ```json
+ * [[2, 3], [3, 4]]
+ * ```
+ * refers to the graph `K_{2*3, 3*4}`, which contains 7 columns, 3 of which have 2 chips and 4 of which have 3 chips.
+ * It has n = 7 and k = 3.
  */
-void load_k_and_n(std::vector<std::pair<int, int>>& target, const nlohmann::json& arr);
+std::vector<std::pair<size_t, size_t>> loadKAndN(const nlohmann::json& arr);
 
 /**
  * @brief Generate the file names associated with the given n, k, and goal.
  * @param n Number of columns.
  * @param k Tokens in each column.
  * @param goal Target row to reach.
- * @return Two strings, the path to the winning board and the losing board.
+ * @return The paths to the winning board and the losing board.
  */
-std::pair<std::string, std::string> getFileNames(int n, int k, int goal);
-
-/// @brief Initialize the board with the given pairs of k and n.
-void createBoard(
-        std::vector<std::vector<std::pair<int, int>>>& board, int& N, int& K,
-        const std::vector<std::pair<int, int>>& pairsOfKAndN);
+std::pair<std::filesystem::path, std::filesystem::path> getFileNames(size_t n, size_t k, int goal);
 
 /**
- * @brief Given a Board with N columns and K tokens, initializes subset_graph and num_graph
- * mapping each subset of tokens to a move number
- * @param N Numbers of Columns
- * @param K Tokens in each Column
+ * @brief Initialize the board with the given pairs of k and n.
  */
-void initMap(int N, int K);
+Board createBoard(const std::vector<std::pair<size_t, size_t>>& pairsOfKAndN);
 
 #endif // INIT_H

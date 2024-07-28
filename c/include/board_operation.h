@@ -3,7 +3,7 @@
 
 #include <functional>
 #include <vector>
-#include "Board.h"
+#include "board.h"
 
 /// @brief Integer version of std::pow.
 size_t integerPow(size_t base, size_t exponent);

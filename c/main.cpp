@@ -1,28 +1,26 @@
-#define RUN_ONCE
+//#define RECORD_PARTIAL_RESULT
 
-#include <limits>
-#include <chrono> // Include for high-resolution timing
+#include <chrono>
 #include <filesystem>
 #include <fstream>
-#include "include/json.hpp"
-#include "include/Board.h"
-#include "include/board_operation.h"
-#include "include/compare.h"
-#include "include/graph.h"
-#include "include/helper.h"
-#include "include/init.h"
+#include <limits>
+#include "json.hpp"
+#include "archive.h"
+#include "board.h"
+#include "board_operation.h"
+#include "compare.h"
+#include "graph.h"
+#include "helper.h"
+#include "init.h"
+#include "minimax.h"
 
-
-/*
-g++ -std=c++20 -O3 -flto -march=native -o main main.cpp src/Board.cpp src/helper.cpp src/graph.cpp src/compare.cpp
-./main
-*/
 /**
  * Using CMake:
  * ```shell
  * cmake -B build
  * cmake --build build --config Release
- * ./build/test/iml_test
+ * cd build
+ * ./main <JSON config file>
  * ```
  */
 int main(int argc, char** argv) {
@@ -44,60 +42,49 @@ int main(int argc, char** argv) {
     }
 
     // Parameters
-    std::vector<std::pair<int, int>> k_and_n;
-    load_k_and_n(k_and_n, config["common"]["k-and-n"]);
     int GOAL = config["common"]["goal"];  // Paintability = GOAL + 1
 
-    // Initialize board
-    int N, K;
-    std::vector<std::vector<std::pair<int, int>>> startingBoard;
-    createBoard(startingBoard, N, K, k_and_n);
-    initMap(N, K);
+    // Initialize game state
+    printf("\n<Initializing game state>\n");
+    Board initialBoard = createBoard(loadKAndN(config["common"]["k-and-n"]));
+    GameState initialGameState(initialBoard, GOAL);
+    size_t N = initialGameState.getBoard().getN();
+    size_t K = initialGameState.getBoard().getK();
+    printf("N: %zu, K: %zu\n", N, K);
+    printf("Initial board:\n%s\n", initialBoard.toString().c_str());
 
-    // Files and boards
-    auto [WINNING_FILE, LOSING_FILE] = getFileNames(N, K, GOAL);
-    if (std::filesystem::exists(WINNING_FILE)) {
-        loadBoardsFromFile(WINNING_FILE, WINNING);
+    // Initialize archive
+    printf("\n<Initializing archive>\n");
+    Archive archive;
+    auto [winningFilename, losingFilename] = getFileNames(N, K, GOAL);
+    archive.loadWinning(winningFilename);
+    archive.loadLosing(losingFilename);
+    for (std::filesystem::path additionalWinningFilename : config["negamax"]["files-to-load-from"]["winning"]) {
+        archive.loadWinning(additionalWinningFilename);
     }
-    if (std::filesystem::exists(LOSING_FILE)) {
-        loadBoardsFromFile(LOSING_FILE, LOSING);
+    for (std::filesystem::path additionalLosingFilename : config["negamax"]["files-to-load-from"]["losing"]) {
+        archive.loadLosing(additionalLosingFilename);
     }
-    for (std::filesystem::path winningFile : config["negamax"]["files-to-load-from"]["winning"]) {
-        if (std::filesystem::exists(winningFile)) {
-            printf("Loading winning boards from %s...\n", winningFile.string().c_str());
-            loadBoardsFromFile(winningFile, WINNING);
-        }
-    }
-    for (std::filesystem::path losingFile : config["negamax"]["files-to-load-from"]["losing"]) {
-        if (std::filesystem::exists(losingFile)) {
-            printf("Loading losing boards from %s...\n", losingFile.string().c_str());
-            loadBoardsFromFile(losingFile, WINNING);
-        }
-    }
-    prune_winning();
-    prune_losing();
+    archive.prune();
 
-    Board board(N, K, GOAL, startingBoard);
-    printf("N: %d, K: %d\n", N, K);
-    printf("Starting board:\n%s\n", board.serialize().c_str());
-
-    // Start measuring time
+    // Start negamax algorithm
+    printf("\n<Negamax start>\n");
     auto start = std::chrono::high_resolution_clock::now();
+    size_t count;
+    int best = negamax(initialGameState, count);
 
-    int best = negaMax(board, true, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), 0);
-
-    std::cout << "BEST SCORE WITH NEGAMAX: " << best << std::endl;
-    prune_winning();
-    prune_losing();
-    saveBoardsToFile(WINNING, WINNING_FILE);
-    saveBoardsToFile(LOSING, LOSING_FILE);
-    printf("Winning states saved to file: %s\n", WINNING_FILE.c_str());
-    printf("Losing states saved to file: %s\n", LOSING_FILE.c_str());
-
-    // Stop measuring time and calculate the elapsed duration
+    // End negamax algorithm
     auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
-    std::cout << "Execution time: " << duration.count() << " seconds" << std::endl;
+    std::chrono::seconds duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
+    printf("\n<Negamax end>\n");
+    printf("Total number of cases evaluated: %zu\n", count);
+    printf("Best score: %d\n", best);
+    printf("Execution time: %lld seconds\n", duration.count());
+
+    // Save the winning and losing states to files
+    printf("\n<Saving winning and losing states>\n");
+    archive.saveWinning(winningFilename);
+    archive.saveLosing(losingFilename);
 
     return 0;
 }
