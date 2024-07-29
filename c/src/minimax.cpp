@@ -7,33 +7,56 @@ struct ProgressTracker {
     size_t total;
 };
 
-size_t getFreq(size_t total) {
-    if (total > 1000) {
-        return 100;
-    } else if (total > 100) {
-        return 10;
-    } else if (total > 20) {
-        return 5;
+std::tuple<short, short, short> getColor(size_t idx, size_t total) {
+    // idx = 1: Red
+    // idx = total: Green
+    if (total <= 1) {
+        return { 0, 255, 0 };
+    }
+
+    // Ratio
+    float t = (float)(idx - 1) / (float)(total - 1);
+
+    // Scale color to have maximum lightness
+    if (t < 0.5) {
+        return { 255, (short)(255.0f * t / (1 - t)), 0 };
     } else {
-        return 1;
+        return { (short)(255.0f * (1 - t) / t), 255, 0 };
     }
 }
 
 void log(const ProgressTracker& pt, const std::string& msg) {
-    static constexpr size_t DEPTH_THRESHOLD = 5;
+    static size_t currentDepth = 0;
+    static constexpr size_t DEPTH_THRESHOLD = 4;
 
     // Skip if too deep
     if (pt.depth > DEPTH_THRESHOLD) {
         return;
     }
-    size_t freq = (pt.depth == DEPTH_THRESHOLD) ? getFreq(pt.total) : 1;
 
-    if (pt.idx % freq == 0 || pt.idx == pt.total) {
-        for (size_t i = 0; i < pt.depth; i++) {
-            printf("  ");
+    // Adjust cursor position
+    if (pt.depth > currentDepth) {
+        for (size_t i = 0; i < pt.depth - currentDepth; i++) {
+            printf("\n");
         }
-        printf("[%zu: %lu/%lu] %s\n", pt.depth, pt.idx, pt.total, msg.c_str());
+    } else if (pt.depth < currentDepth) {
+        for (size_t i = 0; i < currentDepth - pt.depth; i++) {
+            printf("\033[2K\033[F");
+        }
+        printf("\033[2K\033[G");
+    } else {
+        printf("\033[2K\033[G");
     }
+    currentDepth = pt.depth;
+
+    // Print actual message
+    auto [r, g, b] = getColor(pt.idx, pt.total);
+    printf("\033[38;2;%d;%d;%dm", r, g, b);
+    printf("Depth %zu [%lu/%lu]: %s", pt.depth, pt.idx, pt.total, msg.c_str());
+    printf("\033[0m");
+
+    // Flush
+    fflush(stdout);
 }
 
 Player minimax(const GameState& initialState, Archive& archive, size_t& count) {
@@ -63,8 +86,6 @@ Player minimax(const GameState& initialState, Archive& archive, size_t& count) {
 
         // 1. First check if we already know the winner
         if (curr.winner != Player::NONE) {
-            log(curr.pt, "Completed");
-
             // If current player is Pusher, add it to the archive
             if (!curr.preventAddingToArchive && gameState.getCurrentPlayer() == Player::PUSHER) {
                 if (curr.winner == Player::PUSHER) {
@@ -108,7 +129,7 @@ Player minimax(const GameState& initialState, Archive& archive, size_t& count) {
         // Starting from this step we consider this state as visited, thus increment the count.
         count++;
         curr.winner = archive.predictWinner(gameState);
-        log(curr.pt, "Begin");
+        log(curr.pt, "In progress");
 
         // 4. If we still don't have the state, we have to expand all possible next states.
         if (curr.winner == Player::NONE) {

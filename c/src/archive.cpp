@@ -2,7 +2,8 @@
 #include "archive.h"
 #include "compare.h"
 
-Archive::Archive() noexcept : winningCount_(0), losingCount_(0), winningPruneThreshold_(10), losingPruneThreshold_(10) {}
+Archive::Archive() noexcept
+        : winningCount_(0), losingCount_(0), winningPruneThreshold_(10), losingPruneThreshold_(10) {}
 
 // Helper function
 void saveBoardsTo(std::map<size_t, std::vector<Board>>& boards, const std::filesystem::path& filename) {
@@ -87,8 +88,28 @@ void Archive::addLosing(const Board& board) noexcept {
     }
 }
 
-Player Archive::predictWinner(const GameState& gameState) const noexcept {
-    // todo: parallelize this
+bool findAnyMatchThread(
+        const Board& target, const std::vector<Board>& boards, Purpose purpose,
+        const std::vector<CompResult>& expectations, std::atomic<size_t>& counter) noexcept {
+
+    while (true) {
+        size_t i = counter.fetch_add(1, std::memory_order_relaxed);
+        if (i >= boards.size()) {
+            break;
+        }
+
+        CompResult result = compareBoards(target, boards[i], purpose);
+        if (std::find(expectations.begin(), expectations.end(), result) != expectations.end()) {
+            // If found, skip the rest
+            counter.store(boards.size(), std::memory_order_relaxed);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+Player Archive::predictWinner(const GameState& gameState, size_t j) const noexcept {
     // If the game is already finished, return the winner
     Player winner = gameState.getWinner();
     if (winner != Player::NONE) {
@@ -105,24 +126,38 @@ Player Archive::predictWinner(const GameState& gameState) const noexcept {
             continue;
         }
 
+        // Multithreading
+        std::atomic<size_t> counter = 0;
+        std::vector<std::future<bool>> futures;
+        size_t j_ = std::max(std::min(j, winningBoards.size() / 2), 1ul);
+        futures.reserve(j_);
+
         // Compare with all winning boards
-        for (const Board& winningBoard : winningBoards) {
+        for (size_t i = 0; i < j_; i++) {
             if (numChipsInWinningBoard == numChips) {
-                switch (compareBoards(board, winningBoard, Purpose::BOTH)) {
-                    case CompResult::GREATER:
-                    case CompResult::EQUAL:
-                        return Player::PUSHER;
-                    default:
-                        break;
-                }
+                futures.push_back(std::async(
+                        std::launch::async,
+                        findAnyMatchThread,
+                        std::ref(board), std::ref(winningBoards), Purpose::BOTH,
+                        std::vector{ CompResult::GREATER, CompResult::EQUAL }, std::ref(counter)));
             } else {
-                switch (compareBoards(board, winningBoard, Purpose::GREATER)) {
-                    case CompResult::GREATER:
-                        return Player::PUSHER;
-                    default:
-                        break;
-                }
+                futures.push_back(std::async(
+                        std::launch::async,
+                        findAnyMatchThread,
+                        std::ref(board), std::ref(winningBoards), Purpose::GREATER,
+                        std::vector{ CompResult::GREATER }, std::ref(counter)));
             }
+        }
+
+        // Wait for all threads to finish
+        bool found = false;
+        for (std::future<bool>& future : futures) {
+            if (future.get()) {
+                found = true;
+            }
+        }
+        if (found) {
+            return Player::PUSHER;
         }
     }
 
@@ -132,24 +167,38 @@ Player Archive::predictWinner(const GameState& gameState) const noexcept {
             continue;
         }
 
+        // Multithreading
+        std::atomic<size_t> counter = 0;
+        std::vector<std::future<bool>> futures;
+        size_t j_ = std::max(std::min(j, losingBoards.size() / 2), 1ul);
+        futures.reserve(j_);
+
         // Compare with all losing boards
-        for (const Board& losingBoard : losingBoards) {
+        for (size_t i = 0; i < j_; i++) {
             if (numChipsInLosingBoard == numChips) {
-                switch (compareBoards(board, losingBoard, Purpose::BOTH)) {
-                    case CompResult::LESS:
-                    case CompResult::EQUAL:
-                        return Player::REMOVER;
-                    default:
-                        break;
-                }
+                futures.push_back(std::async(
+                        std::launch::async,
+                        findAnyMatchThread,
+                        std::ref(board), std::ref(losingBoards), Purpose::BOTH,
+                        std::vector{ CompResult::LESS, CompResult::EQUAL }, std::ref(counter)));
             } else {
-                switch (compareBoards(board, losingBoard, Purpose::LESS)) {
-                    case CompResult::LESS:
-                        return Player::REMOVER;
-                    default:
-                        break;
-                }
+                futures.push_back(std::async(
+                        std::launch::async,
+                        findAnyMatchThread,
+                        std::ref(board), std::ref(losingBoards), Purpose::LESS,
+                        std::vector{ CompResult::LESS }, std::ref(counter)));
             }
+        }
+
+        // Wait for all threads to finish
+        bool found = false;
+        for (std::future<bool>& future : futures) {
+            if (future.get()) {
+                found = true;
+            }
+        }
+        if (found) {
+            return Player::REMOVER;
         }
     }
 
@@ -207,7 +256,7 @@ void Archive::pruneWinningBoards() noexcept {
 
     // Update the winning count and prune threshold
     this->winningCount_ = winningBoards.size();
-    this->winningPruneThreshold_ = this->winningCount_ * 3;
+    this->winningPruneThreshold_ = std::max(100ul, this->winningCount_ * 3);
 }
 
 void Archive::pruneLosingBoards() noexcept {
@@ -256,7 +305,7 @@ void Archive::pruneLosingBoards() noexcept {
 
     // Update the losing count and prune threshold
     this->losingCount_ = losingBoards.size();
-    this->losingPruneThreshold_ = this->losingCount_ * 3;
+    this->losingPruneThreshold_ = std::max(100ul, this->losingCount_ * 3);
 }
 
 std::vector<Board> Archive::getWinningBoardsAsVector() const noexcept {
