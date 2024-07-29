@@ -57,21 +57,19 @@ std::vector<GameState> GameState::step() const {
     std::vector<GameState> result;
     switch (this->currentPlayer_) {
         case Player::PUSHER: {
-            std::vector<PusherMove> moves = this->board_.getPusherMoves();
-            std::transform(moves.begin(), moves.end(), result.begin(), [this](const PusherMove& move) {
+            for (const PusherMove& move : this->board_.getPusherMoves()) {
                 GameState gameState = *this;
                 gameState.apply(move);
-                return gameState;
-            });
+                result.push_back(gameState);
+            }
             break;
         }
         case Player::REMOVER: {
-            std::vector<RemoverMove> moves = this->board_.getRemoverMoves();
-            std::transform(moves.begin(), moves.end(), result.begin(), [this](const RemoverMove& move) {
+            for (const RemoverMove& move : this->board_.getRemoverMoves()) {
                 GameState gameState = *this;
                 gameState.apply(move);
-                return gameState;
-            });
+                result.push_back(gameState);
+            }
             break;
         }
         case Player::NONE:
@@ -84,21 +82,19 @@ std::vector<GameState> GameState::stepPruned() const {
     std::vector<GameState> result;
     switch (this->currentPlayer_) {
         case Player::PUSHER: {
-            std::vector<PusherMove> moves = this->getPusherMovesPruned();
-            std::transform(moves.begin(), moves.end(), result.begin(), [this](const PusherMove& move) {
+            for (const PusherMove& move : this->getPusherMovesPruned()) {
                 GameState gameState = *this;
                 gameState.apply(move);
-                return gameState;
-            });
+                result.push_back(gameState);
+            }
             break;
         }
         case Player::REMOVER: {
-            std::vector<RemoverMove> moves = this->getRemoverMovesPruned();
-            std::transform(moves.begin(), moves.end(), result.begin(), [this](const RemoverMove& move) {
+            for (const RemoverMove& move : this->getRemoverMovesPruned()) {
                 GameState gameState = *this;
                 gameState.apply(move);
-                return gameState;
-            });
+                result.push_back(gameState);
+            }
             break;
         }
         case Player::NONE:

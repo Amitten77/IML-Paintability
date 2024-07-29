@@ -10,7 +10,7 @@
 #define ARCHIVE_H
 
 #include <filesystem>
-#include <unordered_map>
+#include <map>
 #include "game_state.h"
 
 static const char* BOARD_DELIMITER = "---";
@@ -24,7 +24,6 @@ public:
     void loadWinning(const std::filesystem::path& filename);
     void loadLosing(const std::filesystem::path& filename);
 
-    // todo: auto-pruning
     void addWinning(const Board& board) noexcept;
     void addLosing(const Board& board) noexcept;
 
@@ -49,23 +48,30 @@ public:
     /// @brief Same as prune(), but only for losing boards.
     void pruneLosingBoards() noexcept;
 
+    /// @return The winning boards flattened as a single vector.
+    [[nodiscard]] std::vector<Board> getWinningBoardsAsVector() const noexcept;
+
+    /// @return The losing boards flattened as a single vector.
+    [[nodiscard]] std::vector<Board> getLosingBoardsAsVector() const noexcept;
+
+    // Getters
+    [[nodiscard]] const std::map<size_t, std::vector<Board>>& getWinningBoards() const noexcept;
+    [[nodiscard]] const std::map<size_t, std::vector<Board>>& getLosingBoards() const noexcept;
+    [[nodiscard]] size_t getWinningCount() const noexcept;
+    [[nodiscard]] size_t getLosingCount() const noexcept;
+
 private:
     /**
-     * @{
      * @brief Store the winning and losing states.
      *
      * The index is the number of remaining chips in the game state. When deciding whether a game state is winning, all
      * winning states with more chips than the target game state will be skipped. Similar optimization is applied to
      * losing states as well.
      */
-    std::unordered_map<size_t, std::vector<Board>> winningBoards_;
-    std::unordered_map<size_t, std::vector<Board>> losingBoards_;
-    /**
-     * @}
-     */
-};
+    std::map<size_t, std::vector<Board>> winningBoards_, losingBoards_;
 
-void saveBoardsTo(std::unordered_map<size_t, std::vector<Board>>& boards, const std::filesystem::path& filename);
-void loadBoardsFrom(std::unordered_map<size_t, std::vector<Board>>& boards,const std::filesystem::path& filename);
+    size_t winningCount_, losingCount_;
+    size_t winningPruneThreshold_, losingPruneThreshold_;
+};
 
 #endif // ARCHIVE_H

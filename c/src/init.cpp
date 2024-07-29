@@ -1,8 +1,27 @@
 #include <format>
 #include <sstream>
-#include "board.h"
 #include "init.h"
 
+std::pair<std::filesystem::path, std::filesystem::path> getFileNames(size_t n, size_t k, int goal) {
+    std::filesystem::path filename = std::format("N{}_K{}_goal{}_board.txt", n, k, goal);
+    return { "winning" / filename, "losing" / filename };
+}
+
+/**
+ * @brief Helper function to load the pairs of k*n from the given JSON 2D array.
+ * @param arr The JSON array.
+ * @return A vector of pairs of k_ and n_.
+ *
+ * Each pair of k_ and n_ represents n_ columns with k_ chips on row 0. The actual n is the sum of all n_, and the
+ * actual k is the maximum of all k_.
+ *
+ * E.g.
+ * ```json
+ * [[2, 3], [3, 4]]
+ * ```
+ * refers to the graph `K_{2*3, 3*4}`, which contains 7 columns, 3 of which have 2 chips and 4 of which have 3 chips.
+ * It has n = 7 and k = 3.
+ */
 std::vector<std::pair<size_t, size_t>> loadKAndN(const nlohmann::json& arr) {
     std::vector<std::pair<size_t, size_t>> result;
     for (const nlohmann::json& pair : arr) {
@@ -11,13 +30,9 @@ std::vector<std::pair<size_t, size_t>> loadKAndN(const nlohmann::json& arr) {
     return result;
 }
 
-std::pair<std::filesystem::path, std::filesystem::path> getFileNames(size_t n, size_t k, int goal) {
-    std::filesystem::path filename = std::format("N{}_K{}_goal{}_board.txt", n, k, goal);
-    return { "winning" / filename, "losing" / filename };
-}
-
-Board createBoard(const std::vector<std::pair<size_t, size_t>>& pairsOfKAndN) {
-    // First find n and k
+GameState initGameState(const nlohmann::json& config) {
+    // Find n and k
+    const std::vector<std::pair<size_t, size_t>>& pairsOfKAndN = loadKAndN(config["common"]["k-and-n"]);
     size_t n = 0;
     size_t k = 0;
     for (auto [k_, n_] : pairsOfKAndN) {
@@ -39,5 +54,8 @@ Board createBoard(const std::vector<std::pair<size_t, size_t>>& pairsOfKAndN) {
         c += n_;
     }
 
-    return { n, k, boardState };
+    // Find goal
+    int goal = config["common"]["goal"];
+
+    return { { n, k, boardState }, goal };
 }

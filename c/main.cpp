@@ -3,13 +3,10 @@
 #include <chrono>
 #include <filesystem>
 #include <fstream>
-#include <limits>
 #include "json.hpp"
 #include "archive.h"
 #include "board.h"
 #include "compare.h"
-#include "graph.h"
-#include "helper.h"
 #include "init.h"
 #include "minimax.h"
 
@@ -29,6 +26,7 @@ int main(int argc, char** argv) {
     }
 
     // Load config
+    printf("<Loading config>\n");
     nlohmann::json config;
     std::filesystem::path configFilePath = argv[1];
     std::ifstream fs(configFilePath);
@@ -40,16 +38,14 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
-    // Parameters
-    int GOAL = config["common"]["goal"];  // Paintability = GOAL + 1
-
     // Initialize game state
     printf("\n<Initializing game state>\n");
-    Board initialBoard = createBoard(loadKAndN(config["common"]["k-and-n"]));
-    GameState initialGameState(initialBoard, GOAL);
-    size_t N = initialGameState.getBoard().getN();
-    size_t K = initialGameState.getBoard().getK();
-    printf("N: %zu, K: %zu\n", N, K);
+    GameState initialGameState = initGameState(config);
+    const Board& initialBoard = initialGameState.getBoard();
+    size_t N = initialBoard.getN();
+    size_t K = initialBoard.getK();
+    int GOAL = initialGameState.getGoal();  // Paintability = GOAL + 1
+    printf("N: %zu, K: %zu, GOAL: %d\n", N, K, GOAL);
     printf("Initial board:\n%s\n", initialBoard.toString().c_str());
 
     // Initialize archive
@@ -82,6 +78,7 @@ int main(int argc, char** argv) {
 
     // Save the winning and losing states to files
     printf("\n<Saving winning and losing states>\n");
+    archive.prune();
     archive.saveWinning(winningFilename);
     archive.saveLosing(losingFilename);
 

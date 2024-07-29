@@ -53,7 +53,7 @@ using EncodedColumnState = size_t;
  *
  * This function DOES NOT CLEAR `decoded`. Instead it inserts elements to the back of it.
  */
-void decodeMove(EncodedMove encoded, PusherMove& decoded, int k, size_t col = 0);
+void decodeMove(EncodedMove encoded, PusherMove& decoded, size_t k, size_t col = 0);
 
 /**
  * @brief Encode a column state into a number for convenient comparisons.
@@ -61,14 +61,14 @@ void decodeMove(EncodedMove encoded, PusherMove& decoded, int k, size_t col = 0)
  * @param goal An upper bound on the row number of each token. This is for avoiding hash collisions.
  * @return The column state encoded as a number.
  */
-EncodedColumnState encodeColState(const std::vector<int>& column, unsigned int goal);
+EncodedColumnState encodeColState(const ColumnState& column, int goal);
 
 /**
  * @brief Applies the encoded move to the column state in-place.
  * @param column The column to apply the move to.
  * @param move The encoded move to apply.
  */
-void applyMoveToColumn(std::vector<int>& column, EncodedMove move);
+void applyMoveToColumn(ColumnState& column, EncodedMove move);
 
 /**
  * @brief Converts a move (on a column) into a bit string for logging.

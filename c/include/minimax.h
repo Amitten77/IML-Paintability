@@ -1,9 +1,9 @@
 /**
  * @file minimax.h
- * @brief Minimax algorithm with alpha-beta pruning
+ * @brief Implements the minimax algorithm.
  *
- * This file contains the main algorithm for finding the score of a given board, assuming that the Pusher and Remover
- * play optimally. The algorithm is based on the minimax algorithm with alpha-beta pruning.
+ * This file contains the main algorithm for finding the winner of a given board, assuming that the Pusher and Remover
+ * play optimally. The algorithm is based on the minimax algorithm.
  */
 
 #ifndef MINIMAX_H
@@ -19,6 +19,6 @@
  * @param count The number of states visited.
  * @return Predicted winner.
  */
-Player minimax(const GameState& initialState, const Archive& archive, size_t& count);
+Player minimax(const GameState& initialState, Archive& archive, size_t& count);
 
 #endif // MINIMAX_H

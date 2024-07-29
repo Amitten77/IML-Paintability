@@ -45,6 +45,7 @@ bool Board::apply(RemoverMove move) {
     for (size_t idx = 0; idx < k; idx++) {
         if (this->chipIsMoved_[move][idx]) {
             this->boardState_[move][idx] = -1;
+            this->numChips_--;
             result = true;
         }
     }

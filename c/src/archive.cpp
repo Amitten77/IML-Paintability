@@ -2,7 +2,54 @@
 #include "archive.h"
 #include "compare.h"
 
-Archive::Archive() noexcept = default;
+Archive::Archive() noexcept : winningCount_(0), losingCount_(0), winningPruneThreshold_(10), losingPruneThreshold_(10) {}
+
+// Helper function
+void saveBoardsTo(std::map<size_t, std::vector<Board>>& boards, const std::filesystem::path& filename) {
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+        fprintf(stderr, "Failed to open file for writing: %s\n", filename.c_str());
+        return;
+    }
+
+    for (const auto& [numChips, boards_] : boards) {
+        for (const Board& board : boards_) {
+            file << board.toString();
+            file << BOARD_DELIMITER << std::endl;
+        }
+    }
+
+    file.close();
+}
+
+// Helper function
+void loadBoardsFrom(std::map<size_t, std::vector<Board>>& boards, const std::filesystem::path& filename) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        fprintf(stderr, "Failed to open file for reading: %s\n", filename.c_str());
+        return;
+    }
+
+    std::string line;
+    std::string boardString;
+    while (std::getline(file, line)) {
+        if (line == BOARD_DELIMITER) {
+            if (!boardString.empty()) {
+                Board board(boardString);
+                boards[board.getNumChips()].emplace_back(board);
+                boardString.clear();
+            }
+        } else {
+            boardString += line + "\n";
+        }
+    }
+
+    // Don't forget to add the last board if the file doesn't end with "---"
+    if (!boardString.empty()) {
+        Board board(boardString);
+        boards[board.getNumChips()].emplace_back(board);
+    }
+}
 
 void Archive::saveWinning(const std::filesystem::path& filename) {
     saveBoardsTo(this->winningBoards_, filename);
@@ -26,10 +73,18 @@ void Archive::loadLosing(const std::filesystem::path& filename) {
 
 void Archive::addWinning(const Board& board) noexcept {
     this->winningBoards_[board.getNumChips()].emplace_back(board);
+    this->winningCount_++;
+    if (this->winningCount_ >= this->winningPruneThreshold_) {
+        this->pruneWinningBoards();
+    }
 }
 
 void Archive::addLosing(const Board& board) noexcept {
     this->losingBoards_[board.getNumChips()].emplace_back(board);
+    this->losingCount_++;
+    if (this->losingCount_ >= this->losingPruneThreshold_) {
+        this->pruneLosingBoards();
+    }
 }
 
 Player Archive::predictWinner(const GameState& gameState) const noexcept {
@@ -72,7 +127,7 @@ Player Archive::predictWinner(const GameState& gameState) const noexcept {
     }
 
     for (const auto& [numChipsInLosingBoard, losingBoards] : this->losingBoards_) {
-        // Skip losing boards with less chips than the target game state
+        // Skip losing boards with fewer chips than the target game state
         if (numChipsInLosingBoard < numChips) {
             continue;
         }
@@ -149,6 +204,10 @@ void Archive::pruneWinningBoards() noexcept {
     for (const Board& board : winningBoards) {
         this->winningBoards_[board.getNumChips()].emplace_back(board);
     }
+
+    // Update the winning count and prune threshold
+    this->winningCount_ = winningBoards.size();
+    this->winningPruneThreshold_ = this->winningCount_ * 3;
 }
 
 void Archive::pruneLosingBoards() noexcept {
@@ -194,49 +253,44 @@ void Archive::pruneLosingBoards() noexcept {
     for (const Board& board : losingBoards) {
         this->losingBoards_[board.getNumChips()].emplace_back(board);
     }
+
+    // Update the losing count and prune threshold
+    this->losingCount_ = losingBoards.size();
+    this->losingPruneThreshold_ = this->losingCount_ * 3;
 }
 
-void saveBoardsTo(std::unordered_map<size_t, std::vector<Board>>& boards, const std::filesystem::path& filename) {
-    std::ofstream file(filename);
-    if (!file.is_open()) {
-        fprintf(stderr, "Failed to open file for writing: %s\n", filename.c_str());
-        return;
-    }
-
-    for (const auto& [numChips, boards_] : boards) {
-        for (const Board& board : boards_) {
-            file << board.toString();
-            file << BOARD_DELIMITER << std::endl;
+std::vector<Board> Archive::getWinningBoardsAsVector() const noexcept {
+    std::vector<Board> result;
+    for (const auto& [numChips, boards] : this->winningBoards_) {
+        for (const Board& board : boards) {
+            result.push_back(board);
         }
     }
-
-    file.close();
+    return result;
 }
 
-void loadBoardsFrom(std::unordered_map<size_t, std::vector<Board>>& boards, const std::filesystem::path& filename) {
-    std::ifstream file(filename);
-    if (!file.is_open()) {
-        fprintf(stderr, "Failed to open file for reading: %s\n", filename.c_str());
-        return;
-    }
-
-    std::string line;
-    std::string boardString;
-    while (std::getline(file, line)) {
-        if (line == BOARD_DELIMITER) {
-            if (!boardString.empty()) {
-                Board board(boardString);
-                boards[board.getNumChips()].emplace_back(board);
-                boardString.clear();
-            }
-        } else {
-            boardString += line + "\n";
+std::vector<Board> Archive::getLosingBoardsAsVector() const noexcept {
+    std::vector<Board> result;
+    for (const auto& [numChips, boards] : this->losingBoards_) {
+        for (const Board& board : boards) {
+            result.push_back(board);
         }
     }
+    return result;
+}
 
-    // Don't forget to add the last board if the file doesn't end with "---"
-    if (!boardString.empty()) {
-        Board board(boardString);
-        boards[board.getNumChips()].emplace_back(board);
-    }
+const std::map<size_t, std::vector<Board>>& Archive::getWinningBoards() const noexcept {
+    return this->winningBoards_;
+}
+
+const std::map<size_t, std::vector<Board>>& Archive::getLosingBoards() const noexcept {
+    return this->losingBoards_;
+}
+
+size_t Archive::getWinningCount() const noexcept {
+    return this->winningCount_;
+}
+
+size_t Archive::getLosingCount() const noexcept {
+    return this->losingCount_;
 }

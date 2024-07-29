@@ -1,14 +1,14 @@
 #include <ranges>
 #include "hash.h"
 
-void decodeMove(EncodedMove encoded, PusherMove& decoded, int k, size_t col) {
-    for (int i = 0; i < k; i++) {
-        if (encoded % 2) decoded.push_back((int)col * k + (k - i - 1));
+void decodeMove(EncodedMove encoded, PusherMove& decoded, size_t k, size_t col) {
+    for (size_t i = 0; i < k; i++) {
+        if (encoded % 2) decoded.push_back(col * k + i);
         encoded /= 2;
     }
 }
 
-EncodedColumnState encodeColState(const ColumnState& column, unsigned int goal) {
+EncodedColumnState encodeColState(const ColumnState& column, int goal) {
     EncodedColumnState encoded = 0;
     for (int row : column | std::views::reverse) {
         encoded += (row + 1);

@@ -61,34 +61,4 @@ CompResult compareSortedCols(const std::vector<int>& col1, const std::vector<int
  */
 CompResult compareBoards(const Board& board1, const Board& board2, Purpose purpose = Purpose::BOTH);
 
-/**
- * @brief Compare a board with winning boards to check if it is winning.
- * @tparam T Iterator type.
- * @param board The target board.
- * @param winningBoardsBegin Starting iterator of a list of winning boards.
- * @param winningBoardsEnd Ending iterator of a list of winning boards.
- * @return Whether it is winning.
- */
-template <typename T>
-bool boardIsWinning(const Board& board, T winningBoardsBegin, T winningBoardsEnd) {
-    return std::any_of(winningBoardsBegin, winningBoardsEnd, [&board](const Board& other) {
-        return compareBoards(board, other, Purpose::GREATER) == CompResult::GREATER;
-    });
-}
-
-/**
- * @brief Compare a board with losing boards to check if it is losing.
- * @tparam T Iterator type.
- * @param board The target board.
- * @param losingBoardsBegin Starting iterator of a list of losing boards.
- * @param losingBoardsEnd Ending iterator of a list of losing boards.
- * @return Whether it is losing.
- */
-template <typename T>
-bool boardIsLosing(const Board& board, T losingBoardsBegin, T losingBoardsEnd) {
-    return std::any_of(losingBoardsBegin, losingBoardsEnd, [&board](const Board& other) {
-        return compareBoards(board, other, Purpose::LESS) == CompResult::LESS;
-    });
-}
-
 #endif // COMPARE_H
