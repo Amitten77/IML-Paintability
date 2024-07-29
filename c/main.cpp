@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
     }
 
     // Initialize game state
-    printf("\n<Initializing game state>\n");
+    printf("<Initializing game state>\n");
     GameState initialGameState = initGameState(config);
     const Board& initialBoard = initialGameState.getBoard();
     size_t N = initialBoard.getN();
@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
     printf("Initial board:\n%s\n", initialBoard.toString().c_str());
 
     // Initialize archive
-    printf("\n<Initializing archive>\n");
+    printf("<Initializing archive>\n");
     Archive archive;
     auto [winningFilename, losingFilename] = getFileNames(N, K, GOAL);
     archive.loadWinning(winningFilename);
@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
     archive.prune();
 
     // Start negamax algorithm
-    printf("\n<Negamax start>\n");
+    printf("<Negamax start>\n");
     auto start = std::chrono::high_resolution_clock::now();
     size_t count;
     Player winner = minimax(initialGameState, archive, count);
@@ -71,13 +71,13 @@ int main(int argc, char** argv) {
     // End negamax algorithm
     auto stop = std::chrono::high_resolution_clock::now();
     std::chrono::seconds duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
-    printf("\n<Negamax end>\n");
+    printf("<Negamax end>\n");
     printf("Total number of cases evaluated: %zu\n", count);
     printf("Winner: %s\n", toString(winner).c_str());
     printf("Execution time: %lld seconds\n", duration.count());
 
     // Save the winning and losing states to files
-    printf("\n<Saving winning and losing states>\n");
+    printf("<Saving winning and losing states>\n");
     archive.prune();
     archive.saveWinning(winningFilename);
     archive.saveLosing(losingFilename);

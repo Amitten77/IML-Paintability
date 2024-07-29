@@ -247,7 +247,7 @@ int main(int argc, char** argv) {
     }
 
     // Initialize game state
-    printf("\n<Initializing game state>\n");
+    printf("<Initializing game state>\n");
     GameState initialGameState = initGameState(config);
     const Board& initialBoard = initialGameState.getBoard();
     size_t N = initialBoard.getN();
@@ -257,7 +257,7 @@ int main(int argc, char** argv) {
     printf("Initial board:\n%s\n", initialBoard.toString().c_str());
 
     // Load the winning and losing states
-    printf("\n<Loading winning and losing states>\n");
+    printf("<Loading winning and losing states>\n");
     auto [winningFilename, losingFilename] = getFileNames(N, K, GOAL);
     Archive winningArchive, losingArchive;
     winningArchive.loadWinning(winningFilename);

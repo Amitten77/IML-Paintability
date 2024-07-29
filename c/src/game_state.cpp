@@ -59,16 +59,18 @@ std::vector<GameState> GameState::step() const {
         case Player::PUSHER: {
             for (const PusherMove& move : this->board_.getPusherMoves()) {
                 GameState gameState = *this;
-                gameState.apply(move);
-                result.push_back(gameState);
+                if (gameState.apply(move)) {
+                    result.push_back(gameState);
+                }
             }
             break;
         }
         case Player::REMOVER: {
             for (const RemoverMove& move : this->board_.getRemoverMoves()) {
                 GameState gameState = *this;
-                gameState.apply(move);
-                result.push_back(gameState);
+                if (gameState.apply(move)) {
+                    result.push_back(gameState);
+                }
             }
             break;
         }
@@ -84,16 +86,18 @@ std::vector<GameState> GameState::stepPruned() const {
         case Player::PUSHER: {
             for (const PusherMove& move : this->getPusherMovesPruned()) {
                 GameState gameState = *this;
-                gameState.apply(move);
-                result.push_back(gameState);
+                if (gameState.apply(move)) {
+                    result.push_back(gameState);
+                }
             }
             break;
         }
         case Player::REMOVER: {
             for (const RemoverMove& move : this->getRemoverMovesPruned()) {
                 GameState gameState = *this;
-                gameState.apply(move);
-                result.push_back(gameState);
+                if (gameState.apply(move)) {
+                    result.push_back(gameState);
+                }
             }
             break;
         }

@@ -8,26 +8,27 @@ struct ProgressTracker {
 };
 
 size_t getFreq(size_t total) {
-    (void)total;
-    return 1;
-//    if (total > 1000) {
-//        return 100;
-//    } else if (total > 100) {
-//        return 10;
-//    } else if (total > 20) {
-//        return 5;
-//    } else {
-//        return 1;
-//    }
+    if (total > 1000) {
+        return 100;
+    } else if (total > 100) {
+        return 10;
+    } else if (total > 20) {
+        return 5;
+    } else {
+        return 1;
+    }
 }
 
 void log(const ProgressTracker& pt, const std::string& msg) {
+    static constexpr size_t DEPTH_THRESHOLD = 5;
+
     // Skip if too deep
-    if (pt.depth > 5) {
+    if (pt.depth > DEPTH_THRESHOLD) {
         return;
     }
+    size_t freq = (pt.depth == DEPTH_THRESHOLD) ? getFreq(pt.total) : 1;
 
-    if (pt.idx % getFreq(pt.total) == 0 || pt.idx == pt.total) {
+    if (pt.idx % freq == 0 || pt.idx == pt.total) {
         for (size_t i = 0; i < pt.depth; i++) {
             printf("  ");
         }

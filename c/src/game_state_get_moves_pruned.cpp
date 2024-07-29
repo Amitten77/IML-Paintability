@@ -279,6 +279,11 @@ std::vector<PusherMove> GameState::getPusherMovesPruned(int verbose) const noexc
         }
     }
 
+    // Sort the moves in decreasing size, as we want to prioritize moving more chips
+    std::sort(moves.begin(), moves.end(), [](const PusherMove& a, const PusherMove& b) {
+        return a.size() > b.size();
+    });
+
     return moves;
 }
 
