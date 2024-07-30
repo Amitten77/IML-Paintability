@@ -234,7 +234,7 @@ int main(int argc, char** argv) {
     }
 
     // Load config
-    printf("<Loading config>\n");
+    printf("[Loading config]\n");
     nlohmann::json config;
     std::filesystem::path configFilePath = argv[1];
     std::ifstream fs(configFilePath);
@@ -247,7 +247,7 @@ int main(int argc, char** argv) {
     }
 
     // Initialize game state
-    printf("\n<Initializing game state>\n");
+    printf("\n[Initializing game state]\n");
     GameState initialGameState = initGameState(config);
     const Board& initialBoard = initialGameState.getBoard();
     size_t N = initialBoard.getN();
@@ -257,7 +257,7 @@ int main(int argc, char** argv) {
     printf("Initial board:\n%s", initialBoard.toString().c_str());
 
     // Load the winning and losing states
-    printf("\n<Loading winning and losing states>\n");
+    printf("\n[Loading winning and losing states]\n");
     auto [winningFilename, losingFilename] = getFileNames(N, K, GOAL);
     Archive winningArchive, losingArchive;
     winningArchive.loadWinning(winningFilename);
@@ -271,6 +271,7 @@ int main(int argc, char** argv) {
     }
 
     // Check if board is winning or losing
+    printf("\n[Verification]\n");
     bool pusherWillWin = winningArchive.predictWinner(initialGameState) == Player::PUSHER;
     bool pusherWillLose = losingArchive.predictWinner(initialGameState) == Player::REMOVER;
 

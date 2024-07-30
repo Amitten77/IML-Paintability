@@ -27,7 +27,7 @@ std::tuple<short, short, short> getColor(size_t idx, size_t total) {
 
 void log(const ProgressTracker& pt, const std::string& msg) {
     static size_t currentDepth = 0;
-    static constexpr size_t DEPTH_THRESHOLD = 4;
+    static constexpr size_t DEPTH_THRESHOLD = 7;
 
     // Skip if too deep
     if (pt.depth > DEPTH_THRESHOLD) {
@@ -152,6 +152,9 @@ Player minimax(const GameState& initialState, Archive& archive, size_t& count) {
             curr.preventAddingToArchive = true;
         }
     }
+
+    // Log end
+    printf("\n");
 
     return result;
 }

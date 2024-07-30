@@ -1,6 +1,7 @@
 //#define RECORD_PARTIAL_RESULT
 
 #include <chrono>
+#include <ctime>
 #include <filesystem>
 #include <fstream>
 #include "json.hpp"
@@ -26,7 +27,7 @@ int main(int argc, char** argv) {
     }
 
     // Load config
-    printf("<Loading config>\n");
+    printf("[Loading config]\n");
     nlohmann::json config;
     std::filesystem::path configFilePath = argv[1];
     std::ifstream fs(configFilePath);
@@ -39,7 +40,7 @@ int main(int argc, char** argv) {
     }
 
     // Initialize game state
-    printf("\n<Initializing game state>\n");
+    printf("\n[Initializing game state]\n");
     GameState initialGameState = initGameState(config);
     const Board& initialBoard = initialGameState.getBoard();
     size_t N = initialBoard.getN();
@@ -49,7 +50,7 @@ int main(int argc, char** argv) {
     printf("Initial board:\n%s", initialBoard.toString().c_str());
 
     // Initialize archive
-    printf("\n<Initializing archive>\n");
+    printf("\n[Initializing archive]\n");
     Archive archive;
     auto [winningFilename, losingFilename] = getFileNames(N, K, GOAL);
     archive.loadWinning(winningFilename);
@@ -63,21 +64,37 @@ int main(int argc, char** argv) {
     archive.prune();
 
     // Start negamax algorithm
-    printf("\n<Minimax start>\n");
-    auto start = std::chrono::high_resolution_clock::now();
+    printf("\n[Minimax start]\n");
+    auto startWall = std::chrono::high_resolution_clock::now();
+    auto startCpu = std::clock();
     size_t count;
     Player winner = minimax(initialGameState, archive, count);
 
     // End negamax algorithm
-    auto stop = std::chrono::high_resolution_clock::now();
-    std::chrono::seconds duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
-    printf("\n<Minimax end>\n");
+    auto endWall = std::chrono::high_resolution_clock::now();
+    auto endCpu = std::clock();
+    double durationWall = (double)std::chrono::duration_cast<std::chrono::seconds>(endWall - startWall).count();
+    double durationCpu = static_cast<double>(endCpu - startCpu) / CLOCKS_PER_SEC;
+
+    printf("\n[Minimax end]\n");
     printf("Total number of cases evaluated: %zu\n", count);
-    printf("Winner: %s\n", toString(winner).c_str());
-    printf("Execution time: %lld seconds\n", duration.count());
+    switch (winner) {
+        case Player::PUSHER:
+            printf("\033[38;2;0;38;255mWinner: Pusher\033[0m\n");
+            break;
+        case Player::REMOVER:
+            printf("\033[38;2;255;95;5mWinner: Remover\033[0m\n");
+            break;
+        case Player::NONE:
+            printf("Winner not found\n");
+            break;
+    }
+    printf("Wall time: %.2f seconds\n", durationWall);
+    printf("CPU time: %.2f seconds\n", durationCpu);
+    printf("Speedup: %f\n", durationCpu / durationWall);
 
     // Save the winning and losing states to files
-    printf("\n<Saving winning and losing states>\n");
+    printf("\n[Saving winning and losing states]\n");
     archive.prune();
     archive.saveWinning(winningFilename);
     archive.saveLosing(losingFilename);
