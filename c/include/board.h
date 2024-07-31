@@ -99,17 +99,17 @@ public:
      *
      * Time complexity: O(nk).
      */
-    [[nodiscard]] int checkMaxRow() const noexcept;
+    [[nodiscard]] int calcMaxRow() const noexcept;
 
     /**
-     * @return Check whether the current player is the Pusher or Remover.
+     * @return Whether the current player is the Pusher or Remover.
      *
      * Goes through the entire list of chips. If at least one chip is moved, then the current player is the Remover.
      * Otherwise it is the Pusher.
      *
      * Time complexity: O(nk).
      */
-    [[nodiscard]] Player checkCurrentPlayer() const noexcept;
+    [[nodiscard]] Player calcCurrentPlayer() const noexcept;
 
     /**
      * @return All valid Pusher moves that can be applied on this board.

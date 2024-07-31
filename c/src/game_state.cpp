@@ -1,8 +1,8 @@
 #include "game_state.h"
 
 GameState::GameState(Board board, int goal) : board_(std::move(board)), goal_(goal) {
-    this->currentScore_ = this->board_.checkMaxRow();
-    this->currentPlayer_ = this->board_.checkCurrentPlayer();
+    this->currentScore_ = this->board_.calcMaxRow();
+    this->currentPlayer_ = this->board_.calcCurrentPlayer();
 }
 
 Player GameState::getWinner() const noexcept {
@@ -48,7 +48,7 @@ bool GameState::apply(RemoverMove move) {
 
     bool result = this->board_.apply(move);
 
-    this->currentScore_ = std::max(this->currentScore_, this->board_.checkMaxRow());
+    this->currentScore_ = std::max(this->currentScore_, this->board_.calcMaxRow());
     this->currentPlayer_ = Player::PUSHER;
     return result;
 }

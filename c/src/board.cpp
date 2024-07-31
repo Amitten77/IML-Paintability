@@ -77,8 +77,9 @@ std::string Board::toString() const noexcept {
     ss << std::format("n={},k={},n_chips={}\n", this->n_, this->k_, this->numChips_);
     // Serialize the board structure
     for (const std::vector<int>& col : this->boardState_) {
-        for (int r : col) {
-            ss << r << " ";
+        for (size_t idx = 0; idx < this->k_; idx++) {
+            if (idx > 0) ss << " ";
+            ss << col[idx];
         }
         ss << "\n"; // Newline to separate rows
     }
@@ -86,7 +87,7 @@ std::string Board::toString() const noexcept {
     return ss.str();
 }
 
-int Board::checkMaxRow() const noexcept {
+int Board::calcMaxRow() const noexcept {
     int maxRow = -1;
     if (this->n_ == 0 || this->k_ == 0) {
         return maxRow;
@@ -99,7 +100,7 @@ int Board::checkMaxRow() const noexcept {
     return maxRow;
 }
 
-Player Board::checkCurrentPlayer() const noexcept {
+Player Board::calcCurrentPlayer() const noexcept {
     // If at least one chip is moved, then the current player is the Remover
     for (const std::vector<bool>& col : this->chipIsMoved_) {
         for (bool moved : col) {
