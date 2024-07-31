@@ -2,6 +2,8 @@
 #include "archive.h"
 #include "compare.h"
 
+#define TIDY_ON_INSERT
+
 Archive::Archive() noexcept
         : winningCount_(0), losingCount_(0), winningPruneThreshold_(10), losingPruneThreshold_(10) {}
 
@@ -73,19 +75,91 @@ void Archive::loadLosing(const std::filesystem::path& filename) {
 }
 
 void Archive::addWinning(const Board& board) noexcept {
+#ifdef TIDY_ON_INSERT
+    size_t newSize = 0;
+
+    // Check if the board to add is comparable to any existing boards
+    for (auto& [numChips, boards] : this->winningBoards_) {
+        std::vector<bool> shouldRemove(boards.size(), false);
+        for (size_t i = 0; i < boards.size(); i++) {
+            switch (compareBoards(board, boards[i], Purpose::BOTH)) {
+                case CompResult::LESS:
+                    // Should replace the existing board
+                    shouldRemove[i] = true;
+                    break;
+                case CompResult::GREATER:
+                    // Should not add the new board
+                    return;
+                default:
+                    break;
+            }
+        }
+
+        // Remove boards to be replaced
+        size_t i = 0;
+        std::erase_if(boards, [&shouldRemove, &i](const Board&) {
+            return shouldRemove[i++];
+        });
+
+        newSize += boards.size();
+    }
+
+    // Update the size
+    this->winningCount_ = newSize;
+#endif
+
     this->winningBoards_[board.getNumChips()].emplace_back(board);
     this->winningCount_++;
+
+#ifndef TIDY_ON_INSERT
     if (this->winningCount_ >= this->winningPruneThreshold_) {
         this->pruneWinningBoards();
     }
+#endif
 }
 
 void Archive::addLosing(const Board& board) noexcept {
+#ifdef TIDY_ON_INSERT
+    size_t newSize = 0;
+
+    // Check if the board to add is comparable to any existing boards
+    for (auto& [numChips, boards] : this->losingBoards_) {
+        std::vector<bool> shouldRemove(boards.size(), false);
+        for (size_t i = 0; i < boards.size(); i++) {
+            switch (compareBoards(board, boards[i], Purpose::BOTH)) {
+                case CompResult::GREATER:
+                    // Should replace the existing board
+                    shouldRemove[i] = true;
+                    break;
+                case CompResult::LESS:
+                    // Should not add the new board
+                    return;
+                default:
+                    break;
+            }
+        }
+
+        // Remove boards to be replaced
+        size_t i = 0;
+        std::erase_if(boards, [&shouldRemove, &i](const Board&) {
+            return shouldRemove[i++];
+        });
+
+        newSize += boards.size();
+    }
+
+    // Update the size
+    this->losingCount_ = newSize;
+#endif
+
     this->losingBoards_[board.getNumChips()].emplace_back(board);
     this->losingCount_++;
+
+#ifndef TIDY_ON_INSERT
     if (this->losingCount_ >= this->losingPruneThreshold_) {
         this->pruneLosingBoards();
     }
+#endif
 }
 
 bool findAnyMatchThread(

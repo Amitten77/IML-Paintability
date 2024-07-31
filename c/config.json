@@ -3,14 +3,15 @@
         "k-and-n": [[3, 6]],
         "goal": 8
     },
-    "negamax": {
+    "minimax": {
+        "threads": 32,
         "files-to-load-from": {
             "winning": [],
             "losing": []
         }
     },
     "verify": {
-        "threads": 24,
+        "threads": 32,
         "log-frequency": {
             "winning": 10,
             "losing": 20

@@ -142,15 +142,15 @@ size_t verifyLosingStatesThread(
         size_t i = counter.fetch_add(1, std::memory_order_relaxed);
         if (i >= total) break;
         if ((i + 1) % logFreq == 0 || i + 1 == total) {
-            printf("[Verify Losing] %zu / %zu\n", i, total);
+            printf("[Verify Losing] %zu / %zu\n", i + 1, total);
         }
 
         const GameState& gameState = losingStates[i];
 
         // Double check that the Remover will move next
-        if (gameState.getCurrentPlayer() != Player::REMOVER) {
+        if (gameState.getCurrentPlayer() != Player::PUSHER) {
             printf(
-                    "Warning: Skipping the following state due to being the Pusher's turn:\n%s\n",
+                    "Warning: Skipping the following state due to being the Remover's turn:\n%s\n",
                     gameState.getBoard().toString().c_str());
             countUnverified++;
             continue;
@@ -172,7 +172,7 @@ size_t verifyLosingStatesThread(
                     std::vector<GameState> nextNextStates = nextState.step();
 #endif
 
-                    // If all moves lead to Pusher losing or another losing state, then this is a losing state
+                    // If any move lead to Pusher losing or another losing state, then this is a losing state
                     return std::any_of(
                             nextNextStates.begin(), nextNextStates.end(),
                             [&archive](const GameState& nextNextState) {

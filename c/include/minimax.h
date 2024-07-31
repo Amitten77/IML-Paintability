@@ -16,9 +16,10 @@
  * @brief Runs minimax to search all possible moves of both players.
  * @param initialState The initial game state.
  * @param archive The archive to store the winning and losing states.
+ * @param j The number of threads.
  * @param count The number of states visited.
  * @return Predicted winner.
  */
-Player minimax(const GameState& initialState, Archive& archive, size_t& count);
+Player minimax(const GameState& initialState, Archive& archive, size_t j, size_t& count);
 
 #endif // MINIMAX_H

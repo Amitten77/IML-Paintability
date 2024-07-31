@@ -289,6 +289,7 @@ std::vector<PusherMove> GameState::getPusherMovesPruned(int verbose) const noexc
 
 std::vector<RemoverMove> GameState::getRemoverMovesPruned(int verbose) const noexcept {
     (void)verbose;
+
     std::vector<RemoverMove> moves;
     const Board& board = this->getBoard();
     size_t n = board.getN();
@@ -296,7 +297,20 @@ std::vector<RemoverMove> GameState::getRemoverMovesPruned(int verbose) const noe
     // For all possible remover's choice, calculate the resulting board, and neglect invalid moves
     std::vector<bool> selected(n, true);
     std::vector<Board> movedBoards(n, board);
+    std::vector<int> removedChipsValue(n);
     for (size_t c = 0; c < n; c++) {
+        // Find the total value of chips removed by the move
+        // The value of a single chip is 2^r, where r is the row of the chip
+        for (size_t idx = 0; idx < board.getK(); idx++) {
+            if (board.chipIsMoved(c, idx)) {
+                int r = board.getChipRow(c, idx);
+                if (r >= 0) {
+                    removedChipsValue[c] += (1 << r);
+                }
+            }
+        }
+
+        // Apply the move to get the resulting board
         if (!movedBoards[c].apply(c)) {
             selected[c] = false;
         }
@@ -337,6 +351,12 @@ std::vector<RemoverMove> GameState::getRemoverMovesPruned(int verbose) const noe
             moves.push_back(c);
         }
     }
+
+    // Sort the moves by the number of chips removed
+    std::sort(moves.begin(), moves.end(), [&removedChipsValue](size_t c1, size_t c2) {
+        // Prioritize moves that remove a higher value of chips
+        return removedChipsValue[c1] > removedChipsValue[c2];
+    });
 
     return moves;
 }

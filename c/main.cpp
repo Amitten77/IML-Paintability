@@ -55,22 +55,22 @@ int main(int argc, char** argv) {
     auto [winningFilename, losingFilename] = getFileNames(N, K, GOAL);
     archive.loadWinning(winningFilename);
     archive.loadLosing(losingFilename);
-    for (std::filesystem::path additionalWinningFilename : config["negamax"]["files-to-load-from"]["winning"]) {
+    for (std::filesystem::path additionalWinningFilename : config["minimax"]["files-to-load-from"]["winning"]) {
         archive.loadWinning(additionalWinningFilename);
     }
-    for (std::filesystem::path additionalLosingFilename : config["negamax"]["files-to-load-from"]["losing"]) {
+    for (std::filesystem::path additionalLosingFilename : config["minimax"]["files-to-load-from"]["losing"]) {
         archive.loadLosing(additionalLosingFilename);
     }
     archive.prune();
 
-    // Start negamax algorithm
+    // Start minimax algorithm
     printf("\n[Minimax start]\n");
     auto startWall = std::chrono::high_resolution_clock::now();
     auto startCpu = std::clock();
     size_t count;
-    Player winner = minimax(initialGameState, archive, count);
+    Player winner = minimax(initialGameState, archive, config["minimax"]["threads"], count);
 
-    // End negamax algorithm
+    // End minimax algorithm
     auto endWall = std::chrono::high_resolution_clock::now();
     auto endCpu = std::clock();
     double durationWall = (double)std::chrono::duration_cast<std::chrono::seconds>(endWall - startWall).count();
