@@ -279,12 +279,14 @@ Player Archive::predictWinner(const GameState& gameState, size_t j) const noexce
     return Player::NONE;
 }
 
-void Archive::prune() noexcept {
-    pruneWinningBoards();
-    pruneLosingBoards();
+void Archive::prune(int verbose) noexcept {
+    pruneWinningBoards(verbose);
+    pruneLosingBoards(verbose);
 }
 
-void Archive::pruneWinningBoards() noexcept {
+void Archive::pruneWinningBoards(int verbose) noexcept {
+    size_t startCount = this->winningCount_;
+
     // Flatten the winning boards
     std::vector<Board> winningBoards;
     std::vector<bool> shouldRemove;
@@ -331,9 +333,17 @@ void Archive::pruneWinningBoards() noexcept {
     // Update the winning count and prune threshold
     this->winningCount_ = winningBoards.size();
     this->winningPruneThreshold_ = std::max(100ul, this->winningCount_ * 3);
+
+#ifdef TIDY_ON_INSERT
+    if (verbose) {
+        printf("Pruned winning boards: %zu -> %zu\n", startCount, this->winningCount_);
+    }
+#endif
 }
 
-void Archive::pruneLosingBoards() noexcept {
+void Archive::pruneLosingBoards(int verbose) noexcept {
+    size_t startCount = this->losingCount_;
+
     // Flatten the losing boards
     std::vector<Board> losingBoards;
     std::vector<bool> shouldRemove;
@@ -380,6 +390,12 @@ void Archive::pruneLosingBoards() noexcept {
     // Update the losing count and prune threshold
     this->losingCount_ = losingBoards.size();
     this->losingPruneThreshold_ = std::max(100ul, this->losingCount_ * 3);
+
+#ifdef TIDY_ON_INSERT
+    if (verbose) {
+        printf("Pruned losing boards: %zu -> %zu\n", startCount, this->losingCount_);
+    }
+#endif
 }
 
 std::vector<Board> Archive::getWinningBoardsAsVector() const noexcept {

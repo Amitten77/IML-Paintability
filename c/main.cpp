@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
     for (std::filesystem::path additionalLosingFilename : config["minimax"]["files-to-load-from"]["losing"]) {
         archive.loadLosing(additionalLosingFilename);
     }
-    archive.prune();
+    archive.prune(1);
 
     // Start minimax algorithm
     printf("\n[Minimax start]\n");
@@ -94,8 +94,8 @@ int main(int argc, char** argv) {
     printf("Speedup: %f\n", durationCpu / durationWall);
 
     // Save the winning and losing states to files
+    archive.prune(1);
     printf("\n[Saving winning and losing states]\n");
-    archive.prune();
     archive.saveWinning(winningFilename);
     archive.saveLosing(losingFilename);
 

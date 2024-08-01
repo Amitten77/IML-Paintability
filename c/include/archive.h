@@ -41,13 +41,13 @@ public:
      * If a winning/losing state is strictly greater/less than another winning/losing state, the former state will be
      * considered as redundant, and thus be removed.
      */
-    void prune() noexcept;
+    void prune(int verbose = 0) noexcept;
 
     /// @brief Same as prune(), but only for winning boards.
-    void pruneWinningBoards() noexcept;
+    void pruneWinningBoards(int verbose = 0) noexcept;
 
     /// @brief Same as prune(), but only for losing boards.
-    void pruneLosingBoards() noexcept;
+    void pruneLosingBoards(int verbose = 0) noexcept;
 
     /// @return The winning boards flattened as a single vector.
     [[nodiscard]] std::vector<Board> getWinningBoardsAsVector() const noexcept;

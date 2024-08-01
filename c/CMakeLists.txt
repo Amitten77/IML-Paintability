@@ -6,7 +6,6 @@ if (BUILD_TESTS)
     enable_testing()
 endif ()
 
-
 # Project settings
 project(iml-paintability)
 
@@ -15,16 +14,19 @@ set(DEPS_PATH "${CMAKE_SOURCE_DIR}/deps")
 list(APPEND CMAKE_PREFIX_PATH "${DEPS_PATH}")
 
 # Compiler flags
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 if (MSVC)
     add_compile_options(/utf-8 /W4 /WX)
-    add_compile_options("$<$<CONFIG:Release>:/O2>")
+    add_compile_options("$<$<CONFIG:Release>:/Ox>")
     add_compile_options("$<$<CONFIG:Debug>:/Zi>")
+    add_compile_options("/arch:AVX2")
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 else ()
     add_compile_options(-Wall -Wextra -Werror)
     add_compile_options("$<$<CONFIG:Release>:-O3>")
     add_compile_options("$<$<CONFIG:Debug>:-g>")
+    add_compile_options("-march=native")
 endif ()
 
 # For static analysis and linting
