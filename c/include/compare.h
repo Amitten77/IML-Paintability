@@ -57,7 +57,6 @@ CompResult compareBoards(const Board& board1, const Board& board2, Purpose purpo
  * @param boards A list of winning boards.
  * @return Whether it is winning.
  */
-bool boardIsWinning(const Board& board, const std::vector<Board>& winningBoards);
 
 bool bfs(const std::vector<std::unordered_set<int>>& relation, std::vector<int>& distance, std::vector<int>& pairU, std::vector<int>& pairV, int n);
 

@@ -490,48 +490,31 @@ void Board::sim_game() {
     }
 }
 
-// std::string Board::serialize() const {
-//         std::ostringstream os;
-//         // Serialize basic member variables
-//         os << n << "," << k << "," << goal << "," << max_score << "," << num_tokens << "\n";
-        
-//         // Serialize the board structure
-//         for (const auto& row : board) {
-//             for (const auto& cell : row) {
-//                 os << cell.first << ":" << cell.second << " "; // Use ':' to separate pair values and ' ' for cell delimiter
-//             }
-//             os << "\n"; // Newline to separate rows
-//         }
+std::string Board::serialize() const {
+        std::ostringstream os;
 
-//         return os.str();
-//     }
+        for (const auto& cell : board) {
+            os << cell << " "; 
+        }
+        os << "\n"; 
 
-// Board::Board(const std::string& serializedBoard) {
-//         std::istringstream iss(serializedBoard);
-//         std::string line;
+        return os.str();
+}
 
-//         // Get the first line and extract basic member variables
-//         std::getline(iss, line);
-//         std::istringstream basicInfo(line);
-//         std::string value;
-//         std::getline(basicInfo, value, ','); n = std::stoi(value);
-//         std::getline(basicInfo, value, ','); k = std::stoi(value);
-//         std::getline(basicInfo, value, ','); goal = std::stoi(value);
-//         std::getline(basicInfo, value, ','); max_score = std::stoi(value);
-//         std::getline(basicInfo, value, ','); num_tokens = std::stoi(value);
+Board::Board(const std::string& serializedBoard, int n, int k, int goal) : n(n), k(k), goal(goal), max_score(0), num_tokens(0) {
+        std::istringstream iss(serializedBoard);
+        int cell;
+        while (iss >> cell) {
+            board.push_back(cell);
+            if (cell != -1) {
+                num_tokens++;
+            }
+        }
 
-//         // Process subsequent lines for the board structure
-//         while (std::getline(iss, line)) {
-//             std::istringstream cellStream(line);
-//             std::vector<std::pair<int, int>> row;
-//             std::string cellData;
-//             while (std::getline(cellStream, cellData, ' ')) {
-//                 if (cellData.empty()) continue; // Skip empty entries, if any
-//                 int first = std::stoi(cellData.substr(0, cellData.find(':')));
-//                 int second = std::stoi(cellData.substr(cellData.find(':') + 1));
-//                 row.emplace_back(first, second);
-//             }
-//             board.push_back(row);
-//         }
-//     }
+        if (!board.empty()) {
+            max_score = *std::max_element(board.begin(), board.end());
+        }
+        this->organize_board();
+    }
+
 

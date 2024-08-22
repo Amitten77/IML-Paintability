@@ -8,46 +8,37 @@
 
 const int SCALE_FACTOR = 4;
 
-// void saveBoardsToFile(const std::vector<Board>& boards, const std::string& filename) {
-//     std::ofstream file(filename);
-//     if (!file.is_open()) {
-//         std::cerr << "Failed to open file for writing: " << filename << std::endl;
-//         return;
-//     }
+void saveBoardsToFile(const std::vector<Board>& boards, const std::string& filename) {
+    std::ofstream outFile(filename);
+    if (!outFile) {
+        throw std::runtime_error("Failed to open file for writing.");
+    }
 
-//     for (const Board& board : boards) {
-//         file << board.serialize();
-//         file << "---\n"; // Use a delimiter to separate boards
-//     }
+    for (const auto& board : boards) {
+        outFile << board.serialize();
+    }
 
-//     file.close();
-// }
+    outFile.close();
+}
 
-// void loadBoardsFromFile(const std::string& filename, std::vector<Board>& boards) {
-//     std::ifstream file(filename);
-//     if (!file.is_open()) {
-//         std::cerr << "Failed to open file for reading: " << filename << std::endl;
-//         return;
-//     }
+void loadBoardsFromFile(const std::string& filename, std::vector<Board>& boards, int n, int k, int goal) {
+    std::ifstream inFile(filename);
+    if (!inFile) {
+        std::cerr << "Error: Failed to open file for reading: " << filename << std::endl;
+        return;
+    }
 
-//     std::string line;
-//     std::string serializedBoard;
-//     while (std::getline(file, line)) {
-//         if (line == "---") { // Board delimiter
-//             if (!serializedBoard.empty()) {
-//                 boards.emplace_back(serializedBoard);
-//                 serializedBoard.clear();
-//             }
-//         } else {
-//             serializedBoard += line + "\n";
-//         }
-//     }
-    
-//     // Don't forget to add the last board if the file doesn't end with "---"
-//     if (!serializedBoard.empty()) {
-//         boards.emplace_back(serializedBoard);
-//     }
-// }
+    std::string line;
+
+    while (getline(inFile, line)) {
+        if (!line.empty()) {
+            boards.emplace_back(line, n, k, goal);
+        }
+    }
+
+    inFile.close();
+}
+
 
 std::vector<std::vector<int>> product(const std::vector<std::vector<std::vector<int>>>& lists) {
     std::vector<std::vector<int>> result;
@@ -208,7 +199,7 @@ std::string checkStatus(const Board &board) {
     if (maxTokens == 1) {
         return "LOSING";
     } 
-    if (maxTokens == 2 || (maxTokens == 3 && threeCount <= 2)) {
+    if (maxTokens == 2) {
         if (rowsFilled[0] + int(rowsFilled.size()) - 1 < board.goal) {
             return "LOSING";
         }
@@ -287,7 +278,7 @@ int negaMax(Board& board, bool isPusher, int alpha, int beta, int depth) {
             if (depth < 1) {
                 std::cout << std::fixed << std::setprecision(2) 
             << (((int)index + 1) * 100.0 / (int)game_states.size()) << "% done with the Game States for Depth "
-            << depth << " for Possibility " << (index + 1) << " out of " << game_states.size() << std::endl;
+            << depth << " for Possibility " << (index + 1) << " out of " << game_states.size() << '\n';
             }
             if (bestVal >= board.goal || beta <= alpha) {
                 break;
@@ -311,17 +302,17 @@ int negaMax(Board& board, bool isPusher, int alpha, int beta, int depth) {
         if (bestVal < board.goal) {
             LOSING.push_back(board);
             if ((int)LOSING.size() > LOSING_BOUND) {
-                std::cout << "Losing Length Before Pruning: " << LOSING.size() << std::endl;
+                std::cout << "Losing Length Before Pruning: " << LOSING.size() << '\n';
                 prune_losing();
-                std::cout << "Losing Length After Pruning: " << LOSING.size() << std::endl;
+                std::cout << "Losing Length After Pruning: " << LOSING.size() << '\n';
                 LOSING_BOUND = std::max(LOSING_BOUND, int((LOSING.size() * SCALE_FACTOR)));
             } 
         } else {
             WINNING.push_back(board);
             if ((int)WINNING.size() > WINNING_BOUND) {
-                std::cout << "Winning Length Before Pruning: " << WINNING.size() << std::endl;
+                std::cout << "Winning Length Before Pruning: " << WINNING.size() << '\n';
                 prune_winning();
-                std::cout << "Winning Length After Pruning: " << WINNING.size() << std::endl;
+                std::cout << "Winning Length After Pruning: " << WINNING.size() << '\n';
                 WINNING_BOUND = std::max(WINNING_BOUND, int((WINNING.size() * SCALE_FACTOR)));
             }
         }

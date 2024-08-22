@@ -56,6 +56,8 @@ public:
     /// @brief Default Constructor. If BoardInput not defined, creates a n x k board with all tokens at row 0. 
     Board(int n, int k, int goal, const std::vector<std::vector<std::pair<int, int>>>& boardInput = std::vector<std::vector<std::pair<int, int>>>());
 
+    Board(const std::string& serializedBoard, int n, int k, int goal);
+
     /// @brief  Deserializes a string into a Board
     /// @param serializedBoard 
     // explicit Board(const std::string& serializedBoard);
@@ -106,7 +108,7 @@ public:
     
     void sim_game();
 
-    // [[nodiscard]] std::string serialize() const;
+     [[nodiscard]] std::string serialize() const;
 
 private:
     // /// @brief helper method for is_possible_push();

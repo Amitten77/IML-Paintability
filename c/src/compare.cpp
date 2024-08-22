@@ -4,9 +4,6 @@
 #include <queue>
 #include "../include/compare.h"
 
-
-//#define USE_HOPCROFT_KARP
-#define HALLS
 #define NIL 0
 #define INF INT_MAX
 
@@ -255,10 +252,4 @@ CompResult compareBoards(const Board& board1, const Board& board2, Purpose purpo
     if (isLess) return CompResult::LESS;
     if (isMore) return CompResult::GREATER;
     return CompResult::INCOMPARABLE;
-}
-
-bool boardIsWinning(const Board& board, const std::vector<Board>& winningBoards) {
-    return std::ranges::any_of(winningBoards, [&board](const Board& other) {
-        return compareBoards(board, other, Purpose::GREATER) == CompResult::GREATER;
-    });
 }

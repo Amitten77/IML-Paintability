@@ -50,12 +50,12 @@ std::vector<std::vector<int>> product(const std::vector<std::vector<std::vector<
 /**
  * @brief Saves a database of boards to a file.
 */
-//void saveBoardsToFile(const std::vector<Board>& boards, const std::string& filename);
+void saveBoardsToFile(const std::vector<Board>& boards, const std::string& filename);
 
 
 /**
  * @brief Reads a database of boards from a file.
 */
-//void loadBoardsFromFile(const std::string& filename, std::vector<Board>& boards);
+void loadBoardsFromFile(const std::string& filename, std::vector<Board>& boards, int n, int k, int goal);
 
 #endif // HELPER_H
