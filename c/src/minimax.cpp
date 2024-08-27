@@ -11,7 +11,7 @@ std::tuple<short, short, short> getColor(size_t idx, size_t total) {
     // idx = 1: Red
     // idx = total: Green
     if (total <= 1) {
-        return { 0, 255, 0 };
+        return std::make_tuple<short, short, short>(0, 255, 0);
     }
 
     // Ratio
@@ -19,9 +19,9 @@ std::tuple<short, short, short> getColor(size_t idx, size_t total) {
 
     // Scale color to have maximum lightness
     if (t < 0.5) {
-        return { 255, (short)(255.0f * t / (1 - t)), 0 };
+        return std::make_tuple<short, short, short>(255, (short)(255.0f * t / (1 - t)), 0);
     } else {
-        return { (short)(255.0f * (1 - t) / t), 255, 0 };
+        return std::make_tuple<short, short, short>((short)(255.0f * (1 - t) / t), 255, 0);
     }
 }
 
@@ -52,7 +52,7 @@ void log(const ProgressTracker& pt, const std::string& msg) {
     // Print actual message
     auto [r, g, b] = getColor(pt.idx, pt.total);
     printf("\033[38;2;%d;%d;%dm", r, g, b);
-    printf("Depth %zu [%lu/%lu]: %s", pt.depth, pt.idx, pt.total, msg.c_str());
+    printf("Depth %zu [%zu/%zu]: %s", pt.depth, pt.idx, pt.total, msg.c_str());
     printf("\033[0m");
 
     // Flush

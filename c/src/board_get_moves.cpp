@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "board.h"
 #include "helper.h"
 

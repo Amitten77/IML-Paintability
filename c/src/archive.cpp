@@ -11,7 +11,7 @@ Archive::Archive() noexcept
 void saveBoardsTo(std::map<size_t, std::vector<Board>>& boards, const std::filesystem::path& filename) {
     std::ofstream file(filename);
     if (!file.is_open()) {
-        fprintf(stderr, "Failed to open file for writing: %s\n", filename.c_str());
+        fprintf(stderr, "Failed to open file for writing: %s\n", filename.string().c_str());
         return;
     }
 
@@ -29,7 +29,7 @@ void saveBoardsTo(std::map<size_t, std::vector<Board>>& boards, const std::files
 void loadBoardsFrom(std::map<size_t, std::vector<Board>>& boards, const std::filesystem::path& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
-        fprintf(stderr, "Failed to open file for reading: %s\n", filename.c_str());
+        fprintf(stderr, "Failed to open file for reading: %s\n", filename.string().c_str());
         return;
     }
 
@@ -203,7 +203,7 @@ Player Archive::predictWinner(const GameState& gameState, size_t j) const noexce
         // Multithreading
         std::atomic<size_t> counter = 0;
         std::vector<std::future<bool>> futures;
-        size_t j_ = std::max(std::min(j, winningBoards.size() / 2), 1ul);
+        size_t j_ = std::max(std::min(j, winningBoards.size() / 2), 1ull);
         futures.reserve(j_);
 
         // Compare with all winning boards
@@ -244,7 +244,7 @@ Player Archive::predictWinner(const GameState& gameState, size_t j) const noexce
         // Multithreading
         std::atomic<size_t> counter = 0;
         std::vector<std::future<bool>> futures;
-        size_t j_ = std::max(std::min(j, losingBoards.size() / 2), 1ul);
+        size_t j_ = std::max(std::min(j, losingBoards.size() / 2), 1ull);
         futures.reserve(j_);
 
         // Compare with all losing boards
@@ -332,7 +332,7 @@ void Archive::pruneWinningBoards(int verbose) noexcept {
 
     // Update the winning count and prune threshold
     this->winningCount_ = winningBoards.size();
-    this->winningPruneThreshold_ = std::max(100ul, this->winningCount_ * 3);
+    this->winningPruneThreshold_ = std::max(100ull, this->winningCount_ * 3);
 
 #ifdef TIDY_ON_INSERT
     if (verbose) {
@@ -389,7 +389,7 @@ void Archive::pruneLosingBoards(int verbose) noexcept {
 
     // Update the losing count and prune threshold
     this->losingCount_ = losingBoards.size();
-    this->losingPruneThreshold_ = std::max(100ul, this->losingCount_ * 3);
+    this->losingPruneThreshold_ = std::max(100ull, this->losingCount_ * 3);
 
 #ifdef TIDY_ON_INSERT
     if (verbose) {
