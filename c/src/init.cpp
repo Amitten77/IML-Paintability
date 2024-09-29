@@ -1,5 +1,4 @@
 #include <format>
-#include <sstream>
 #include "init.h"
 
 std::pair<std::filesystem::path, std::filesystem::path> getFileNames(size_t n, size_t k, int goal) {

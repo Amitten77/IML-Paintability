@@ -1,4 +1,5 @@
 #include <fstream>
+#include <future>
 #include "archive.h"
 #include "compare.h"
 
@@ -183,7 +184,7 @@ bool findAnyMatchThread(
     return false;
 }
 
-Player Archive::predictWinner(const GameState& gameState, size_t j) const noexcept {
+Player Archive::predictWinner(const GameState& gameState, size_t threads) const noexcept {
     // If the game is already finished, return the winner
     Player winner = gameState.getWinner();
     if (winner != Player::NONE) {
@@ -203,7 +204,7 @@ Player Archive::predictWinner(const GameState& gameState, size_t j) const noexce
         // Multithreading
         std::atomic<size_t> counter = 0;
         std::vector<std::future<bool>> futures;
-        size_t j_ = std::max(std::min(j, winningBoards.size() / 2), 1ull);
+        size_t j_ = std::max(std::min(threads, winningBoards.size() / 2), 1ull);
         futures.reserve(j_);
 
         // Compare with all winning boards
@@ -244,7 +245,7 @@ Player Archive::predictWinner(const GameState& gameState, size_t j) const noexce
         // Multithreading
         std::atomic<size_t> counter = 0;
         std::vector<std::future<bool>> futures;
-        size_t j_ = std::max(std::min(j, losingBoards.size() / 2), 1ull);
+        size_t j_ = std::max(std::min(threads, losingBoards.size() / 2), 1ull);
         futures.reserve(j_);
 
         // Compare with all losing boards

@@ -2,23 +2,14 @@
  * @file init.h
  * @brief Initialize the game board.
  *
- * This file contains functions to initialize the game board according to the configuration file. A configuration file
- * has the following format:
- *
- * ```json
- * {
- *   todo
- * }
- * ```
- *
- * todo
+ * This file contains functions to initialize the game board according to the configuration file. See README.md for more
+ * information on the configuration file.
  */
 
 #ifndef INIT_H
 #define INIT_H
 
 #include <filesystem>
-#include <string>
 #include "json.hpp"
 #include "game_state.h"
 

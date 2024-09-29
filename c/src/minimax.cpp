@@ -59,7 +59,7 @@ void log(const ProgressTracker& pt, const std::string& msg) {
     fflush(stdout);
 }
 
-Player minimax(const GameState& initialState, Archive& archive, size_t j, size_t& count) {
+Player minimax(const GameState& initialState, Archive& archive, size_t threads, size_t& count) {
     struct GameSnapShot {
         GameState gameState;  // Current game state
         GameSnapShot* parent;  // GameSnapShot that leads to this state
@@ -128,7 +128,7 @@ Player minimax(const GameState& initialState, Archive& archive, size_t j, size_t
         // 3. After that, try to predict the winner using the archive.
         // Starting from this step we consider this state as visited, thus increment the count.
         count++;
-        curr.winner = archive.predictWinner(gameState, j);
+        curr.winner = archive.predictWinner(gameState, threads);
         log(curr.pt, "In progress");
 
         // 4. If we still don't have the state, we have to expand all possible next states.

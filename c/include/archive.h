@@ -12,7 +12,6 @@
 #include <filesystem>
 #include <map>
 #include "game_state.h"
-#include "thread_pool.h"
 
 static const char* BOARD_DELIMITER = "---";
 
@@ -31,9 +30,10 @@ public:
     /**
      * @brief Predict the winner of the game based on the winning and losing states.
      * @param gameState The game state to predict.
+     * @param threads The number of threads to use.
      * @return The predicted winner.
      */
-    [[nodiscard]] Player predictWinner(const GameState& gameState, size_t j = 32) const noexcept;
+    [[nodiscard]] Player predictWinner(const GameState& gameState, size_t threads = 32) const noexcept;
 
     /**
      * @brief Remove all redundant winning and losing states.

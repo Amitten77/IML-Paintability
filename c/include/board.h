@@ -1,3 +1,8 @@
+/**
+ * @file board.h
+ * @brief This file contains the Board class, which represent the status of all chips.
+ */
+
 #ifndef BOARD_H
 #define BOARD_H
 

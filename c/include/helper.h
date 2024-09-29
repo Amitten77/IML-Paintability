@@ -1,8 +1,12 @@
+/**
+ * @file helper.h
+ * @brief This file contains helper functions for the project.
+ */
+
 #ifndef HELPER_H // Include guard
 #define HELPER_H
 
 #include <vector>
-#include <string>
 
 /// @brief Integer version of std::pow.
 size_t integerPow(size_t base, size_t exponent);

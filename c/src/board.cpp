@@ -3,13 +3,13 @@
 #include <sstream>
 #include "board.h"
 
-std::string toString(Player player) {
+std::string toString(const Player& player) {
     switch (player) {
         case Player::PUSHER:
             return "Player::PUSHER";
         case Player::REMOVER:
             return "Player::REMOVER";
-        case Player::NONE:
+        default:
             return "Player::NONE";
     }
 }
@@ -54,7 +54,7 @@ Board::Board(const std::string& boardString) {
     // Parse the board structure
     this->boardState_.resize(this->n_, std::vector(this->k_, 0));
     this->chipIsMoved_.resize(this->n_, std::vector(this->k_, false));
-    for (size_t i = 0; i <= this->n_ * this->k_; i++) {
+    for (size_t i = 0; i < this->n_ * this->k_; i++) {
         size_t c = i / this->k_;
         size_t idx = i % this->k_;
         ss >> this->boardState_[c][idx];

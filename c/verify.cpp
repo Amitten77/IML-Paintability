@@ -17,14 +17,11 @@
 #include <atomic>
 #include <fstream>
 #include <future>
-#include <mutex>
-#include <queue>
 #include <vector>
 #include "json.hpp"
 #include "archive.h"
 #include "board.h"
 #include "compare.h"
-#include "helper.h"
 #include "init.h"
 
 /**
@@ -46,7 +43,7 @@ size_t verifyWinningStatesThread(
         size_t i = counter.fetch_add(1, std::memory_order_relaxed);
         if (i >= total) break;
         if ((i + 1) % logFreq == 0 || i + 1 == total) {
-            printf("[Verify Winning] %zu / %zu\n", i + 1, total);
+            printf("[Verify winning] %zu / %zu\n", i + 1, total);
         }
 
         const GameState& gameState = winningStates[i];
@@ -66,8 +63,7 @@ size_t verifyWinningStatesThread(
 #else
         std::vector<GameState> nextStates = gameState.step();
 #endif
-        bool canGuaranteeWinning = std::any_of(
-                nextStates.begin(), nextStates.end(),
+        bool canGuaranteeWinning = std::ranges::any_of(nextStates,
                 [&archive](const GameState& nextState) {
                     // Take another step
 #ifdef USE_PRUNED_MOVES_FOR_VERIFICATION
@@ -77,8 +73,7 @@ size_t verifyWinningStatesThread(
 #endif
 
                     // If all moves lead to Pusher victory or a confirmed winning state, then this is a winning state
-                    return std::all_of(
-                            nextNextStates.begin(), nextNextStates.end(),
+                    return std::ranges::all_of(nextNextStates,
                             [nextState, &archive](const GameState& nextNextState) {
                                 return archive.predictWinner(nextNextState) == Player::PUSHER;
                             });
@@ -93,7 +88,7 @@ size_t verifyWinningStatesThread(
     return countUnverified;
 }
 
-size_t verifyWinningStates(const std::vector<GameState>& winningStates, size_t j, size_t logFreq) {
+size_t verifyWinningStates(const std::vector<GameState>& winningStates, size_t threads, size_t logFreq) {
     // Create archive
     Archive archive;
     for (const GameState& gameState : winningStates) {
@@ -104,10 +99,10 @@ size_t verifyWinningStates(const std::vector<GameState>& winningStates, size_t j
     size_t total = winningStates.size();
     std::atomic<size_t> counter = 0;
     std::vector<std::future<size_t>> futures;
-    futures.reserve(j);
+    futures.reserve(threads);
 
     // Create threads
-    for (size_t index = 0; index < j; index++) {
+    for (size_t index = 0; index < threads; index++) {
         futures.push_back(std::async(
                 std::launch::async,
                 verifyWinningStatesThread,
@@ -142,7 +137,7 @@ size_t verifyLosingStatesThread(
         size_t i = counter.fetch_add(1, std::memory_order_relaxed);
         if (i >= total) break;
         if ((i + 1) % logFreq == 0 || i + 1 == total) {
-            printf("[Verify Losing] %zu / %zu\n", i + 1, total);
+            printf("[Verify losing] %zu / %zu\n", i + 1, total);
         }
 
         const GameState& gameState = losingStates[i];
@@ -162,8 +157,7 @@ size_t verifyLosingStatesThread(
 #else
         std::vector<GameState> nextStates = gameState.step();
 #endif
-        bool canGuaranteeLosing = std::all_of(
-                nextStates.begin(), nextStates.end(),
+        bool canGuaranteeLosing = std::ranges::all_of(nextStates,
                 [&archive](const GameState& nextState) {
                     // Take another step
 #ifdef USE_PRUNED_MOVES_FOR_VERIFICATION
@@ -173,8 +167,7 @@ size_t verifyLosingStatesThread(
 #endif
 
                     // If any move lead to Pusher losing or another losing state, then this is a losing state
-                    return std::any_of(
-                            nextNextStates.begin(), nextNextStates.end(),
+                    return std::ranges::any_of(nextNextStates,
                             [&archive](const GameState& nextNextState) {
                                 return archive.predictWinner(nextNextState) == Player::REMOVER;
                             });
@@ -189,7 +182,7 @@ size_t verifyLosingStatesThread(
     return countUnverified;
 }
 
-size_t verifyLosingStates(const std::vector<GameState>& losingStates, size_t j, size_t logFreq) {
+size_t verifyLosingStates(const std::vector<GameState>& losingStates, size_t threads, size_t logFreq) {
     // Create archive
     Archive archive;
     for (const GameState& gameState : losingStates) {
@@ -200,10 +193,10 @@ size_t verifyLosingStates(const std::vector<GameState>& losingStates, size_t j, 
     size_t total = losingStates.size();
     std::atomic<size_t> counter = 0;
     std::vector<std::future<size_t>> futures;
-    futures.reserve(j);
+    futures.reserve(threads);
 
     // Create threads
-    for (size_t index = 0; index < j; index++) {
+    for (size_t index = 0; index < threads; index++) {
         futures.push_back(std::async(
                 std::launch::async,
                 verifyLosingStatesThread,
@@ -229,7 +222,7 @@ size_t verifyLosingStates(const std::vector<GameState>& losingStates, size_t j, 
 
 int main(int argc, char** argv) {
     if (argc != 2) {
-        fprintf(stderr, "Usage: %s <JSON config file>\n", argv[0]);
+        fprintf(stderr, "Usage: %s [JSON config file]\n", argv[0]);
         exit(1);
     }
 
@@ -252,7 +245,7 @@ int main(int argc, char** argv) {
     const Board& initialBoard = initialGameState.getBoard();
     size_t N = initialBoard.getN();
     size_t K = initialBoard.getK();
-    int GOAL = initialGameState.getGoal();  // Paintability = GOAL + 1
+    int GOAL = initialGameState.getGoal();
     printf("N: %zu, K: %zu, GOAL: %d\n", N, K, GOAL);
     printf("Initial board:\n%s", initialBoard.toString().c_str());
 

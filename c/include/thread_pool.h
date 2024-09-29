@@ -1,3 +1,10 @@
+/**
+ * @file thread_pool.h
+ * @brief This file contains the implementation of a thread pool.
+ *
+ * Not used anywhere in the project, but kept it in case it is needed in the future.
+ */
+
 #ifndef THREAD_POOL_H
 #define THREAD_POOL_H
 

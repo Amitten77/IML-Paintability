@@ -1,10 +1,14 @@
 cmake_minimum_required(VERSION 3.21)
 
 # CMake cache variables
-option(BUILD_TESTS "Build the test cases in the `test/` folder." ON)
+option(BUILD_TESTS "Build the test cases in the `test/` folder." OFF)
 if (BUILD_TESTS)
     enable_testing()
 endif ()
+
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+endif()
 
 # Project settings
 project(iml-paintability)
@@ -39,6 +43,8 @@ file(GLOB_RECURSE SOURCES "${CMAKE_SOURCE_DIR}/src/*.cpp")
 add_executable(main main.cpp ${SOURCES})
 set_target_properties(main PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}"
         DEBUG_POSTFIX -d
 )
 target_include_directories(main PRIVATE "${CMAKE_SOURCE_DIR}/include")
@@ -47,9 +53,21 @@ target_include_directories(main PRIVATE "${CMAKE_SOURCE_DIR}/include")
 add_executable(verify verify.cpp ${SOURCES})
 set_target_properties(verify PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}"
         DEBUG_POSTFIX -d
 )
 target_include_directories(verify PRIVATE "${CMAKE_SOURCE_DIR}/include")
+
+# Simple verify target
+add_executable(simple_verify simple_verify.cpp ${SOURCES})
+set_target_properties(simple_verify PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}"
+        DEBUG_POSTFIX -d
+)
+target_include_directories(simple_verify PRIVATE "${CMAKE_SOURCE_DIR}/include")
 
 # Testcases
 if (BUILD_TESTS)

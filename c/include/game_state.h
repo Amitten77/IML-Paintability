@@ -1,3 +1,8 @@
+/**
+ * @file game_state.h
+ * @brief This file contains the class definition for the game state, which represents a snapshot of the game.
+ */
+
 #ifndef GAME_STATE_H
 #define GAME_STATE_H
 
@@ -23,7 +28,7 @@ public:
     /**
      * @return The winner of the game.
      *
-     * Doesn't not make predictions, but rather returns the current winner of the game.
+     * Does not make predictions, but rather returns the current winner of the game.
      *
      * Time complexity: O(1).
      */
