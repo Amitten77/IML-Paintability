@@ -4,8 +4,11 @@
 This project is a part of the IML Paintability project, which explores the online-coloring of a multipartite graph.
 The project implements the minimax algorithm to search all possibilities and determine the optimal strategy for the Pusher or Remover.
 
+## Requirements
+- CMake 3.15 or higher
+
 ## Build
-The project is built with CMake using following commands:
+The project is built with the following commands:
 ```shell
 cd path/to/IML-paintability/c/
 mkdir build
