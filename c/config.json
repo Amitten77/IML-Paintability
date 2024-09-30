@@ -12,10 +12,6 @@
         }
     },
     "verify": {
-        "threads": 32,
-        "log-frequency": {
-            "winning": 10,
-            "losing": 20
-        }
+        "threads": 32
     }
 }

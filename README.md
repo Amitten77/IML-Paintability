@@ -36,9 +36,6 @@ The CMake build system generates three targets:
 
 2. `verify`:
 
-    > Warning: `verify` does not out-perform `simple_verify` by a lot.
-      Only use `verify` if the starting board cannot be specified by one pair of `N` and `K`, or if you are interested in the list of states that failed to verify.
-
     This is a helper executable that verifies the generated boards.
     To run the executable, use the following command:
     ```shell
@@ -48,19 +45,19 @@ The CMake build system generates three targets:
     See the configuration section below for more information.
 
     The program will read the generated boards and verify that the winning and losing states are correct.
-   Given `N`, `K`, and `GOAL`, the winning states and losing states will be loaded from `winning/N[N]_K[K]_goal[GOAL]_board.txt` and `losing/N[N]_K[K]_goal[GOAL]_board.txt`.
-    Note that if the starting board is a winning state, then only the list of winning states requires verification, and vice versa.
+    Given `N`, `K`, and `GOAL`, the winning states and losing states will be loaded from `winning/N[N]_K[K]_goal[GOAL]_board.txt` and `losing/N[N]_K[K]_goal[GOAL]_board.txt`.
+    If multiple groups of `n` and `k` are provided, the final `N` is the sum of all `n` values, and the final `K` is the maximum `k` value.
 
 3. `simple_verify`:
 
-    This is a simplified version of the `verify` executable that prioritizes readability over performance.
+    This is a simplified version of the `verify` executable that prioritizes readability over flexibility.
     To run the executable, use the following command:
     ```shell
     ./simple_verify [N] [K] [GOAL]
     ```
     Replace `[N]`, `[K]`, and `[GOAL]` with the respective parameters.
 
-    Note that different from the `verify` executable, this program always verifies both the winning and losing states, regardless of the starting board.
+    Note that different from the `verify` executable, this program only accepts starting states with a single pair of `N` and `K`.
 
 ## Configuration
 Here are all the parameters that can be configured in the configuration file:
@@ -100,15 +97,6 @@ Here are all the parameters that can be configured in the configuration file:
 
     The number of threads to use for the verification.
 
-- `verify.log-frequency.winning` (used in `verify`):
-
-    A positive integer representing the frequency of logging the progress of verifying the winning states.
-    For example, if this value is 100, then the program will log the progress for every 100 boards.
-
-- `verify.log-frequency.losing` (used in `verify`):
-
-    Same as `verify.log-frequency.winning`, but for losing states.
-
 Example configuration file:
 ```json
 {
@@ -125,11 +113,7 @@ Example configuration file:
         }
     },
     "verify": {
-        "threads": 32,
-        "log-frequency": {
-            "winning": 10,
-            "losing": 20
-        }
+        "threads": 32
     }
 }
 ```

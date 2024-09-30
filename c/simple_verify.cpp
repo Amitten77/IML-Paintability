@@ -2,16 +2,16 @@
  * @file simple_verify.cpp
  * @brief This file is used to verify the correctness of winning and losing states.
  *
- * Compared to `verify.cpp`, this file prioritizes simplicity over performance. To compile this file, see the
- * instructions in README.md.
+ * Compared to `verify.cpp`, this file loads N, K, and GOAL from the command line arguments instead of the configuration
+ * file. This makes the program easier to read.
  *
- * To run the compiled program, use the following command:
+ * See README.md for instructions on building the program. To run the program, use the following command:
  * ```
  * ./simple_verify [N] [K] [GOAL]
  * ```
  *
- * Where `N` is the number of columns, `K` is the number of chips per column, and `GOAL` is the target row to reach. It
- * will then load the files `winning/N[N]_K[K]_goal[GOAL].txt` and `losing/N[N]_K[K]_goal[GOAL].txt`.
+ * Where `N` is the number of columns, `K` is the number of chips per column, and `GOAL` is the target row to reach. The
+ * program automatically loads the files `winning/N[N]_K[K]_goal[GOAL].txt` and `losing/N[N]_K[K]_goal[GOAL].txt`.
  *
  * The first step is to decide if the initial state (i.e. the state where all chips are at row 0) is a winning or
  * losing. This can be done by comparing the initial state with the winning and losing states. Note that this step is
@@ -152,10 +152,10 @@ int main(int argc, char** argv) {
     size_t N = std::stoul(argv[1]);
     size_t K = std::stoul(argv[2]);
     int GOAL = std::stoi(argv[3]);
-    printf("N: %zu, K: %zu, GOAL: %d\n", N, K, GOAL);
 
     // Initialize starting game state
     printf("\n[Initializing game state]\n");
+    printf("N: %zu, K: %zu, GOAL: %d\n", N, K, GOAL);
     GameState startingGameState(Board(N, K), GOAL);
     const Board& startingBoard = startingGameState.getBoard();
     printf("Initial board:\n%s", startingBoard.toString().c_str());
@@ -166,8 +166,8 @@ int main(int argc, char** argv) {
     std::filesystem::path winningFilename = "winning" / filename;
     std::filesystem::path losingFilename = "losing" / filename;
 
-    // Create the archive (archives are libraries of winning & losing states that make it easier to compare game states)
-    // Note we need two archives because the winning states and losing states are not verified, thus unreliable.
+    // Create the archive
+    // Archives organize game states in a way that is easy to do batch comparisons.
     Archive winningArchive, losingArchive;
     winningArchive.loadWinning(winningFilename);
     losingArchive.loadLosing(losingFilename);

@@ -1,24 +1,14 @@
 /**
- * @file Verify if a board is winning or losing.
+ * @file verify.cpp
+ * @brief This file is used to verify the correctness of winning and losing states.
  *
- * According to the definition, a board is winning if it is greater than or equal to a board in the list of winning
- * states, and it is losing if it is less than or equal to a board in the list of losing states. By comparing to the
- * two list of game states, we can decide if the target board is 1) winning, 2) losing, or 3) unknown.
- *
- * That is assuming the two lists are indeed winning/losing states. The purpose of this program is to verify the
- * correctness of the two lists of states. The list of winning states must be valid if the following is verified:
- * a) Starting from any winning state, after a move each by the Pusher and the Remover consecutively, the Pusher can
- *    guarantee the resulting state is either already winning, or a winning state according to the above definition;
- * b) Starting from any losing state, after a move each by the Pusher and the Remover consecutively, the Remover can
- *    guarantee the resulting state is either already losing, or a losing state according to the above definition;
+ * Same algorithm as `simple_verify.cpp`, but uses the configuration file to determine the starting game state. This
+ * allows complex starting game states to be verified, such as those with multiple groups of K and N.
  */
 
 #include <algorithm>
-#include <atomic>
 #include <fstream>
-#include <future>
 #include <vector>
-#include "json.hpp"
 #include "archive.h"
 #include "board.h"
 #include "game_state.h"
@@ -26,197 +16,101 @@
 #include "init.h"
 
 /**
- * @brief Verify if winning boards are indeed winning.
- * @param winningStates A list of winning states to verify.
+ * @brief Verify if winning states are indeed winning.
  * @param archive Archive containing the exact list of winning states to verify.
- * @param counter A counter to keep track of the progress and distributing work among threads.
- * @param logFreq Log frequency.
+ * @param goal The target row to reach.
+ * @param threads The number of threads to use.
  * @return The number of states failed to verify.
  */
-size_t verifyWinningStatesThread(
-        const std::vector<GameState>& winningStates, const Archive& archive, std::atomic<size_t>& counter, size_t logFreq) {
-
+size_t verifyWinningStates(const Archive& archive, int goal, size_t threads) {
+    std::vector<Board> winningStates = archive.getWinningBoardsAsVector();
     size_t total = winningStates.size();
     size_t numFailedToVerify = 0;
 
-    while (true) {
-        // Log progress
-        size_t i = counter.fetch_add(1, std::memory_order_relaxed);
-        if (i >= total) break;
-        if ((i + 1) % logFreq == 0 || i + 1 == total) {
-            printf("[Verify winning] %zu / %zu\n", i + 1, total);
-        }
+    // If there are no winning states, then there is nothing to verify
+    if (total == 0) {
+        printf("Verify winning: 0 / 0 (0 failed to verify)\n");
+        return 0;
+    }
 
-        const GameState& gameState = winningStates[i];
+    // Otherwise, verify the winning states one by one
+    for (size_t i = 0; i < total; i++) {
+        // Fetch the game state to verify
+        GameState state(winningStates[i], goal);
 
-        // Double check that the Pusher will move next
-        if (gameState.getCurrentPlayer() != Player::PUSHER) {
-            printf(
-                    "Warning: Skipping the following state due to being the Remover's turn:\n%s\n",
-                    gameState.getBoard().toString().c_str());
-            numFailedToVerify++;
-            continue;
-        }
-
-        // Take a step
-#ifdef USE_PRUNED_MOVES_FOR_VERIFICATION
-        std::vector<GameState> nextStates = gameState.stepPruned();
-#else
-        std::vector<GameState> nextStates = gameState.step();
-#endif
-        bool canGuaranteeWinning = std::ranges::any_of(nextStates,
-                [&archive](const GameState& nextState) {
-                    // Take another step
-#ifdef USE_PRUNED_MOVES_FOR_VERIFICATION
-                    std::vector<GameState> nextNextStates = nextState.stepPruned();
-#else
+        // For any pusher move...
+        std::vector<GameState> nextStates = state.step();
+        bool isVerified = std::ranges::any_of(nextStates,
+                [&archive, threads](const GameState& nextState) {
+                    // For all subsequent remover moves...
                     std::vector<GameState> nextNextStates = nextState.step();
-#endif
 
-                    // If all moves lead to Pusher victory or a confirmed winning state, then this is a winning state
+                    // If lead to Pusher victory or a winning state, then original game state is verified
                     return std::ranges::all_of(nextNextStates,
-                            [nextState, &archive](const GameState& nextNextState) {
-                                return archive.predictWinner(nextNextState) == Player::PUSHER;
+                            [nextState, &archive, threads](const GameState& nextNextState) {
+                                return archive.predictWinner(nextNextState, threads) == Player::PUSHER;
                             });
                 });
 
-        if (!canGuaranteeWinning) {
+        if (!isVerified) {
             numFailedToVerify++;
-            printf("The following board is not confirmed as a winning state:\n%s\n", gameState.getBoard().toString().c_str());
         }
+
+        // Log the current progress
+        printf("\033[2K\033[GVerify winning: %zu / %zu (%zu failed to verify)", i + 1, total, numFailedToVerify);
     }
+
+    printf("\n");
 
     return numFailedToVerify;
 }
 
-size_t verifyWinningStates(const std::vector<GameState>& winningStates, size_t threads, size_t logFreq) {
-    // Create archive
-    Archive archive;
-    for (const GameState& gameState : winningStates) {
-        archive.addWinning(gameState.getBoard());
-    }
-
-    // Define variables
-    size_t total = winningStates.size();
-    std::atomic<size_t> counter = 0;
-    std::vector<std::future<size_t>> futures;
-    futures.reserve(threads);
-
-    // Create threads
-    for (size_t index = 0; index < threads; index++) {
-        futures.push_back(std::async(
-                std::launch::async,
-                verifyWinningStatesThread,
-                std::ref(winningStates), std::ref(archive), std::ref(counter), logFreq));
-    }
-
-    // Join threads
-    size_t numFailedToVerify = 0;
-    for (auto& fut : futures) {
-        numFailedToVerify += fut.get();
-    }
-
-    // Print results
-    printf("Verified all winning states.\n");
-    if (numFailedToVerify) {
-        printf("%zu (out of %zu) states not confirmed.\n", numFailedToVerify, total);
-    } else {
-        printf("All states confirmed.\n");
-    }
-
-    return numFailedToVerify;
-}
-
-size_t verifyLosingStatesThread(
-        const std::vector<GameState>& losingStates, const Archive& archive, std::atomic<size_t>& counter, size_t logFreq) {
-
+/**
+ * @brief Verify if losing states are indeed losing.
+ * @param archive Archive containing the exact list of losing states to verify.
+ * @param goal The target row to reach.
+ * @param threads The number of threads to use.
+ * @return The number of states failed to verify.
+ */
+size_t verifyLosingStates(const Archive& archive, int goal, size_t threads) {
+    std::vector<Board> losingStates = archive.getLosingBoardsAsVector();
     size_t total = losingStates.size();
     size_t numFailedToVerify = 0;
 
-    while (true) {
-        // Log progress
-        size_t i = counter.fetch_add(1, std::memory_order_relaxed);
-        if (i >= total) break;
-        if ((i + 1) % logFreq == 0 || i + 1 == total) {
-            printf("[Verify losing] %zu / %zu\n", i + 1, total);
-        }
+    // If there are no losing states, then there is nothing to verify
+    if (total == 0) {
+        printf("Verify losing: 0 / 0 (0 failed to verify)\n");
+        return 0;
+    }
 
-        const GameState& gameState = losingStates[i];
+    // Otherwise, verify the losing states one by one
+    for (size_t i = 0; i < total; i++) {
+        // Fetch the game state to verify
+        GameState state(losingStates[i], goal);
 
-        // Double check that the Remover will move next
-        if (gameState.getCurrentPlayer() != Player::PUSHER) {
-            printf(
-                    "Warning: Skipping the following state due to being the Remover's turn:\n%s\n",
-                    gameState.getBoard().toString().c_str());
-            numFailedToVerify++;
-            continue;
-        }
-
-        // Take a step
-#ifdef USE_PRUNED_MOVES_FOR_VERIFICATION
-        std::vector<GameState> nextStates = gameState.stepPruned();
-#else
-        std::vector<GameState> nextStates = gameState.step();
-#endif
-        bool canGuaranteeLosing = std::ranges::all_of(nextStates,
-                [&archive](const GameState& nextState) {
-                    // Take another step
-#ifdef USE_PRUNED_MOVES_FOR_VERIFICATION
-                    std::vector<GameState> nextNextStates = nextState.stepPruned();
-#else
+        // For all pusher moves...
+        std::vector<GameState> nextStates = state.step();
+        bool isVerified = std::ranges::all_of(nextStates,
+                [&archive, threads](const GameState& nextState) {
+                    // For any subsequent remover move...
                     std::vector<GameState> nextNextStates = nextState.step();
-#endif
 
-                    // If any move lead to Pusher losing or another losing state, then this is a losing state
+                    // If lead to Remover victory or a losing state, then original game state is verified
                     return std::ranges::any_of(nextNextStates,
-                            [&archive](const GameState& nextNextState) {
-                                return archive.predictWinner(nextNextState) == Player::REMOVER;
+                            [&archive, threads](const GameState& nextNextState) {
+                                return archive.predictWinner(nextNextState, threads) == Player::REMOVER;
                             });
                 });
 
-        if (!canGuaranteeLosing) {
+        if (!isVerified) {
             numFailedToVerify++;
-            printf("The following board is not confirmed as a losing state:\n%s\n", gameState.getBoard().toString().c_str());
         }
+
+        // Log the current progress
+        printf("\033[2K\033[GVerify losing: %zu / %zu (%zu failed to verify)", i + 1, total, numFailedToVerify);
     }
 
-    return numFailedToVerify;
-}
-
-size_t verifyLosingStates(const std::vector<GameState>& losingStates, size_t threads, size_t logFreq) {
-    // Create archive
-    Archive archive;
-    for (const GameState& gameState : losingStates) {
-        archive.addLosing(gameState.getBoard());
-    }
-
-    // Define variables
-    size_t total = losingStates.size();
-    std::atomic<size_t> counter = 0;
-    std::vector<std::future<size_t>> futures;
-    futures.reserve(threads);
-
-    // Create threads
-    for (size_t index = 0; index < threads; index++) {
-        futures.push_back(std::async(
-                std::launch::async,
-                verifyLosingStatesThread,
-                std::ref(losingStates), std::ref(archive), std::ref(counter), logFreq));
-    }
-
-    // Join threads
-    size_t numFailedToVerify = 0;
-    for (auto& fut : futures) {
-        numFailedToVerify += fut.get();
-    }
-
-    // Print results
-    printf("Verified all losing states.\n");
-    if (numFailedToVerify) {
-        printf("%zu (out of %zu) states not confirmed.\n", numFailedToVerify, total);
-    } else {
-        printf("All states confirmed.\n");
-    }
+    printf("\n");
 
     return numFailedToVerify;
 }
@@ -242,83 +136,50 @@ int main(int argc, char** argv) {
 
     // Initialize game state
     printf("\n[Initializing game state]\n");
-    GameState initialGameState = initGameState(config);
-    const Board& initialBoard = initialGameState.getBoard();
-    size_t N = initialBoard.getN();
-    size_t K = initialBoard.getK();
-    int GOAL = initialGameState.getGoal();
+    GameState startingGameState = initGameState(config);
+    const Board& startingBoard = startingGameState.getBoard();
+    size_t N = startingBoard.getN();
+    size_t K = startingBoard.getK();
+    int GOAL = startingGameState.getGoal();
     printf("N: %zu, K: %zu, GOAL: %d\n", N, K, GOAL);
-    printf("Initial board:\n%s", initialBoard.toString().c_str());
+    printf("Initial board:\n%s", startingBoard.toString().c_str());
 
     // Load the winning and losing states
     printf("\n[Loading winning and losing states]\n");
     std::filesystem::path filename = getFilename(N, K, GOAL);
     std::filesystem::path winningFilename = "winning" / filename;
     std::filesystem::path losingFilename = "losing" / filename;
+
+    // Create the archive
+    // Archives organize game states in a way that is easy to do batch comparisons.
     Archive winningArchive, losingArchive;
     winningArchive.loadWinning(winningFilename);
     losingArchive.loadLosing(losingFilename);
-    std::vector<GameState> winningBoards, losingBoards;
-    for (const Board& board : winningArchive.getWinningBoardsAsVector()) {
-        winningBoards.emplace_back(board, GOAL);
-    }
-    for (const Board& board : losingArchive.getLosingBoardsAsVector()) {
-        losingBoards.emplace_back(board, GOAL);
-    }
 
-    // Check if board is winning or losing
+    // Check if starting game state is winning or losing
     printf("\n[Verification]\n");
-    bool pusherWillWin = winningArchive.predictWinner(initialGameState) == Player::PUSHER;
-    bool pusherWillLose = losingArchive.predictWinner(initialGameState) == Player::REMOVER;
+    bool pusherWillWin = winningArchive.predictWinner(startingGameState) == Player::PUSHER;
+    bool pusherWillLose = losingArchive.predictWinner(startingGameState) == Player::REMOVER;
 
+    // Step 1: Determine if the starting state is in a winning or losing state
+    std::string prediction;
     if (pusherWillWin && pusherWillLose) {
-        printf("\nPrediction not available (starting state is in both winning and losing states).\n");
-    } else if (!pusherWillWin && !pusherWillLose) {
-        printf("\nPrediction not available (starting state is in neither winning nor losing states).\n");
-        size_t winningStatesFailedToVerify = verifyWinningStates(
-                winningBoards,
-                config["verify"]["threads"],
-                config["verify"]["log-frequency"]["winning"]);
-        printf("\n");
-        size_t losingStatesFailedToVerify = verifyLosingStates(
-                losingBoards,
-                config["verify"]["threads"],
-                config["verify"]["log-frequency"]["losing"]);
-        printf("\n");
-        printf("Summary:\nPrediction not available.\n");
-        printf("Winning states: %zu unconfirmed.\n", winningStatesFailedToVerify);
-        printf("Losing states: %zu unconfirmed.\n", losingStatesFailedToVerify);
+        prediction = "Starting state is both winning and losing state.";
+        printf("Error: %s\n", prediction.c_str());
+    } else if (pusherWillWin) {
+        prediction = "Starting state is winning state.";
+        printf("%s\n", prediction.c_str());
+    } else if (pusherWillLose) {
+        prediction = "Starting state is losing state.";
+        printf("%s\n", prediction.c_str());
     } else {
-        if (pusherWillWin) {
-            printf("Prediction: Pusher will win\n");
-            size_t winningStatesFailedToVerify = verifyWinningStates(
-                    winningBoards,
-                    config["verify"]["threads"],
-                    config["verify"]["log-frequency"]["winning"]);
-            printf("\n");
-
-            printf("Summary:\nPusher predicted to win");
-            if (winningStatesFailedToVerify) {
-                printf(" (%zu states unconfirmed).\n", winningStatesFailedToVerify);
-            } else {
-                printf(" (confirmed).\n");
-            }
-        } else {
-            printf("Prediction: Pusher will lose\n");
-            size_t losingStatesFailedToVerify = verifyLosingStates(
-                    losingBoards,
-                    config["verify"]["threads"],
-                    config["verify"]["log-frequency"]["losing"]);
-            printf("\n");
-
-            printf("Summary:\nPusher predicted to lose");
-            if (losingStatesFailedToVerify) {
-                printf(" (%zu states unconfirmed).\n", losingStatesFailedToVerify);
-            } else {
-                printf(" (confirmed).\n");
-            }
-        }
+        prediction = "Starting state is neither winning nor losing state.";
+        printf("Error: %s\n", prediction.c_str());
     }
+
+    // Step 2: Verify the winning and losing states
+    verifyWinningStates(winningArchive, GOAL, config["verify"]["threads"]);
+    verifyLosingStates(losingArchive, GOAL, config["verify"]["threads"]);
 
     return 0;
 }
