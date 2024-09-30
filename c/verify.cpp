@@ -30,13 +30,13 @@
  * @param archive Archive containing the exact list of winning states to verify.
  * @param counter A counter to keep track of the progress and distributing work among threads.
  * @param logFreq Log frequency.
- * @return The number of unverified states.
+ * @return The number of states failed to verify.
  */
 size_t verifyWinningStatesThread(
         const std::vector<GameState>& winningStates, const Archive& archive, std::atomic<size_t>& counter, size_t logFreq) {
 
     size_t total = winningStates.size();
-    size_t countUnverified = 0;
+    size_t numFailedToVerify = 0;
 
     while (true) {
         // Log progress
@@ -53,7 +53,7 @@ size_t verifyWinningStatesThread(
             printf(
                     "Warning: Skipping the following state due to being the Remover's turn:\n%s\n",
                     gameState.getBoard().toString().c_str());
-            countUnverified++;
+            numFailedToVerify++;
             continue;
         }
 
@@ -80,12 +80,12 @@ size_t verifyWinningStatesThread(
                 });
 
         if (!canGuaranteeWinning) {
-            countUnverified++;
+            numFailedToVerify++;
             printf("The following board is not confirmed as a winning state:\n%s\n", gameState.getBoard().toString().c_str());
         }
     }
 
-    return countUnverified;
+    return numFailedToVerify;
 }
 
 size_t verifyWinningStates(const std::vector<GameState>& winningStates, size_t threads, size_t logFreq) {
@@ -110,27 +110,27 @@ size_t verifyWinningStates(const std::vector<GameState>& winningStates, size_t t
     }
 
     // Join threads
-    size_t countUnverified = 0;
+    size_t numFailedToVerify = 0;
     for (auto& fut : futures) {
-        countUnverified += fut.get();
+        numFailedToVerify += fut.get();
     }
 
     // Print results
     printf("Verified all winning states.\n");
-    if (countUnverified) {
-        printf("%zu (out of %zu) states not confirmed.\n", countUnverified, total);
+    if (numFailedToVerify) {
+        printf("%zu (out of %zu) states not confirmed.\n", numFailedToVerify, total);
     } else {
         printf("All states confirmed.\n");
     }
 
-    return countUnverified;
+    return numFailedToVerify;
 }
 
 size_t verifyLosingStatesThread(
         const std::vector<GameState>& losingStates, const Archive& archive, std::atomic<size_t>& counter, size_t logFreq) {
 
     size_t total = losingStates.size();
-    size_t countUnverified = 0;
+    size_t numFailedToVerify = 0;
 
     while (true) {
         // Log progress
@@ -147,7 +147,7 @@ size_t verifyLosingStatesThread(
             printf(
                     "Warning: Skipping the following state due to being the Remover's turn:\n%s\n",
                     gameState.getBoard().toString().c_str());
-            countUnverified++;
+            numFailedToVerify++;
             continue;
         }
 
@@ -174,12 +174,12 @@ size_t verifyLosingStatesThread(
                 });
 
         if (!canGuaranteeLosing) {
-            countUnverified++;
+            numFailedToVerify++;
             printf("The following board is not confirmed as a losing state:\n%s\n", gameState.getBoard().toString().c_str());
         }
     }
 
-    return countUnverified;
+    return numFailedToVerify;
 }
 
 size_t verifyLosingStates(const std::vector<GameState>& losingStates, size_t threads, size_t logFreq) {
@@ -204,20 +204,20 @@ size_t verifyLosingStates(const std::vector<GameState>& losingStates, size_t thr
     }
 
     // Join threads
-    size_t countUnverified = 0;
+    size_t numFailedToVerify = 0;
     for (auto& fut : futures) {
-        countUnverified += fut.get();
+        numFailedToVerify += fut.get();
     }
 
     // Print results
     printf("Verified all losing states.\n");
-    if (countUnverified) {
-        printf("%zu (out of %zu) states not confirmed.\n", countUnverified, total);
+    if (numFailedToVerify) {
+        printf("%zu (out of %zu) states not confirmed.\n", numFailedToVerify, total);
     } else {
         printf("All states confirmed.\n");
     }
 
-    return countUnverified;
+    return numFailedToVerify;
 }
 
 int main(int argc, char** argv) {
@@ -272,43 +272,43 @@ int main(int argc, char** argv) {
         printf("\nPrediction not available (starting state is in both winning and losing states).\n");
     } else if (!pusherWillWin && !pusherWillLose) {
         printf("\nPrediction not available (starting state is in neither winning nor losing states).\n");
-        size_t unverifiedWinningStates = verifyWinningStates(
+        size_t winningStatesFailedToVerify = verifyWinningStates(
                 winningBoards,
                 config["verify"]["threads"],
                 config["verify"]["log-frequency"]["winning"]);
         printf("\n");
-        size_t unverifiedLosingStates = verifyLosingStates(
+        size_t losingStatesFailedToVerify = verifyLosingStates(
                 losingBoards,
                 config["verify"]["threads"],
                 config["verify"]["log-frequency"]["losing"]);
         printf("\n");
         printf("Summary:\nPrediction not available.\n");
-        printf("Winning states: %zu unconfirmed.\n", unverifiedWinningStates);
-        printf("Losing states: %zu unconfirmed.\n", unverifiedLosingStates);
+        printf("Winning states: %zu unconfirmed.\n", winningStatesFailedToVerify);
+        printf("Losing states: %zu unconfirmed.\n", losingStatesFailedToVerify);
     } else {
         if (pusherWillWin) {
-            size_t unverifiedWinningStates = verifyWinningStates(
+            size_t winningStatesFailedToVerify = verifyWinningStates(
                     winningBoards,
                     config["verify"]["threads"],
                     config["verify"]["log-frequency"]["winning"]);
             printf("\n");
 
             printf("Summary:\nPusher predicted to win");
-            if (unverifiedWinningStates) {
-                printf(" (%zu states unconfirmed).\n", unverifiedWinningStates);
+            if (winningStatesFailedToVerify) {
+                printf(" (%zu states unconfirmed).\n", winningStatesFailedToVerify);
             } else {
                 printf(" (confirmed).\n");
             }
         } else {
-            size_t unverifiedLosingStates = verifyLosingStates(
+            size_t losingStatesFailedToVerify = verifyLosingStates(
                     losingBoards,
                     config["verify"]["threads"],
                     config["verify"]["log-frequency"]["losing"]);
             printf("\n");
 
             printf("Summary:\nPusher predicted to lose");
-            if (unverifiedLosingStates) {
-                printf(" (%zu states unconfirmed).\n", unverifiedLosingStates);
+            if (losingStatesFailedToVerify) {
+                printf(" (%zu states unconfirmed).\n", losingStatesFailedToVerify);
             } else {
                 printf(" (confirmed).\n");
             }

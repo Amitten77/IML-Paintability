@@ -1,8 +1,8 @@
 # IML Paintability Project
 
 ## Introduction
-This project is a part of the IML Paintability project, which explores the online-coloring of a multipartite graph.
-The project implements the minimax algorithm to search all possibilities and determine the optimal strategy for the Pusher or Remover.
+This project is a part of the IML Paintability project, which explores the online-coloring of multi-partite graphs.
+The project implements the minimax algorithm to search all possibilities and determines the optimal strategy for the Pusher or Remover.
 
 ## Requirements
 - CMake 3.15 or higher
@@ -35,6 +35,9 @@ The CMake build system generates three targets:
     The first file contains a list of winning boards, and the second file contains a list of losing boards.
 
 2. `verify`:
+
+    > Warning: `verify` does not out-perform `simple_verify` by a lot.
+      Only use `verify` if the starting board cannot be specified by one pair of `N` and `K`, or if you are interested in the list of states that failed to verify.
 
     This is a helper executable that verifies the generated boards.
     To run the executable, use the following command:
@@ -80,9 +83,11 @@ Here are all the parameters that can be configured in the configuration file:
     The main program allows the user to load known winning states from files, which can be used to speed up the search.
     This parameter is a list of paths to the files containing the known winning states.
 
+    Note: the file `winning/N[N]_K[K]_goal[GOAL]_board.txt` is always loaded if it exists.
+
 - `minimax.files-to-load-from.losing` (used in `main`):
 
-    Same as `minimax.files-to-load-from.winning`, but for known losing states.
+    Same as `minimax.files-to-load-from.winning`, but for known losing states. The file `losing/N[N]_K[K]_goal[GOAL]_board.txt` is always loaded if it exists.
 
 - `verify.threads` (used in `verify`):
 

@@ -48,84 +48,98 @@
  * @brief Verify if winning states are indeed winning.
  * @param archive Archive containing the exact list of winning states to verify.
  * @param goal The target row to reach.
- * @return The number of unverified states.
+ * @return The number of states failed to verify.
  */
 size_t verifyWinningStates(const Archive& archive, int goal) {
     std::vector<Board> winningStates = archive.getWinningBoardsAsVector();
     size_t total = winningStates.size();
-    size_t countUnverified = 0;
+    size_t numFailedToVerify = 0;
 
+    // If there are no winning states, then there is nothing to verify
+    if (total == 0) {
+        printf("Verify winning: 0 / 0 (0 failed to verify)\n");
+        return 0;
+    }
+
+    // Otherwise, verify the winning states one by one
     for (size_t i = 0; i < total; i++) {
         // Fetch the game state to verify
         GameState state(winningStates[i], goal);
 
         // For any pusher move...
         std::vector<GameState> nextStates = state.step();
-        bool isConfirmed = std::ranges::any_of(nextStates,
+        bool isVerified = std::ranges::any_of(nextStates,
                 [&archive](const GameState& nextState) {
                     // For all subsequent remover moves...
                     std::vector<GameState> nextNextStates = nextState.step();
 
-                    // If lead to Pusher victory or a winning state, then original game state is confirmed
+                    // If lead to Pusher victory or a winning state, then original game state is verified
                     return std::ranges::all_of(nextNextStates,
                             [nextState, &archive](const GameState& nextNextState) {
                                 return archive.predictWinner(nextNextState) == Player::PUSHER;
                             });
                 });
 
-        if (!isConfirmed) {
-            countUnverified++;
+        if (!isVerified) {
+            numFailedToVerify++;
         }
 
         // Log the current progress
-        printf("\033[2K\033[G[Verify winning] %zu / %zu: %zu unverified", i + 1, total, countUnverified);
+        printf("\033[2K\033[GVerify winning: %zu / %zu (%zu failed to verify)", i + 1, total, numFailedToVerify);
     }
 
     printf("\n");
 
-    return countUnverified;
+    return numFailedToVerify;
 }
 
 /**
  * @brief Verify if losing states are indeed losing.
  * @param archive Archive containing the exact list of losing states to verify.
  * @param goal The target row to reach.
- * @return The number of unverified states.
+ * @return The number of states failed to verify.
  */
 size_t verifyLosingStates(const Archive& archive, int goal) {
     std::vector<Board> losingStates = archive.getLosingBoardsAsVector();
     size_t total = losingStates.size();
-    size_t countUnverified = 0;
+    size_t numFailedToVerify = 0;
 
+    // If there are no losing states, then there is nothing to verify
+    if (total == 0) {
+        printf("Verify losing: 0 / 0 (0 failed to verify)\n");
+        return 0;
+    }
+
+    // Otherwise, verify the losing states one by one
     for (size_t i = 0; i < total; i++) {
         // Fetch the game state to verify
         GameState state(losingStates[i], goal);
 
         // For all pusher moves...
         std::vector<GameState> nextStates = state.step();
-        bool isConfirmed = std::ranges::all_of(nextStates,
+        bool isVerified = std::ranges::all_of(nextStates,
                 [&archive](const GameState& nextState) {
                     // For any subsequent remover move...
                     std::vector<GameState> nextNextStates = nextState.step();
 
-                    // If lead to Remover victory or a losing state, then original game state is confirmed
+                    // If lead to Remover victory or a losing state, then original game state is verified
                     return std::ranges::any_of(nextNextStates,
                             [&archive](const GameState& nextNextState) {
                                 return archive.predictWinner(nextNextState) == Player::REMOVER;
                             });
                 });
 
-        if (!isConfirmed) {
-            countUnverified++;
+        if (!isVerified) {
+            numFailedToVerify++;
         }
 
         // Log the current progress
-        printf("\033[2K\033[G[Verify losing] %zu / %zu: %zu unverified", i + 1, total, countUnverified);
+        printf("\033[2K\033[GVerify losing: %zu / %zu (%zu failed to verify)", i + 1, total, numFailedToVerify);
     }
 
     printf("\n");
 
-    return countUnverified;
+    return numFailedToVerify;
 }
 
 int main(int argc, char** argv) {

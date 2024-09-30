@@ -10,6 +10,7 @@
 #include "compare.h"
 #include "init.h"
 #include "minimax.h"
+#include "scoped_timer.h"
 
 /**
  * Using CMake:
@@ -63,22 +64,18 @@ int main(int argc, char** argv) {
     }
     archive.prune(1);
 
-    // Start minimax algorithm
-    printf("\n[Minimax start]\n");
-    auto startWall = std::chrono::high_resolution_clock::now();
-    auto startCpu = std::clock();
-    size_t count;
-    Player winner = minimax(initialGameState, archive, config["minimax"]["threads"], count);
+    {
+        ScopedTimer timer;
 
-    // End minimax algorithm
-    auto endWall = std::chrono::high_resolution_clock::now();
-    auto endCpu = std::clock();
-    double durationWall = (double)std::chrono::duration_cast<std::chrono::seconds>(endWall - startWall).count();
-    double durationCpu = static_cast<double>(endCpu - startCpu) / CLOCKS_PER_SEC;
+        // Start minimax algorithm
+        printf("\n[Minimax start]\n");
+        size_t count;
+        Player winner = minimax(initialGameState, archive, config["minimax"]["threads"], count);
 
-    printf("\n[Minimax end]\n");
-    printf("Total number of cases evaluated: %zu\n", count);
-    switch (winner) {
+        // End minimax algorithm
+        printf("\n[Minimax end]\n");
+        printf("Total number of cases evaluated: %zu\n", count);
+        switch (winner) {
         case Player::PUSHER:
             printf("\033[38;2;0;38;255mWinner: Pusher\033[0m\n");
             break;
@@ -88,13 +85,11 @@ int main(int argc, char** argv) {
         case Player::NONE:
             printf("Winner not found\n");
             break;
+        }
     }
-    printf("Wall time: %.2f seconds\n", durationWall);
-    printf("CPU time: %.2f seconds\n", durationCpu);
-    printf("Speedup: %f\n", durationCpu / durationWall);
 
     // Save the winning and losing states to files
-    archive.prune(1);
+    archive.prune();
     printf("\n[Saving winning and losing states]\n");
     archive.saveWinning(winningFilename);
     archive.saveLosing(losingFilename);
