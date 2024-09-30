@@ -10,6 +10,7 @@ Archive::Archive() noexcept
 
 // Helper function
 void saveBoardsTo(std::map<size_t, std::vector<Board>>& boards, const std::filesystem::path& filename) {
+    std::filesystem::create_directories(filename.parent_path());
     std::ofstream file(filename);
     if (!file.is_open()) {
         fprintf(stderr, "Failed to open file for writing: %s\n", filename.string().c_str());
@@ -66,12 +67,22 @@ void Archive::saveLosing(const std::filesystem::path& filename) {
 void Archive::loadWinning(const std::filesystem::path& filename) {
     if (std::filesystem::exists(filename)) {
         loadBoardsFrom(this->winningBoards_, filename);
+        // Update the size
+        this->winningCount_ = 0;
+        for (const auto& [numChips, boards] : this->winningBoards_) {
+            this->winningCount_ += boards.size();
+        }
     }
 }
 
 void Archive::loadLosing(const std::filesystem::path& filename) {
     if (std::filesystem::exists(filename)) {
         loadBoardsFrom(this->losingBoards_, filename);
+        // Update the size
+        this->losingCount_ = 0;
+        for (const auto& [numChips, boards] : this->losingBoards_) {
+            this->losingCount_ += boards.size();
+        }
     }
 }
 
@@ -299,7 +310,6 @@ void Archive::pruneWinningBoards(int verbose) noexcept {
     shouldRemove.resize(winningBoards.size(), false);
 
     // Mark redundant winning boards
-    // todo: parallelize this
     for (size_t i = 0; i < winningBoards.size(); i++) {
         for (size_t j = i + 1; j < winningBoards.size(); j++) {
             if (shouldRemove[i] || shouldRemove[j]) {
@@ -356,7 +366,6 @@ void Archive::pruneLosingBoards(int verbose) noexcept {
     shouldRemove.resize(losingBoards.size(), false);
 
     // Mark redundant losing boards
-    // todo: parallelize this
     for (size_t i = 0; i < losingBoards.size(); i++) {
         for (size_t j = i + 1; j < losingBoards.size(); j++) {
             if (shouldRemove[i] || shouldRemove[j]) {

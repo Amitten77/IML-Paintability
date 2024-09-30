@@ -1,3 +1,4 @@
+#include <format>
 #include "helper.h"
 
 size_t integerPow(size_t base, size_t exponent) {
@@ -13,4 +14,17 @@ size_t countMovableChips(const std::vector<int>& column) {
         count++;
     }
     return count;
+}
+
+std::filesystem::path getFilename(size_t n, size_t k, int goal, const std::string& suffix) {
+    return std::format("N{}_K{}_goal{}_board{}.txt", n, k, goal, suffix);
+}
+
+std::string getCurrentTime() {
+    std::stringstream currentTime;
+    auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    std::tm buf;
+    localtime_s(&buf, &now);
+    currentTime << std::put_time(&buf, "%Y-%m-%d_%H-%M");
+    return currentTime.str();
 }

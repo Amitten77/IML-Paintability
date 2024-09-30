@@ -72,18 +72,25 @@ Here are all the parameters that can be configured in the configuration file:
 - `common.goal` (used in `main` and `verify`):
 
     The target row for the Pusher to reach. The Pusher wins if, after the Remover's turn, there is at least one chip at or above this row.
-    Note that the paintability is the smallest goal that results in the Remover winning.
+    The paintability is the smallest goal that results in the Remover winning.
 
 - `minimax.threads` (used in `main`):
 
     The number of threads to use for the minimax algorithm.
+
+- `minimax.hours-per-save` (used in `main`):
+
+    To avoid losing progress, the program saves the current list of winning and losing states every `hours-per-save` hours.
+    The files are saved as `winning/temp/N[N]_K[K]_goal[GOAL]_board_[DATETIME].txt` and `losing/temp/N[N]_K[K]_goal[GOAL]_board_[DATETIME].txt`.
+
+    Note: If `hours-per-save` is set to 0 or negative, the program will not make any temporary save.
 
 - `minimax.files-to-load-from.winning` (used in `main`):
 
     The main program allows the user to load known winning states from files, which can be used to speed up the search.
     This parameter is a list of paths to the files containing the known winning states.
 
-    Note: the file `winning/N[N]_K[K]_goal[GOAL]_board.txt` is always loaded if it exists.
+    Note: The file `winning/N[N]_K[K]_goal[GOAL]_board.txt` is always loaded if it exists.
 
 - `minimax.files-to-load-from.losing` (used in `main`):
 
@@ -111,6 +118,7 @@ Example configuration file:
     },
     "minimax": {
         "threads": 32,
+        "hours-per-save": 8,
         "files-to-load-from": {
             "winning": [],
             "losing": []

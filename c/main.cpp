@@ -1,13 +1,13 @@
 //#define RECORD_PARTIAL_RESULT
 
 #include <chrono>
-#include <ctime>
 #include <filesystem>
 #include <fstream>
 #include "json.hpp"
 #include "archive.h"
 #include "board.h"
-#include "compare.h"
+#include "game_state.h"
+#include "helper.h"
 #include "init.h"
 #include "minimax.h"
 #include "scoped_timer.h"
@@ -53,7 +53,9 @@ int main(int argc, char** argv) {
     // Initialize archive
     printf("\n[Initializing archive]\n");
     Archive archive;
-    auto [winningFilename, losingFilename] = getFileNames(N, K, GOAL);
+    std::filesystem::path filename = getFilename(N, K, GOAL);
+    std::filesystem::path winningFilename = "winning" / filename;
+    std::filesystem::path losingFilename = "losing" / filename;
     archive.loadWinning(winningFilename);
     archive.loadLosing(losingFilename);
     for (std::filesystem::path additionalWinningFilename : config["minimax"]["files-to-load-from"]["winning"]) {
@@ -70,7 +72,7 @@ int main(int argc, char** argv) {
         // Start minimax algorithm
         printf("\n[Minimax start]\n");
         size_t count;
-        Player winner = minimax(initialGameState, archive, config["minimax"]["threads"], count);
+        Player winner = minimax(initialGameState, archive, config["minimax"]["hours-per-save"], config["minimax"]["threads"], count);
 
         // End minimax algorithm
         printf("\n[Minimax end]\n");

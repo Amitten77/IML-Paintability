@@ -1,10 +1,4 @@
-#include <format>
 #include "init.h"
-
-std::pair<std::filesystem::path, std::filesystem::path> getFileNames(size_t n, size_t k, int goal) {
-    std::filesystem::path filename = std::format("N{}_K{}_goal{}_board.txt", n, k, goal);
-    return { "winning" / filename, "losing" / filename };
-}
 
 /**
  * @brief Helper function to load the pairs of k*n from the given JSON 2D array.

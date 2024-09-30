@@ -21,7 +21,8 @@
 #include "json.hpp"
 #include "archive.h"
 #include "board.h"
-#include "compare.h"
+#include "game_state.h"
+#include "helper.h"
 #include "init.h"
 
 /**
@@ -251,7 +252,9 @@ int main(int argc, char** argv) {
 
     // Load the winning and losing states
     printf("\n[Loading winning and losing states]\n");
-    auto [winningFilename, losingFilename] = getFileNames(N, K, GOAL);
+    std::filesystem::path filename = getFilename(N, K, GOAL);
+    std::filesystem::path winningFilename = "winning" / filename;
+    std::filesystem::path losingFilename = "losing" / filename;
     Archive winningArchive, losingArchive;
     winningArchive.loadWinning(winningFilename);
     losingArchive.loadLosing(losingFilename);
@@ -287,6 +290,7 @@ int main(int argc, char** argv) {
         printf("Losing states: %zu unconfirmed.\n", losingStatesFailedToVerify);
     } else {
         if (pusherWillWin) {
+            printf("Prediction: Pusher will win\n");
             size_t winningStatesFailedToVerify = verifyWinningStates(
                     winningBoards,
                     config["verify"]["threads"],
@@ -300,6 +304,7 @@ int main(int argc, char** argv) {
                 printf(" (confirmed).\n");
             }
         } else {
+            printf("Prediction: Pusher will lose\n");
             size_t losingStatesFailedToVerify = verifyLosingStates(
                     losingBoards,
                     config["verify"]["threads"],

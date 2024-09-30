@@ -1,4 +1,5 @@
 #include <stack>
+#include "helper.h"
 #include "minimax.h"
 
 struct ProgressTracker {
@@ -59,7 +60,7 @@ void log(const ProgressTracker& pt, const std::string& msg) {
     fflush(stdout);
 }
 
-Player minimax(const GameState& initialState, Archive& archive, size_t threads, size_t& count) {
+Player minimax(const GameState& initialState, Archive& archive, double hoursPerSave, size_t threads, size_t& count) {
     struct GameSnapShot {
         GameState gameState;  // Current game state
         GameSnapShot* parent;  // GameSnapShot that leads to this state
@@ -74,12 +75,29 @@ Player minimax(const GameState& initialState, Archive& archive, size_t threads, 
     std::stack<GameSnapShot> s;
     s.push({ initialState, nullptr, Player::NONE, false, { 0, 1, 1 } });
     count = 0;
+    auto lastSaveTime = std::chrono::high_resolution_clock::now();
 
     // Final winner of the initial state
     Player result = Player::NONE;
 
     // Main loop
     while (!s.empty()) {
+        // Save the partial result
+        // In case there is an exception, we can still continue from where we left off
+        if (hoursPerSave > 0) {
+            auto currentTime = std::chrono::high_resolution_clock::now();
+            double duration = std::chrono::duration_cast<std::chrono::duration<double>>(currentTime - lastSaveTime).count();
+            if (duration >= hoursPerSave * 3600) {
+                std::filesystem::path filename = getFilename(
+                    initialState.getBoard().getN(), initialState.getBoard().getK(), initialState.getGoal(),
+                    "_" + getCurrentTime());
+                archive.saveWinning("winning" / ("temp" / filename));
+                archive.saveLosing("losing" / ("temp" / filename));
+                lastSaveTime = currentTime;
+            }
+        }
+
+        // Retrieve the current state
         GameSnapShot& curr = s.top();
         GameState& gameState = curr.gameState;
         GameSnapShot* parent = curr.parent;
@@ -131,7 +149,7 @@ Player minimax(const GameState& initialState, Archive& archive, size_t threads, 
         curr.winner = archive.predictWinner(gameState, threads);
         log(curr.pt, "In progress");
 
-        // 4. If we still don't have the state, we have to expand all possible next states.
+        // 4. If we still don't have the winner, we have to expand all possible next states.
         if (curr.winner == Player::NONE) {
             // If winner cannot be predicted, then generate all possible next states and push them onto the stack.
             std::vector<GameState> nextStates = gameState.stepPruned();

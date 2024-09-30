@@ -6,6 +6,7 @@
 #ifndef HELPER_H // Include guard
 #define HELPER_H
 
+#include <filesystem>
 #include <vector>
 
 /// @brief Integer version of std::pow.
@@ -17,6 +18,19 @@ size_t integerPow(size_t base, size_t exponent);
  * @return Number of movable tokens.
  */
 size_t countMovableChips(const std::vector<int>& column);
+
+/**
+ * @brief Generate the file name associated with the given n, k, and goal.
+ * @param n Number of columns.
+ * @param k Tokens in each column.
+ * @param goal Target row to reach.
+ * @param suffix Optional suffix to append to the file name (before the extension `.txt`).
+ * @return The paths to the winning board and the losing board.
+ */
+std::filesystem::path getFilename(size_t n, size_t k, int goal, const std::string& suffix = "");
+
+/// @return The current time in the format of "YYYY-mm-dd_HH-MM".
+std::string getCurrentTime();
 
 /**
  * @brief Generates a powerset of a given set.

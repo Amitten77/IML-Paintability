@@ -42,7 +42,7 @@
 #include "archive.h"
 #include "board.h"
 #include "game_state.h"
-#include "init.h"
+#include "helper.h"
 
 /**
  * @brief Verify if winning states are indeed winning.
@@ -162,7 +162,9 @@ int main(int argc, char** argv) {
 
     // Load the winning and losing states
     printf("\n[Loading winning and losing states]\n");
-    auto [winningFilename, losingFilename] = getFileNames(N, K, GOAL);
+    std::filesystem::path filename = getFilename(N, K, GOAL);
+    std::filesystem::path winningFilename = "winning" / filename;
+    std::filesystem::path losingFilename = "losing" / filename;
 
     // Create the archive (archives are libraries of winning & losing states that make it easier to compare game states)
     // Note we need two archives because the winning states and losing states are not verified, thus unreliable.
