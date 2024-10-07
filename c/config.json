@@ -1,7 +1,7 @@
 {
     "common": {
-        "k-and-n": [[3, 6]],
-        "goal": 8
+        "k-and-n": [[3, 4]],
+        "goal": 5
     },
     "minimax": {
         "threads": 32,

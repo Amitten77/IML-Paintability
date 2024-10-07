@@ -1,4 +1,6 @@
+#include <chrono>
 #include <format>
+#include <sstream>
 #include "helper.h"
 
 size_t integerPow(size_t base, size_t exponent) {
@@ -24,7 +26,11 @@ std::string getCurrentTime() {
     std::stringstream currentTime;
     auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     std::tm buf;
+#ifdef _WIN32
     localtime_s(&buf, &now);
+#else
+    localtime_r(&now, &buf);
+#endif
     currentTime << std::put_time(&buf, "%Y-%m-%d_%H-%M");
     return currentTime.str();
 }

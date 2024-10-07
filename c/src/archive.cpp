@@ -215,11 +215,11 @@ Player Archive::predictWinner(const GameState& gameState, size_t threads) const 
         // Multithreading
         std::atomic<size_t> counter = 0;
         std::vector<std::future<bool>> futures;
-        size_t j_ = std::max(std::min(threads, winningBoards.size() / 2), 1ull);
-        futures.reserve(j_);
+        size_t t_ = std::max(std::min(threads, winningBoards.size() / 2), (size_t)1);
+        futures.reserve(t_);
 
         // Compare with all winning boards
-        for (size_t i = 0; i < j_; i++) {
+        for (size_t i = 0; i < t_; i++) {
             if (numChipsInWinningBoard == numChips) {
                 futures.push_back(std::async(
                         std::launch::async,
@@ -256,11 +256,11 @@ Player Archive::predictWinner(const GameState& gameState, size_t threads) const 
         // Multithreading
         std::atomic<size_t> counter = 0;
         std::vector<std::future<bool>> futures;
-        size_t j_ = std::max(std::min(threads, losingBoards.size() / 2), 1ull);
-        futures.reserve(j_);
+        size_t t_ = std::max(std::min(threads, losingBoards.size() / 2), (size_t)1);
+        futures.reserve(t_);
 
         // Compare with all losing boards
-        for (size_t i = 0; i < j_; i++) {
+        for (size_t i = 0; i < t_; i++) {
             if (numChipsInLosingBoard == numChips) {
                 futures.push_back(std::async(
                         std::launch::async,
@@ -343,7 +343,7 @@ void Archive::pruneWinningBoards(int verbose) noexcept {
 
     // Update the winning count and prune threshold
     this->winningCount_ = winningBoards.size();
-    this->winningPruneThreshold_ = std::max(100ull, this->winningCount_ * 3);
+    this->winningPruneThreshold_ = std::max((size_t)100, this->winningCount_ * 3);
 
 #ifdef TIDY_ON_INSERT
     if (verbose) {
@@ -399,7 +399,7 @@ void Archive::pruneLosingBoards(int verbose) noexcept {
 
     // Update the losing count and prune threshold
     this->losingCount_ = losingBoards.size();
-    this->losingPruneThreshold_ = std::max(100ull, this->losingCount_ * 3);
+    this->losingPruneThreshold_ = std::max((size_t)100, this->losingCount_ * 3);
 
 #ifdef TIDY_ON_INSERT
     if (verbose) {
