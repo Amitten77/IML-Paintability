@@ -8,7 +8,12 @@ The project implements the minimax algorithm to search all possibilities and det
 - CMake 3.15 or higher
 
 ## Build
-The project is built with the following commands:
+First, clone the repository:
+```shell
+git clone https://github.com/Amitten77/IML-Paintability.git
+git switch tianyue
+```
+Then, build the project with the following commands:
 ```shell
 cd path/to/IML-paintability/c/
 mkdir build
