@@ -13,8 +13,6 @@
 #include <map>
 #include "game_state.h"
 
-static const char* BOARD_DELIMITER = "---";
-
 class Archive {
 public:
     Archive() noexcept;

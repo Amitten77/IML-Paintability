@@ -5,6 +5,8 @@
 
 #define TIDY_ON_INSERT
 
+static const char* BOARD_DELIMITER = "---";
+
 Archive::Archive() noexcept
         : winningCount_(0), losingCount_(0), winningPruneThreshold_(10), losingPruneThreshold_(10) {}
 
