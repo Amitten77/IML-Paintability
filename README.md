@@ -5,7 +5,11 @@ This project is a part of the IML Paintability project, which explores the onlin
 The project implements the minimax algorithm to search all possibilities and determines the optimal strategy for the Pusher or Remover.
 
 ## Requirements
-- CMake 3.15 or higher
+- Compiler:
+  - GCC: version 13 or higher
+  - Clang: version 12 or higher
+  - MSVC: version 17 (Visual Studio 2022) or higher
+- CMake: version 3.15 or higher
 
 ## Build
 First, clone the repository:
