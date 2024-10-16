@@ -1,12 +1,13 @@
+#include <cstdio>
 #include "scoped_timer.h"
 
 ScopedTimer::ScopedTimer() {
-    this->startWall = std::chrono::high_resolution_clock::now();
+    this->startWall = std::chrono::steady_clock::now();
     this->startCpu = std::clock();
 }
 
 ScopedTimer::~ScopedTimer() {
-    auto endWall = std::chrono::high_resolution_clock::now();
+    auto endWall = std::chrono::steady_clock::now();
     auto endCpu = std::clock();
     double durationWall = (double)std::chrono::duration_cast<std::chrono::seconds>(endWall - startWall).count();
     double durationCpu = static_cast<double>(endCpu - startCpu) / CLOCKS_PER_SEC;

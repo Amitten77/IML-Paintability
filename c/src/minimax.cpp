@@ -67,7 +67,7 @@ Player minimax(
     // Save the partial result
     // In case there is an exception, we can still continue from where we left off
     if (hoursPerSave > 0) {
-        auto currentTime = std::chrono::high_resolution_clock::now();
+        auto currentTime = std::chrono::steady_clock::now();
         double duration = std::chrono::duration_cast<std::chrono::duration<double>>(currentTime - lastSaveTime).count();
         if (duration >= hoursPerSave * 3600) {
             std::filesystem::path filename = getFilename(
@@ -123,7 +123,7 @@ Player minimax(
 }
 
 Player minimax(const GameState& startingState, Archive& archive, double hoursPerSave, size_t threads, size_t& count) {
-    auto lastSaveTime = std::chrono::high_resolution_clock::now();
+    auto lastSaveTime = std::chrono::steady_clock::now();
 
     // Find the winner recursively
     Player winner = minimax(startingState, archive, hoursPerSave, threads, count, { 0, 1, 1 }, lastSaveTime);
@@ -150,7 +150,7 @@ Player minimax(const GameState& startingState, Archive& archive, double hoursPer
 //     std::stack<GameSnapShot> s;
 //     s.push({ initialState, nullptr, Player::NONE, false, { 0, 1, 1 } });
 //     count = 0;
-//     auto lastSaveTime = std::chrono::high_resolution_clock::now();
+//     auto lastSaveTime = std::chrono::steady_clock::now();
 //
 //     // Final winner of the initial state
 //     Player result = Player::NONE;
@@ -160,7 +160,7 @@ Player minimax(const GameState& startingState, Archive& archive, double hoursPer
 //         // Save the partial result
 //         // In case there is an exception, we can still continue from where we left off
 //         if (hoursPerSave > 0) {
-//             auto currentTime = std::chrono::high_resolution_clock::now();
+//             auto currentTime = std::chrono::steady_clock::now();
 //             double duration = std::chrono::duration_cast<std::chrono::duration<double>>(currentTime - lastSaveTime).count();
 //             if (duration >= hoursPerSave * 3600) {
 //                 std::filesystem::path filename = getFilename(

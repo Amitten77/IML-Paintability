@@ -9,7 +9,7 @@ public:
     ~ScopedTimer();
 
 private:
-    std::chrono::time_point<std::chrono::high_resolution_clock> startWall;
+    std::chrono::time_point<std::chrono::steady_clock> startWall;
     std::clock_t startCpu;
 };
 
