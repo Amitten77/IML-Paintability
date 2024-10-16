@@ -15,11 +15,12 @@ The project implements the minimax algorithm to search all possibilities and det
 First, clone the repository:
 ```shell
 git clone https://github.com/Amitten77/IML-Paintability.git
+cd IML-paintability/c/
 git switch tianyue
 ```
+
 Then, build the project with the following commands:
 ```shell
-cd path/to/IML-paintability/c/
 mkdir build
 cd build
 cmake ..
@@ -67,6 +68,8 @@ The CMake build system generates three targets:
     Replace `[N]`, `[K]`, and `[GOAL]` with the respective parameters.
 
     Note that different from the `verify` executable, this program only accepts starting states with a single pair of `N` and `K`.
+
+> On Windows, use `\` instead of `/` in the above commands.
 
 ## Configuration
 Here are all the parameters that can be configured in the configuration file:
