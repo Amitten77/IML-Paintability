@@ -1,3 +1,8 @@
+/**
+ * @file graph.h
+ * @brief This file contains the declaration of the Graph class and the Hopcroft-Karp function.
+ */
+
 #ifndef GRAPH_H
 #define GRAPH_H
 

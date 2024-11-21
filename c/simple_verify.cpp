@@ -1,28 +1,56 @@
 /**
- * @file verify.cpp
+ * @file simple_verify.cpp
  * @brief This file is used to verify the correctness of winning and losing states.
  *
- * Same algorithm as `simple_verify.cpp`, but uses the configuration file to determine the starting game state. This
- * allows complex starting game states to be verified, such as those with multiple groups of K and N.
+ * Compared to `verify.cpp`, this file loads N, K, and GOAL from the command line arguments instead of the configuration
+ * file. This makes the program easier to read.
+ *
+ * See README.md for instructions on building the program. To run the program, use the following command:
+ * ```
+ * ./simple_verify [N] [K] [GOAL]
+ * ```
+ *
+ * Where `N` is the number of columns, `K` is the number of chips per column, and `GOAL` is the target row to reach. The
+ * program automatically loads the files `winning/N[N]_K[K]_goal[GOAL].txt` and `losing/N[N]_K[K]_goal[GOAL].txt`.
+ *
+ * The first step is to decide if the initial state (i.e. the state where all chips are at row 0) is a winning or
+ * losing. This can be done by comparing the initial state with the winning and losing states. Note that this step is
+ * purely for providing information, and is independent of the correctness of the winning and losing states.
+ *
+ * Then, BOTH the winning states and losing states will be checked for correctness. We define a winning state as correct
+ * if there exists a pusher move, for all subsequent remover moves, the resulting state satisfies one of the following
+ * conditions:
+ *   1. One of the chips is at row `goal`.
+ *   2. The resulting state is greater than or equal to a state in the list of winning states.
+ *
+ * Similarly, we define a losing state as correct if for all pusher moves, there exists a remover move, such that the
+ * resulting state satisfies one of the following conditions:
+ *   1. All chips are removed.
+ *   2. The resulting state is less than or equal to a state in the list of losing states.
+ *
+ * The above arguments show that the winning/losing states are closed under a certain pusher/remover strategy.
+ *
+ * Note that we only care about the correctness of either the winning or the losing state, depending on whether the
+ * Pusher or the Remover has the winning strategy. If the initial state is a winning state, then the Pusher has the
+ * winning strategy. In this case, we only care about the correctness of the winning states. Similarly, if the initial
+ * state is a losing state, then the Remover has the winning strategy, so we only care about the correctness of the
+ * losing states.
  */
 
 #include <algorithm>
-#include <fstream>
 #include <vector>
 #include "archive.h"
 #include "board.h"
 #include "game_state.h"
 #include "helper.h"
-#include "init.h"
 
 /**
  * @brief Verify if winning states are indeed winning.
  * @param archive Archive containing the exact list of winning states to verify.
  * @param goal The target row to reach.
- * @param threads The number of threads to use.
  * @return The number of states failed to verify.
  */
-size_t verifyWinningStates(const Archive& archive, int goal, size_t threads) {
+size_t verifyWinningStates(const Archive& archive, int goal) {
     std::vector<Board> winningStates = archive.getWinningBoardsAsVector();
     size_t total = winningStates.size();
     size_t numFailedToVerify = 0;
@@ -41,14 +69,14 @@ size_t verifyWinningStates(const Archive& archive, int goal, size_t threads) {
         // For any pusher move...
         std::vector<GameState> nextStates = state.step();
         bool isVerified = std::ranges::any_of(nextStates,
-                [&archive, threads](const GameState& nextState) {
+                [&archive](const GameState& nextState) {
                     // For all subsequent remover moves...
                     std::vector<GameState> nextNextStates = nextState.step();
 
                     // If lead to Pusher victory or a winning state, then original game state is verified
                     return std::ranges::all_of(nextNextStates,
-                            [nextState, &archive, threads](const GameState& nextNextState) {
-                                return archive.predictWinner(nextNextState, threads) == Player::PUSHER;
+                            [nextState, &archive](const GameState& nextNextState) {
+                                return archive.predictWinner(nextNextState) == Player::PUSHER;
                             });
                 });
 
@@ -69,10 +97,9 @@ size_t verifyWinningStates(const Archive& archive, int goal, size_t threads) {
  * @brief Verify if losing states are indeed losing.
  * @param archive Archive containing the exact list of losing states to verify.
  * @param goal The target row to reach.
- * @param threads The number of threads to use.
  * @return The number of states failed to verify.
  */
-size_t verifyLosingStates(const Archive& archive, int goal, size_t threads) {
+size_t verifyLosingStates(const Archive& archive, int goal) {
     std::vector<Board> losingStates = archive.getLosingBoardsAsVector();
     size_t total = losingStates.size();
     size_t numFailedToVerify = 0;
@@ -91,14 +118,14 @@ size_t verifyLosingStates(const Archive& archive, int goal, size_t threads) {
         // For all pusher moves...
         std::vector<GameState> nextStates = state.step();
         bool isVerified = std::ranges::all_of(nextStates,
-                [&archive, threads](const GameState& nextState) {
+                [&archive](const GameState& nextState) {
                     // For any subsequent remover move...
                     std::vector<GameState> nextNextStates = nextState.step();
 
                     // If lead to Remover victory or a losing state, then original game state is verified
                     return std::ranges::any_of(nextNextStates,
-                            [&archive, threads](const GameState& nextNextState) {
-                                return archive.predictWinner(nextNextState, threads) == Player::REMOVER;
+                            [&archive](const GameState& nextNextState) {
+                                return archive.predictWinner(nextNextState) == Player::REMOVER;
                             });
                 });
 
@@ -116,32 +143,21 @@ size_t verifyLosingStates(const Archive& archive, int goal, size_t threads) {
 }
 
 int main(int argc, char** argv) {
-    if (argc != 2) {
-        fprintf(stderr, "Usage: %s [JSON config file]\n", argv[0]);
+    if (argc != 4) {
+        fprintf(stderr, "Usage: %s [N] [K] [GOAL]\n", argv[0]);
         exit(1);
     }
 
-    // Load config
-    printf("[Loading config]\n");
-    nlohmann::json config;
-    std::filesystem::path configFilePath = argv[1];
-    std::ifstream fs(configFilePath);
-    if (fs.is_open()) {
-        fs >> config;
-        fs.close();
-    } else {
-        fprintf(stderr, "Config file cannot be opened\n");
-        exit(1);
-    }
+    // Read command line arguments
+    size_t N = std::stoul(argv[1]);
+    size_t K = std::stoul(argv[2]);
+    int GOAL = std::stoi(argv[3]);
 
-    // Initialize game state
+    // Initialize starting game state
     printf("\n[Initializing game state]\n");
-    GameState startingGameState = initGameState(config);
-    const Board& startingBoard = startingGameState.getBoard();
-    size_t N = startingBoard.getN();
-    size_t K = startingBoard.getK();
-    int GOAL = startingGameState.getGoal();
     printf("N: %zu, K: %zu, GOAL: %d\n", N, K, GOAL);
+    GameState startingGameState(Board(N, K), GOAL);
+    const Board& startingBoard = startingGameState.getBoard();
     printf("Initial board:\n%s", startingBoard.toString().c_str());
 
     // Load the winning and losing states
@@ -178,8 +194,8 @@ int main(int argc, char** argv) {
     }
 
     // Step 2: Verify the winning and losing states
-    verifyWinningStates(winningArchive, GOAL, config["verify"]["threads"]);
-    verifyLosingStates(losingArchive, GOAL, config["verify"]["threads"]);
+    verifyWinningStates(winningArchive, GOAL);
+    verifyLosingStates(losingArchive, GOAL);
 
     return 0;
 }
