@@ -1,6 +1,6 @@
 {
     "common": {
-        "k-and-n": [[3, 4]],
+        "k-and-n": [3, 3, 3, 3],
         "goal": 5
     },
     "minimax": {

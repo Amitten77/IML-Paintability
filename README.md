@@ -75,8 +75,8 @@ The CMake build system generates three targets:
 Here are all the parameters that can be configured in the configuration file:
 - `common.k-and-n` (used in `main` and `verify`):
 
-    A list of pairs of `k` and `n` values. Each pair represents `n` identical columns each with `k` chips.
-    For example, `[[2, 3], [4, 5]]` represents a graph with 8 columns, where 3 columns have 2 chips each and 5 columns have 4 chips each.
+    A list of numbers where each number represent the `k` value of a column. The length of the list is the number of columns.
+    For example, `[2, 2, 2, 4, 4, 4, 4, 4]` represents a graph with 8 columns, where 3 columns have 2 chips each and 5 columns have 4 chips each.
 
 - `common.goal` (used in `main` and `verify`):
 
@@ -113,7 +113,7 @@ Example configuration file:
 ```json
 {
     "common": {
-        "k-and-n": [[3, 6]],
+        "k-and-n": [3, 3, 3, 3, 3, 3],
         "goal": 8
     },
     "minimax": {
