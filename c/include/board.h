@@ -128,7 +128,7 @@ public:
     [[nodiscard]] std::vector<RemoverMove> getRemoverMoves() const noexcept;
 
     /**
-     * @brief Applies the Pusher's move. Do nothing if currently not the Pusher's turn.
+     * @brief Applies the Pusher's move.
      * @param move The move to make, which is a list of chip indices to push forward.
      * @return Whether the move contains at least one valid chip.
      *
@@ -140,7 +140,7 @@ public:
     bool apply(const PusherMove& move);
 
     /**
-     * @brief Applies the Remover's move. Do nothing if currently not the Remover's turn.
+     * @brief Applies the Remover's move.
      * @param move The column index to remove.
      * @return Whether the move is a valid column with at least one moved chip.
      *

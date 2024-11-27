@@ -43,12 +43,12 @@ int main(int argc, char** argv) {
     // Initialize game state
     printf("\n[Initializing game state]\n");
     GameState startingGameState = initGameState(config);
-    const Board& initialBoard = startingGameState.getBoard();
-    size_t N = initialBoard.getN();
-    size_t K = initialBoard.getK();
-    int GOAL = startingGameState.getGoal();  // Paintability = GOAL + 1
+    const Board& startingBoard = startingGameState.getBoard();
+    size_t N = startingBoard.getN();
+    size_t K = startingBoard.getK();
+    int GOAL = startingGameState.getGoal();
     printf("N: %zu, K: %zu, GOAL: %d\n", N, K, GOAL);
-    printf("Initial board:\n%s", initialBoard.toString().c_str());
+    printf("Starting board:\n%s", startingBoard.toString().c_str());
 
     // Initialize archive
     printf("\n[Initializing archive]\n");

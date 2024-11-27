@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <format>
 #include <regex>
 #include <sstream>

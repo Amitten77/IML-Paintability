@@ -158,7 +158,7 @@ int main(int argc, char** argv) {
     printf("N: %zu, K: %zu, GOAL: %d\n", N, K, GOAL);
     GameState startingGameState(Board(N, K), GOAL);
     const Board& startingBoard = startingGameState.getBoard();
-    printf("Initial board:\n%s", startingBoard.toString().c_str());
+    printf("Starting board:\n%s", startingBoard.toString().c_str());
 
     // Load the winning and losing states
     printf("\n[Loading winning and losing states]\n");

@@ -142,7 +142,7 @@ int main(int argc, char** argv) {
     size_t K = startingBoard.getK();
     int GOAL = startingGameState.getGoal();
     printf("N: %zu, K: %zu, GOAL: %d\n", N, K, GOAL);
-    printf("Initial board:\n%s", startingBoard.toString().c_str());
+    printf("Starting board:\n%s", startingBoard.toString().c_str());
 
     // Load the winning and losing states
     printf("\n[Loading winning and losing states]\n");
