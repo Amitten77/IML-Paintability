@@ -22,6 +22,16 @@ std::vector<PusherMove> Board::getPusherMoves() const noexcept {
     return moves;
 }
 
+std::vector<PusherMove> Board::getPusherMovesSymmetric() const noexcept {
+    // Sort the moves in decreasing size, as we want to prioritize moving more chips
+    std::vector<PusherMove> moves = powerset(range(this->k_));
+    std::sort(moves.begin(), moves.end(), [](const PusherMove& a, const PusherMove& b) {
+        return a.size() > b.size();
+    });
+
+    return moves;
+}
+
 std::vector<RemoverMove> Board::getRemoverMoves() const noexcept {
     std::vector<RemoverMove> moves;
     std::vector<size_t> countMoved(this->n_, 0);

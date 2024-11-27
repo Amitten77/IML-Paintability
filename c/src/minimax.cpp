@@ -71,7 +71,7 @@ Player minimax(
         double duration = std::chrono::duration_cast<std::chrono::duration<double>>(currentTime - lastSaveTime).count();
         if (duration >= hoursPerSave * 3600) {
             std::filesystem::path filename = getFilename(
-                state.getBoard().getN(), state.getBoard().getK(), state.getGoal(),
+                state.getBoard().getN(), state.getBoard().getK(), state.getGoal(), state.isSymmetric(),
                 "_" + getCurrentTime());
             archive.saveWinning("winning" / ("temp" / filename));
             archive.saveLosing("losing" / ("temp" / filename));

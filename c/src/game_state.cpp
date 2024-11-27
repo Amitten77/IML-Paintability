@@ -1,6 +1,6 @@
 #include "game_state.h"
 
-GameState::GameState(Board board, int goal) : board_(std::move(board)), goal_(goal) {
+GameState::GameState(Board board, int goal, bool symmetric) : board_(std::move(board)), goal_(goal), symmetric_(symmetric) {
     this->currentScore_ = this->board_.calcMaxRow();
     this->currentPlayer_ = this->board_.calcCurrentPlayer();
 }
@@ -27,7 +27,11 @@ Board GameState::getBoardWithoutMovedChips() const noexcept {
         }
     }
 
-    return { n, k, boardState };
+    return {
+        n, k, boardState,
+        std::vector(n, std::vector(k, false)),
+        this->board_.getChipIDs()
+    };
 }
 
 bool GameState::apply(const PusherMove& move) {
@@ -35,7 +39,7 @@ bool GameState::apply(const PusherMove& move) {
         return false;
     }
 
-    bool result = this->board_.apply(move);
+    bool result = this->symmetric_? this->board_.applySymmetric(move) : this->board_.apply(move);
 
     this->currentPlayer_ = Player::REMOVER;
     return result;
@@ -57,7 +61,7 @@ std::vector<GameState> GameState::step() const {
     std::vector<GameState> result;
     switch (this->currentPlayer_) {
         case Player::PUSHER: {
-            for (const PusherMove& move : this->board_.getPusherMoves()) {
+            for (const PusherMove& move : (this->symmetric_ ? this->board_.getPusherMovesSymmetric() : this->board_.getPusherMoves())) {
                 GameState gameState = *this;
                 if (gameState.apply(move)) {
                     result.push_back(gameState);
@@ -84,7 +88,7 @@ std::vector<GameState> GameState::stepPruned() const {
     std::vector<GameState> result;
     switch (this->currentPlayer_) {
         case Player::PUSHER: {
-            for (const PusherMove& move : this->getPusherMovesPruned()) {
+            for (const PusherMove& move : (this->symmetric_ ? this->board_.getPusherMovesSymmetric() : this->getPusherMovesPruned())) {
                 GameState gameState = *this;
                 if (gameState.apply(move)) {
                     result.push_back(gameState);
@@ -113,6 +117,10 @@ const Board& GameState::getBoard() const noexcept {
 
 int GameState::getGoal() const noexcept {
     return this->goal_;
+}
+
+bool GameState::isSymmetric() const noexcept {
+    return this->symmetric_;
 }
 
 int GameState::getCurrentScore() const noexcept {

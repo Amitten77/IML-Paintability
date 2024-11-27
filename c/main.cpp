@@ -43,17 +43,18 @@ int main(int argc, char** argv) {
     // Initialize game state
     printf("\n[Initializing game state]\n");
     GameState startingGameState = initGameState(config);
-    const Board& initialBoard = startingGameState.getBoard();
-    size_t N = initialBoard.getN();
-    size_t K = initialBoard.getK();
-    int GOAL = startingGameState.getGoal();  // Paintability = GOAL + 1
-    printf("N: %zu, K: %zu, GOAL: %d\n", N, K, GOAL);
-    printf("Initial board:\n%s", initialBoard.toString().c_str());
+    const Board& startingBoard = startingGameState.getBoard();
+    size_t N = startingBoard.getN();
+    size_t K = startingBoard.getK();
+    int GOAL = startingGameState.getGoal();
+    bool symmetric = startingGameState.isSymmetric();
+    printf("N: %zu, K: %zu, GOAL: %d, SYM: %s\n", N, K, GOAL, symmetric ? "yes" : "no");
+    printf("Starting board:\n%s", startingBoard.toString().c_str());
 
     // Initialize archive
     printf("\n[Initializing archive]\n");
     Archive archive;
-    std::filesystem::path filename = getFilename(N, K, GOAL);
+    std::filesystem::path filename = getFilename(N, K, GOAL, symmetric);
     std::filesystem::path winningFilename = "winning" / filename;
     std::filesystem::path losingFilename = "losing" / filename;
     archive.loadWinning(winningFilename);

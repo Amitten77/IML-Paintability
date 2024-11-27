@@ -12,6 +12,9 @@
 /// @brief Integer version of std::pow.
 size_t integerPow(size_t base, size_t exponent);
 
+/// @brief Generate a range of numbers from 0 to k-1, inclusive.
+std::vector<size_t> range(size_t k);
+
 /**
  * @brief Count the number of movable chips (i.e. chips not removed) in a single column.
  * @param column The target column.
@@ -24,10 +27,11 @@ size_t countMovableChips(const std::vector<int>& column);
  * @param n Number of columns.
  * @param k Tokens in each column.
  * @param goal Target row to reach.
+ * @param symmetric Whether the game is symmetric.
  * @param suffix Optional suffix to append to the file name (before the extension `.txt`).
  * @return The paths to the winning board and the losing board.
  */
-std::filesystem::path getFilename(size_t n, size_t k, int goal, const std::string& suffix = "");
+std::filesystem::path getFilename(size_t n, size_t k, int goal, bool symmetric, const std::string& suffix = "");
 
 /// @return The current time in the format of "YYYY-mm-dd_HH-MM".
 std::string getCurrentTime();

@@ -48,9 +48,10 @@
  * @brief Verify if winning states are indeed winning.
  * @param archive Archive containing the exact list of winning states to verify.
  * @param goal The target row to reach.
+ * @param symmetric Whether the game is symmetric.
  * @return The number of states failed to verify.
  */
-size_t verifyWinningStates(const Archive& archive, int goal) {
+size_t verifyWinningStates(const Archive& archive, int goal, bool symmetric) {
     std::vector<Board> winningStates = archive.getWinningBoardsAsVector();
     size_t total = winningStates.size();
     size_t numFailedToVerify = 0;
@@ -64,7 +65,7 @@ size_t verifyWinningStates(const Archive& archive, int goal) {
     // Otherwise, verify the winning states one by one
     for (size_t i = 0; i < total; i++) {
         // Fetch the game state to verify
-        GameState state(winningStates[i], goal);
+        GameState state(winningStates[i], goal, symmetric);
 
         // For any pusher move...
         std::vector<GameState> nextStates = state.step();
@@ -97,9 +98,10 @@ size_t verifyWinningStates(const Archive& archive, int goal) {
  * @brief Verify if losing states are indeed losing.
  * @param archive Archive containing the exact list of losing states to verify.
  * @param goal The target row to reach.
+ * @param symmetric Whether the game is symmetric.
  * @return The number of states failed to verify.
  */
-size_t verifyLosingStates(const Archive& archive, int goal) {
+size_t verifyLosingStates(const Archive& archive, int goal, bool symmetric) {
     std::vector<Board> losingStates = archive.getLosingBoardsAsVector();
     size_t total = losingStates.size();
     size_t numFailedToVerify = 0;
@@ -113,7 +115,7 @@ size_t verifyLosingStates(const Archive& archive, int goal) {
     // Otherwise, verify the losing states one by one
     for (size_t i = 0; i < total; i++) {
         // Fetch the game state to verify
-        GameState state(losingStates[i], goal);
+        GameState state(losingStates[i], goal, symmetric);
 
         // For all pusher moves...
         std::vector<GameState> nextStates = state.step();
@@ -143,9 +145,22 @@ size_t verifyLosingStates(const Archive& archive, int goal) {
 }
 
 int main(int argc, char** argv) {
-    if (argc != 4) {
-        fprintf(stderr, "Usage: %s [N] [K] [GOAL]\n", argv[0]);
+    // Check if the number of arguments is valid
+    if (argc != 4 && argc != 5) {
+        fprintf(stderr, "Usage: %s [N] [K] [GOAL] [-sym]\n", argv[0]);
         exit(1);
+    }
+
+    // Validate the optional [-sym] argument if present
+    bool symmetric = false;
+    if (argc == 5) {
+        if (strcmp(argv[4], "-sym") == 0) {
+            symmetric = true;
+        } else {
+            fprintf(stderr, "Invalid argument: %s\n", argv[4]);
+            fprintf(stderr, "Usage: %s [N] [K] [GOAL] [-sym]\n", argv[0]);
+            exit(1);
+        }
     }
 
     // Read command line arguments
@@ -156,13 +171,13 @@ int main(int argc, char** argv) {
     // Initialize starting game state
     printf("\n[Initializing game state]\n");
     printf("N: %zu, K: %zu, GOAL: %d\n", N, K, GOAL);
-    GameState startingGameState(Board(N, K), GOAL);
+    GameState startingGameState(Board(N, K), GOAL, symmetric);
     const Board& startingBoard = startingGameState.getBoard();
     printf("Initial board:\n%s", startingBoard.toString().c_str());
 
     // Load the winning and losing states
     printf("\n[Loading winning and losing states]\n");
-    std::filesystem::path filename = getFilename(N, K, GOAL);
+    std::filesystem::path filename = getFilename(N, K, GOAL, symmetric);
     std::filesystem::path winningFilename = "winning" / filename;
     std::filesystem::path losingFilename = "losing" / filename;
 
@@ -194,8 +209,8 @@ int main(int argc, char** argv) {
     }
 
     // Step 2: Verify the winning and losing states
-    verifyWinningStates(winningArchive, GOAL);
-    verifyLosingStates(losingArchive, GOAL);
+    verifyWinningStates(winningArchive, GOAL, symmetric);
+    verifyLosingStates(losingArchive, GOAL, symmetric);
 
     return 0;
 }

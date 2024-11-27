@@ -83,6 +83,10 @@ Here are all the parameters that can be configured in the configuration file:
     The target row for the Pusher to reach. The Pusher wins if, after the Remover's turn, there is at least one chip at or above this row.
     The paintability is the smallest goal that results in the Remover winning.
 
+- `common.symmetric` (used in `main` and `verify`):
+
+    Specifies whether to simulate a symmetric chip game.
+
 - `minimax.threads` (used in `main`):
 
     The number of threads to use for the minimax algorithm.
@@ -114,7 +118,8 @@ Example configuration file:
 {
     "common": {
         "k-and-n": [3, 3, 3, 3, 3, 3],
-        "goal": 8
+        "goal": 8,
+        "symmetric": false
     },
     "minimax": {
         "threads": 32,

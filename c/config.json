@@ -1,7 +1,8 @@
 {
     "common": {
         "k-and-n": [3, 3, 3, 3],
-        "goal": 5
+        "goal": 5,
+        "symmetric": false
     },
     "minimax": {
         "threads": 32,

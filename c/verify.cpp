@@ -19,10 +19,11 @@
  * @brief Verify if winning states are indeed winning.
  * @param archive Archive containing the exact list of winning states to verify.
  * @param goal The target row to reach.
+ * @param symmetric Whether the game is symmetric.
  * @param threads The number of threads to use.
  * @return The number of states failed to verify.
  */
-size_t verifyWinningStates(const Archive& archive, int goal, size_t threads) {
+size_t verifyWinningStates(const Archive& archive, int goal, bool symmetric, size_t threads) {
     std::vector<Board> winningStates = archive.getWinningBoardsAsVector();
     size_t total = winningStates.size();
     size_t numFailedToVerify = 0;
@@ -36,7 +37,7 @@ size_t verifyWinningStates(const Archive& archive, int goal, size_t threads) {
     // Otherwise, verify the winning states one by one
     for (size_t i = 0; i < total; i++) {
         // Fetch the game state to verify
-        GameState state(winningStates[i], goal);
+        GameState state(winningStates[i], goal, symmetric);
 
         // For any pusher move...
         std::vector<GameState> nextStates = state.step();
@@ -69,10 +70,11 @@ size_t verifyWinningStates(const Archive& archive, int goal, size_t threads) {
  * @brief Verify if losing states are indeed losing.
  * @param archive Archive containing the exact list of losing states to verify.
  * @param goal The target row to reach.
+ * @param symmetric Whether the game is symmetric.
  * @param threads The number of threads to use.
  * @return The number of states failed to verify.
  */
-size_t verifyLosingStates(const Archive& archive, int goal, size_t threads) {
+size_t verifyLosingStates(const Archive& archive, int goal, bool symmetric, size_t threads) {
     std::vector<Board> losingStates = archive.getLosingBoardsAsVector();
     size_t total = losingStates.size();
     size_t numFailedToVerify = 0;
@@ -86,7 +88,7 @@ size_t verifyLosingStates(const Archive& archive, int goal, size_t threads) {
     // Otherwise, verify the losing states one by one
     for (size_t i = 0; i < total; i++) {
         // Fetch the game state to verify
-        GameState state(losingStates[i], goal);
+        GameState state(losingStates[i], goal, symmetric);
 
         // For all pusher moves...
         std::vector<GameState> nextStates = state.step();
@@ -141,12 +143,13 @@ int main(int argc, char** argv) {
     size_t N = startingBoard.getN();
     size_t K = startingBoard.getK();
     int GOAL = startingGameState.getGoal();
-    printf("N: %zu, K: %zu, GOAL: %d\n", N, K, GOAL);
-    printf("Initial board:\n%s", startingBoard.toString().c_str());
+    bool symmetric = startingGameState.isSymmetric();
+    printf("N: %zu, K: %zu, GOAL: %d, SYM: %s\n", N, K, GOAL, symmetric ? "yes" : "no");
+    printf("Starting board:\n%s", startingBoard.toString().c_str());
 
     // Load the winning and losing states
     printf("\n[Loading winning and losing states]\n");
-    std::filesystem::path filename = getFilename(N, K, GOAL);
+    std::filesystem::path filename = getFilename(N, K, GOAL, symmetric);
     std::filesystem::path winningFilename = "winning" / filename;
     std::filesystem::path losingFilename = "losing" / filename;
 
@@ -178,8 +181,8 @@ int main(int argc, char** argv) {
     }
 
     // Step 2: Verify the winning and losing states
-    verifyWinningStates(winningArchive, GOAL, config["verify"]["threads"]);
-    verifyLosingStates(losingArchive, GOAL, config["verify"]["threads"]);
+    verifyWinningStates(winningArchive, GOAL, symmetric, config["verify"]["threads"]);
+    verifyLosingStates(losingArchive, GOAL, symmetric, config["verify"]["threads"]);
 
     return 0;
 }

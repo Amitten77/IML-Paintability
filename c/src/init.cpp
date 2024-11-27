@@ -20,8 +20,9 @@ GameState initGameState(const nlohmann::json& config) {
         }
     }
 
-    // Find goal
+    // Find goal and symmetric
     int goal = config["common"]["goal"];
+    bool symmetric = config["common"]["symmetric"];
 
-    return { { n, k, boardState }, goal };
+    return { { n, k, boardState }, goal, symmetric };
 }

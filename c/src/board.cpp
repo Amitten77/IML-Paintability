@@ -1,7 +1,9 @@
+#include <algorithm>
 #include <format>
 #include <regex>
 #include <sstream>
 #include "board.h"
+#include "helper.h"
 
 std::string toString(const Player& player) {
     switch (player) {
@@ -17,13 +19,17 @@ std::string toString(const Player& player) {
 Board::Board() : Board(0, 0) {}
 
 Board::Board(size_t n, size_t k)
-        : Board(n, k, std::vector(n, std::vector(k, 0)), std::vector(n, std::vector(k, false))) {}
+        : Board(n, k, std::vector(n, std::vector(k, 0))) {}
 
 Board::Board(size_t n, size_t k, std::vector<std::vector<int>> boardState)
-        : Board(n, k, std::move(boardState), std::vector(n, std::vector(k, false))) {}
+        : Board(n, k, std::move(boardState), std::vector(n, std::vector(k, false)),
+                std::vector(n, range(k))) {}
 
-Board::Board(size_t n, size_t k, std::vector<std::vector<int>> boardState, std::vector<std::vector<bool>> chipIsMoved)
-        : n_(n), k_(k), boardState_(std::move(boardState)), chipIsMoved_(std::move(chipIsMoved)) {
+Board::Board(
+        size_t n, size_t k, std::vector<std::vector<int>> boardState, std::vector<std::vector<bool>> chipIsMoved,
+        std::vector<std::vector<size_t>> chipID)
+        : n_(n), k_(k), boardState_(std::move(boardState)), chipIsMoved_(std::move(chipIsMoved)),
+        chipID_(std::move(chipID)) {
 
     this->numChips_ = 0;
     for (const std::vector<int>& col : this->boardState_) {
@@ -138,6 +144,10 @@ bool Board::chipIsMoved(size_t c, size_t idx) const noexcept {
     return this->chipIsMoved_.at(c).at(idx);
 }
 
+std::vector<std::vector<size_t>> Board::getChipIDs() const noexcept {
+    return this->chipID_;
+}
+
 void Board::tidy() noexcept {
     // Sort the chips in each column
     for (size_t c = 0; c < this->n_; c++) {
@@ -146,10 +156,10 @@ void Board::tidy() noexcept {
 }
 
 void Board::tidy(size_t c) noexcept {
-    // Bind each chip to its corresponding moved boolean
-    std::vector<std::pair<int, bool>> chips;
+    // Bind each chip to its corresponding moved boolean and ID
+    std::vector<std::tuple<int, bool, size_t>> chips;
     for (size_t idx = 0; idx < this->k_; idx++) {
-        chips.emplace_back(this->boardState_[c][idx], this->chipIsMoved_[c][idx]);
+        chips.emplace_back(this->boardState_[c][idx], this->chipIsMoved_[c][idx], this->chipID_[c][idx]);
     }
 
     // Sort the chips in descending order
@@ -157,7 +167,8 @@ void Board::tidy(size_t c) noexcept {
 
     // Update the board state and chipIsMoved
     for (size_t idx = 0; idx < this->k_; idx++) {
-        this->boardState_[c][idx] = chips[idx].first;
-        this->chipIsMoved_[c][idx] = chips[idx].second;
+        this->boardState_[c][idx] = std::get<0>(chips[idx]);
+        this->chipIsMoved_[c][idx] = std::get<1>(chips[idx]);
+        this->chipID_[c][idx] = std::get<2>(chips[idx]);
     }
 }

@@ -1,5 +1,6 @@
 #include <chrono>
 #include <format>
+#include <numeric>
 #include <sstream>
 #include "helper.h"
 
@@ -7,6 +8,12 @@ size_t integerPow(size_t base, size_t exponent) {
     size_t result = 1;
     for (size_t i = 0; i < exponent; i++) result *= base;
     return result;
+}
+
+std::vector<size_t> range(size_t k) {
+    std::vector<size_t> range(k);
+    std::iota(range.begin(), range.end(), 0);
+    return range;
 }
 
 size_t countMovableChips(const std::vector<int>& column) {
@@ -18,8 +25,8 @@ size_t countMovableChips(const std::vector<int>& column) {
     return count;
 }
 
-std::filesystem::path getFilename(size_t n, size_t k, int goal, const std::string& suffix) {
-    return std::format("N{}_K{}_goal{}_board{}.txt", n, k, goal, suffix);
+std::filesystem::path getFilename(size_t n, size_t k, int goal, bool symmetric, const std::string& suffix) {
+    return std::format("N{}_K{}_goal{}{}_board{}.txt", n, k, goal, symmetric ? "_sym" : "", suffix);
 }
 
 std::string getCurrentTime() {

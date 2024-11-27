@@ -16,13 +16,14 @@ public:
      * @brief Constructor.
      * @param board The current board state.
      * @param goal The goal score to reach.
+     * @param symmetric Whether the game is symmetric.
      *
-     * Initializes the game state with the current board and goal score. The current score and player are automatically
-     * calculated based on the board state.
+     * Initializes the game state with the current board, goal score, and whether the game is symmetric. The current
+     * score and player are automatically calculated based on the board state.
      *
      * Time complexity: O(nk).
      */
-    GameState(Board board, int goal);
+    GameState(Board board, int goal, bool symmetric);
 
     // Methods
     /**
@@ -105,6 +106,8 @@ public:
     [[nodiscard]] const Board& getBoard() const noexcept;
     /// @brief Get the goal score to reach.
     [[nodiscard]] int getGoal() const noexcept;
+    /// @brief Check if the game is symmetric.
+    [[nodiscard]] bool isSymmetric() const noexcept;
     /// @brief Get the current score.
     [[nodiscard]] int getCurrentScore() const noexcept;
     /// @brief Get the current player.
@@ -113,6 +116,7 @@ public:
 private:
     Board board_;
     int goal_;
+    bool symmetric_;
     int currentScore_;
     Player currentPlayer_;
 };

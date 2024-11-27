@@ -61,12 +61,14 @@ public:
      * @param k Number of chips per column.
      * @param boardState The initial board state.
      * @param chipIsMoved Specifies which chips are already moved.
+     * @param chipID Specifies the ID of the chip in its column.
      *
      * Initializes the board with the specified size, initial board state, and which chips are already moved.
      *
      * Time complexity: O(nk).
      */
-    Board(size_t n, size_t k, BoardState boardState, std::vector<std::vector<bool>> chipIsMoved);
+    Board(size_t n, size_t k, BoardState boardState, std::vector<std::vector<bool>> chipIsMoved,
+          std::vector<std::vector<size_t>> chipID);
 
     /**
      * @brief Constructor with board string.
@@ -123,12 +125,17 @@ public:
     [[nodiscard]] std::vector<PusherMove> getPusherMoves() const noexcept;
 
     /**
+     * @return All valid Pusher moves that can be applied on this board in a symmetric chip game.
+     */
+    [[nodiscard]] std::vector<PusherMove> getPusherMovesSymmetric() const noexcept;
+
+    /**
      * @return All valid Pusher moves that can be applied on this board.
      */
     [[nodiscard]] std::vector<RemoverMove> getRemoverMoves() const noexcept;
 
     /**
-     * @brief Applies the Pusher's move. Do nothing if currently not the Pusher's turn.
+     * @brief Applies the Pusher's move.
      * @param move The move to make, which is a list of chip indices to push forward.
      * @return Whether the move contains at least one valid chip.
      *
@@ -140,7 +147,19 @@ public:
     bool apply(const PusherMove& move);
 
     /**
-     * @brief Applies the Remover's move. Do nothing if currently not the Remover's turn.
+     * @brief Applies the Pusher's move in a symmetric chip game.
+     * @param move The move to make, which is a list of chip IDs (within each column) to push forward. The same move
+     *             will be applied to all columns.
+     * @return Whether the move contains at least one valid chip.
+     *
+     * The move is applied to the board in-place.
+     *
+     * Time complexity: O(nk).
+     */
+    bool applySymmetric(const PusherMove& move);
+
+    /**
+     * @brief Applies the Remover's move.
      * @param move The column index to remove.
      * @return Whether the move is a valid column with at least one moved chip.
      *
@@ -163,6 +182,8 @@ public:
     [[nodiscard]] int getChipRow(size_t c, size_t idx) const noexcept;
     /// @brief Check if the chip has been moved by the Pusher in the previous turn.
     [[nodiscard]] bool chipIsMoved(size_t c, size_t idx) const noexcept;
+    /// @brief Get the IDs of the chips in their current order.
+    [[nodiscard]] std::vector<std::vector<size_t>> getChipIDs() const noexcept;
 
 private:
     /**
@@ -208,6 +229,13 @@ private:
      * Thus if at least one chip is moved, then the current player is the Remover.
      */
     std::vector<std::vector<bool>> chipIsMoved_;
+
+    /**
+     * @brief Represents the ID of the chip in its column.
+     *
+     * In each column, the chips are numbered from 0 to K-1. This is used to identify the chip in the column.
+     */
+    std::vector<std::vector<size_t>> chipID_;
 };
 
 #endif // BOARD_H
