@@ -12,6 +12,8 @@
         }
     },
     "verify": {
+        "verify-winning": true,
+        "verify-losing": true,
         "threads": 32
     }
 }

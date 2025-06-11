@@ -178,8 +178,18 @@ int main(int argc, char** argv) {
     }
 
     // Step 2: Verify the winning and losing states
-    verifyWinningStates(winningArchive, GOAL, config["verify"]["threads"]);
-    verifyLosingStates(losingArchive, GOAL, config["verify"]["threads"]);
+    bool verifyWinning = config["verify"]["verify-winning"];
+    bool verifyLosing = config["verify"]["verify-losing"];
+    if (verifyWinning) {
+        verifyWinningStates(winningArchive, GOAL, config["verify"]["threads"]);
+    }
+    if (verifyLosing) {
+        verifyLosingStates(losingArchive, GOAL, config["verify"]["threads"]);
+    }
+    if (!verifyWinning && !verifyLosing) {
+        printf("No verification performed.\n");
+        printf("Set the `verify.verify-winning` or `verify.verify-losing parameter` to true to perform verification. See the README file's configuration section for more details.\n");
+    }
 
     return 0;
 }

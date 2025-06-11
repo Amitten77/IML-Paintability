@@ -16,7 +16,6 @@ First, clone the repository:
 ```shell
 git clone https://github.com/Amitten77/IML-Paintability.git
 cd IML-paintability/c/
-git switch tianyue
 ```
 
 Then, build the project with the following commands:
@@ -75,7 +74,7 @@ The CMake build system generates three targets:
 Here are all the parameters that can be configured in the configuration file:
 - `common.k-and-n` (used in `main` and `verify`):
 
-    A list of numbers where each number represent the `k` value of a column. The length of the list is the number of columns.
+    A list of numbers where each number represents the `k` value of a column. The length of the list is the number of columns.
     For example, `[2, 2, 2, 4, 4, 4, 4, 4]` represents a graph with 8 columns, where 3 columns have 2 chips each and 5 columns have 4 chips each.
 
 - `common.goal` (used in `main` and `verify`):
@@ -105,6 +104,15 @@ Here are all the parameters that can be configured in the configuration file:
 
     Same as `minimax.files-to-load-from.winning`, but for known losing states. The file `losing/N[N]_K[K]_goal[GOAL]_board.txt` is always loaded if it exists.
 
+- `verify.verify-winning` (used in `verify`):
+
+    A boolean value that indicates whether to verify the winning states.
+
+- `verify.verify-losing` (used in `verify`):
+
+    A boolean value that indicates whether to verify the losing states.
+    If both `verify-winning` and `verify-losing` are set to `false`, the program will not perform any verification.
+
 - `verify.threads` (used in `verify`):
 
     The number of threads to use for the verification.
@@ -125,6 +133,8 @@ Example configuration file:
         }
     },
     "verify": {
+        "verify-winning": false,
+        "verify-losing": true,
         "threads": 32
     }
 }
