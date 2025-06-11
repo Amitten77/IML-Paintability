@@ -58,6 +58,7 @@ size_t verifyWinningStates(const Archive& archive, int goal, size_t threads) {
 
         // Log the current progress
         printf("\033[2K\033[GVerify winning: %zu / %zu (%zu failed to verify)", i + 1, total, numFailedToVerify);
+        fflush(stdout);
     }
 
     printf("\n");
@@ -108,6 +109,7 @@ size_t verifyLosingStates(const Archive& archive, int goal, size_t threads) {
 
         // Log the current progress
         printf("\033[2K\033[GVerify losing: %zu / %zu (%zu failed to verify)", i + 1, total, numFailedToVerify);
+        fflush(stdout);
     }
 
     printf("\n");
